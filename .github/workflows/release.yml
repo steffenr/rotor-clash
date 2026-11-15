@@ -56,7 +56,7 @@ jobs:
             fi
           done
 
-      - name: Deploy files via rsync over SSH & restart Plesk Passenger
+      - name: Deploy files via SSH & restart Plesk Passenger
         env:
           SSH_HOST: ${{ secrets.SSH_HOST || vars.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER || vars.SSH_USER }}
@@ -73,22 +73,25 @@ jobs:
           ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH' '$DEPLOY_PATH/tmp' '$DEPLOY_PATH/data'"
 
-          # Sync app, compiled dist/, compiled dist-server/server.cjs, and src/data/
-          rsync -avz --delete \
-            --exclude '/.git/' \
-            --exclude '/.github/' \
-            --exclude '/.aistudio/' \
-            --exclude '/node_modules/' \
-            --exclude '/data/' \
-            --exclude '/tmp/' \
-            --exclude '/tests/' \
-            -e "ssh -p $SSH_PORT -i ~/.ssh/deploy_key" \
-            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+          # Package production release payload into a compressed archive
+          tar -czf /tmp/rotor-clash-release.tar.gz \
+            package.json \
+            app.js \
+            .nvmrc \
+            .node-version \
+            dist \
+            dist-server \
+            src/data
 
-          # Install production dependencies using Plesk's Node.js binary if available & reload Passenger
+          # Upload archive via SCP (universally supported on all SSH hosts, no remote rsync dependency)
+          scp -P "$SSH_PORT" -i ~/.ssh/deploy_key /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
+
+          # Extract cleanly, remove archive, install production dependencies using Plesk Node.js & reload Passenger
           ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
-            "export PATH=\"/opt/plesk/node/22/bin:/opt/plesk/node/20/bin:\$PATH\"; \
-             cd '$DEPLOY_PATH' && \
+            "cd '$DEPLOY_PATH' && \
+             tar -xzf rotor-clash-release.tar.gz && \
+             rm -f rotor-clash-release.tar.gz && \
+             export PATH=\"/opt/plesk/node/26/bin:/opt/plesk/node/24/bin:/opt/plesk/node/22/bin:/opt/plesk/node/20/bin:\$PATH\" && \
              npm install --omit=dev && \
              touch tmp/restart.txt"
 

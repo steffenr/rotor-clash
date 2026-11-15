@@ -38,7 +38,7 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
 ```text
 ├── .github/workflows/
 │   ├── ci.yml                  # Lint, test & build checks on PRs to develop and pushes to main/develop
-│   └── release.yml             # Manual workflow_dispatch build & rsync/SSH deploy to netcup
+│   └── release.yml             # Manual workflow_dispatch build & SCP/tar deploy to netcup
 ├── server.ts                   # Express + WebSocket server (dev Vite middleware / prod dist/)
 ├── index.html                  # Alpine.js root mount & font imports
 ├── src/
@@ -85,7 +85,7 @@ Rotor Clash requires a persistent **Node.js** process with **WebSocket (`/ws`)**
 
 ### CI/CD Branch & Release Flow
 - **`main` / `develop` (`ci.yml`)**: Automatically runs `npm run lint`, `npm test`, `npm run build`, and `npm run build:server` on pushes to `main`/`develop` and pull requests into `develop`/`main`.
-- **Manual Release (`release.yml`)**: Triggered manually in **GitHub → Actions → Release — Deploy to netcup → Run workflow**. It runs the full verification suite, syncs the compiled app via `rsync` over SSH (preserving `data/` and `tmp/`), installs production dependencies (`npm install --omit=dev`), and reloads Phusion Passenger (`touch tmp/restart.txt`).
+- **Manual Release (`release.yml`)**: Triggered manually in **GitHub → Actions → Release — Deploy to netcup → Run workflow**. It runs the full verification suite, packages the compiled build into a compressed payload, securely transfers it via `scp` and unpacks it via `tar` over SSH (preserving `data/` and `tmp/`), installs production dependencies (`npm install --omit=dev`), and reloads Phusion Passenger (`touch tmp/restart.txt`).
 
 ### Required GitHub Secrets / Variables
 - `SSH_PRIVATE_KEY` *(Repository Secret)* — unencrypted deploy private key matching `~/.ssh/authorized_keys`
