@@ -1236,129 +1236,227 @@ export function renderCardDetailModal(): string {
     <template x-if="inspectedCard">
       <div
         @click="closeModal()"
-        class="fixed inset-0 z-50 bg-[#173240]/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        class="fixed inset-0 z-50 bg-[#173240]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
         role="dialog"
         aria-modal="true"
         :aria-label="inspectedCard.modelName"
       >
         <div
           @click.stop
-          class="w-full max-w-3xl rounded-2xl bg-[#FFFDF7] text-[#173240] border-[3px] border-[#173240] shadow-[0_8px_0_#173240] overflow-hidden my-auto"
+          class="w-full max-w-5xl rounded-2xl bg-[#FFFDF7] text-[#173240] border-[3px] border-[#173240] shadow-[0_8px_0_#173240] overflow-hidden my-auto max-h-[92vh] flex flex-col"
         >
-          <div class="h-1.5 w-full" :style="'background-color:' + cardTheme(inspectedCard).border"></div>
-          <div class="relative h-64 sm:h-76 w-full bg-[#EAE1CA] overflow-hidden">
-            <img
-              :src="photoUrl(inspectedCard)"
-              :alt="inspectedCard.modelName"
-              referrerpolicy="no-referrer"
-              class="h-full w-full object-cover"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-[#173240]/92 via-[#173240]/35 to-transparent"></div>
+          <!-- Category Color Crest Band -->
+          <div class="h-1.5 w-full shrink-0" :style="'background-color:' + cardTheme(inspectedCard).border"></div>
 
-            <button
-              type="button"
-              @click="closeModal()"
-              :aria-label="t.card.close"
-              class="absolute top-4 right-4 w-10 h-10 rounded-xl bg-[#FAF4E4] hover:bg-white border-2 border-[#173240] text-[#173240] flex items-center justify-center shadow-[0_2px_0_#173240] transition-colors"
-            >
-              ${iconSvg('x', 'w-5 h-5')}
-            </button>
-
-            <div class="absolute bottom-4 left-5 right-5 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <div class="text-xs font-semibold text-white/95 flex items-center gap-2">
-                  <span
-                    :style="'background-color:' + cardTheme(inspectedCard).stampBg"
-                    class="px-2 py-0.5 rounded-md border border-[#173240] font-mono font-bold text-white"
-                    x-text="inspectedCard.id"
-                  ></span>
-                  <span x-text="groupName(inspectedCard.groupId)"></span>
-                  <span aria-hidden="true">·</span>
-                  <span x-text="inspectedCard.isRealPhoto ? t.card.photoReal : t.card.photoConcept"></span>
-                </div>
-                <h2 class="mt-1.5 font-display text-2xl sm:text-3xl font-extrabold text-white" x-text="inspectedCard.modelName"></h2>
-                <div
-                  class="text-sm text-white/90"
-                  x-text="inspectedCard.manufacturer + ' · ' + deploymentLabel(inspectedCard.deploymentType) + ' · ' + cardLocale(inspectedCard).country"
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 sm:p-6 space-y-5 bg-[#FFFDF7]">
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <template x-for="stat in statDefinitions" :key="stat.key">
-                <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3">
-                  <div class="text-[11px] font-bold text-[#3C5866] truncate" x-text="t.stats[stat.key].label"></div>
-                  <div class="mt-1 font-mono tabular-nums text-lg font-bold text-[#173240]">
-                    <span x-text="formatStatValue(stat.key, inspectedCard.stats[stat.key])"></span>
-                    <span class="ml-1 text-xs font-medium text-[#3C5866]" x-text="stat.unit"></span>
-                  </div>
+          <!-- Option 1: Two-Column Split Field-Guide Dossier -->
+          <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 items-stretch divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#173240]/15">
+            <!-- Left Column: Uncropped Full-Length Specimen Gallery Frame -->
+            <div class="md:col-span-5 p-4 sm:p-5 bg-[#FAF4E4] flex flex-col justify-between space-y-3.5">
+              <!-- Mobile-Only Header Bar with Card ID & Instant Close -->
+              <div class="flex md:hidden items-center justify-between gap-2 pb-0.5">
+                <div class="flex items-center gap-2 min-w-0">
                   <div
-                    class="mt-0.5 text-[10px] font-bold"
-                    :style="'color:' + (stat.higherWins ? '#2F6F4E' : '#F15A24')"
-                    x-text="stat.higherWins ? t.card.higherWins : t.card.lowerWins"
+                    :style="'background-color:' + cardTheme(inspectedCard).stampBg + '; color:' + cardTheme(inspectedCard).stampText"
+                    class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-xs border-2 border-[#173240]"
+                    x-text="inspectedCard.id"
                   ></div>
+                  <span class="text-xs font-bold text-[#173240] truncate" x-text="inspectedCard.modelName"></span>
                 </div>
-              </template>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-4 space-y-2.5">
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.flagshipPlant"></span>
-                  <span class="font-bold text-[#173240] text-right" x-text="inspectedCard.flagshipPlant"></span>
-                </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.country"></span>
-                  <span class="text-[#173240] text-right" x-text="inspectedCard.flagshipLocation"></span>
-                </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.plantUnits"></span>
-                  <span
-                    class="font-mono tabular-nums font-bold text-[#173240]"
-                    x-text="formatNumber(inspectedCard.turbineCountInPlant)"
-                  ></span>
-                </div>
+                <button
+                  type="button"
+                  @click="closeModal()"
+                  :aria-label="t.card.close"
+                  class="w-8 h-8 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-[#173240] flex items-center justify-center shrink-0 shadow-[0_1.5px_0_#173240] active:translate-y-0.5 transition-all"
+                >
+                  ${iconSvg('x', 'w-4 h-4')}
+                </button>
               </div>
 
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-4 space-y-2.5">
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.drivetrain"></span>
-                  <span class="font-bold text-[#173240] text-right" x-text="cardLocale(inspectedCard).drivetrain"></span>
-                </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.sweptArea"></span>
-                  <span
-                    class="font-mono tabular-nums font-bold text-[#173240]"
-                    x-text="formatNumber(inspectedCard.sweptAreaM2) + ' m²'"
-                  ></span>
-                </div>
-                <div class="flex justify-between gap-2">
-                  <span class="text-[#3C5866]" x-text="t.card.deployedYear"></span>
-                  <span class="font-mono tabular-nums font-bold text-[#173240]" x-text="inspectedCard.year"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="space-y-1">
-                <div class="text-xs font-bold text-[#2F6F4E] flex items-center gap-1.5">
-                  ${iconSvg('wind', 'w-3.5 h-3.5')}
-                  <span x-text="t.card.engineeringSummary"></span>
-                </div>
-                <p class="text-sm text-[#173240] leading-relaxed" x-text="cardLocale(inspectedCard).engineeringNote"></p>
-              </div>
-
-              <a
-                :href="inspectedCard.sourceUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="px-4 py-2.5 rounded-xl bg-[#1E7898] hover:bg-[#155B75] text-white border-2 border-[#173240] font-bold text-xs inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 self-start sm:self-center shadow-[0_2px_0_#173240]"
+              <div
+                class="relative w-full rounded-xl bg-[#FFFDF7] border-2 border-[#173240]/30 p-2 sm:p-3 shadow-inner flex flex-col items-center justify-center min-h-[300px] sm:min-h-[380px] md:min-h-[440px] flex-1"
+                x-data="{ imgFailed: false }"
+                x-effect="void (inspectedCard?.id); imgFailed = false"
               >
-                <span x-text="t.card.technicalSource"></span>
-                ${iconSvg('external-link', 'w-3.5 h-3.5')}
-              </a>
+                <!-- Subtle Field-Guide Measurement Ticks -->
+                <div class="absolute left-1.5 inset-y-4 flex flex-col justify-between pointer-events-none opacity-35" aria-hidden="true">
+                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
+                </div>
+
+                <!-- Complete Uncropped Wind Turbine Photo (Zero Cut-Off) -->
+                <img
+                  x-show="!imgFailed"
+                  :src="photoUrl(inspectedCard)"
+                  :alt="inspectedCard.modelName + ' (' + inspectedCard.flagshipPlant + ')'"
+                  referrerpolicy="no-referrer"
+                  @error="imgFailed = true"
+                  class="w-full h-full max-h-[360px] sm:max-h-[420px] md:max-h-[480px] object-contain rounded-lg select-none"
+                />
+
+                <div
+                  x-show="imgFailed"
+                  class="h-64 w-full bg-gradient-to-br from-[#DCEEF5] to-[#FAF4E4] flex flex-col items-center justify-center text-[#1E7898] p-4 text-center rounded-lg"
+                >
+                  ${iconSvg('wind', 'w-10 h-10 mb-2')}
+                  <span class="text-sm font-bold text-[#173240]" x-text="inspectedCard.modelName"></span>
+                  <span class="text-xs text-[#3C5866] mt-1" x-text="inspectedCard.manufacturer"></span>
+                </div>
+              </div>
+
+              <!-- Uncropped Specimen Info & Provenance Tag -->
+              <div class="rounded-xl bg-[#FFFDF7] border-2 border-[#173240]/20 p-3 space-y-1 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-bold text-[#173240] truncate" x-text="inspectedCard.flagshipPlant"></span>
+                  <span
+                    class="px-2 py-0.5 rounded text-[10px] font-bold border border-[#173240]/25 whitespace-nowrap"
+                    :class="inspectedCard.isRealPhoto ? 'bg-[#E7F4EC] text-[#2F6F4E]' : 'bg-[#FAF4E4] text-[#78350F]'"
+                    x-text="inspectedCard.isRealPhoto ? t.card.photoReal : t.card.photoConcept"
+                  ></span>
+                </div>
+                <div class="text-[#3C5866] text-[11px] flex items-center justify-between gap-2">
+                  <span class="truncate" x-text="inspectedCard.flagshipLocation"></span>
+                  <span class="font-mono tabular-nums font-semibold shrink-0" x-text="formatNumber(inspectedCard.turbineCountInPlant) + ' ' + (lang === 'de' ? 'Anlagen' : 'turbines')"></span>
+                </div>
+              </div>
+
+              <!-- Deck Navigation -->
+              <div class="flex items-center justify-between gap-2 pt-0.5">
+                <button
+                  type="button"
+                  @click="inspectPrevCard()"
+                  class="px-3 py-1.5 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center gap-1.5 shadow-[0_2px_0_#173240] active:translate-y-0.5 transition-all whitespace-nowrap"
+                >
+                  ${iconSvg('arrow-left', 'w-3.5 h-3.5')}
+                  <span x-text="t.card.prevCard"></span>
+                </button>
+                <span class="font-mono tabular-nums text-xs font-bold text-[#3C5866]" x-text="inspectedCard.id + ' / 8D'"></span>
+                <button
+                  type="button"
+                  @click="inspectNextCard()"
+                  class="px-3 py-1.5 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center gap-1.5 shadow-[0_2px_0_#173240] active:translate-y-0.5 transition-all whitespace-nowrap"
+                >
+                  <span x-text="t.card.nextCard"></span>
+                  ${iconSvg('arrow-right', 'w-3.5 h-3.5')}
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Specs, Stats & Engineering Dossier -->
+            <div class="md:col-span-7 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-[#FFFDF7]">
+              <!-- Header -->
+              <div>
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div
+                      :style="'background-color:' + cardTheme(inspectedCard).stampBg + '; color:' + cardTheme(inspectedCard).stampText"
+                      class="w-11 h-11 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-base border-2 border-[#173240] shadow-[0_2px_0_#173240]"
+                      :title="groupName(inspectedCard.groupId)"
+                      x-text="inspectedCard.id"
+                    ></div>
+                    <div class="min-w-0">
+                      <span
+                        class="text-xs font-extrabold uppercase tracking-wide truncate block"
+                        :style="'color:' + cardTheme(inspectedCard).border"
+                        x-text="groupName(inspectedCard.groupId)"
+                      ></span>
+                      <span class="text-xs font-semibold text-[#4B6675]" x-text="deploymentLabel(inspectedCard.deploymentType)"></span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    @click="closeModal()"
+                    :aria-label="t.card.close"
+                    class="w-9 h-9 rounded-xl bg-[#FAF4E4] hover:bg-white border-2 border-[#173240] text-[#173240] flex items-center justify-center shadow-[0_2px_0_#173240] transition-colors shrink-0"
+                  >
+                    ${iconSvg('x', 'w-4 h-4')}
+                  </button>
+                </div>
+
+                <h2 class="mt-2.5 font-display text-2xl sm:text-3xl font-extrabold text-[#173240] leading-tight" x-text="inspectedCard.modelName"></h2>
+                <div class="text-xs sm:text-sm text-[#3C5866] mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span class="font-bold text-[#173240]" x-text="inspectedCard.manufacturer"></span>
+                  <span aria-hidden="true">·</span>
+                  <span x-text="cardLocale(inspectedCard).country"></span>
+                  <span aria-hidden="true">·</span>
+                  <span class="font-mono tabular-nums font-semibold" x-text="inspectedCard.year"></span>
+                </div>
+              </div>
+
+              <!-- 5 Stat Tiles Grid -->
+              <div class="space-y-1.5">
+                <div class="text-xs font-bold text-[#3C5866]" x-text="lang === 'de' ? 'Vergleichswerte im Quartett' : 'Quartet Battle Stats'"></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                  <template x-for="stat in statDefinitions" :key="stat.key">
+                    <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-2 sm:p-2.5 flex flex-col justify-between">
+                      <div class="text-[10px] font-bold text-[#3C5866] truncate" x-text="t.stats[stat.key].shortLabel"></div>
+                      <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-[#173240] leading-tight">
+                        <span x-text="formatStatValue(stat.key, inspectedCard.stats[stat.key])"></span>
+                        <span class="text-[10px] font-medium text-[#3C5866]" x-text="stat.unit"></span>
+                      </div>
+                      <div
+                        class="text-[9px] font-bold truncate flex items-center gap-0.5"
+                        :style="'color:' + (stat.higherWins ? '#2F6F4E' : '#C94213')"
+                      >
+                        <span x-show="stat.higherWins">${iconSvg('arrow-up', 'w-2 h-2')}</span>
+                        <span x-show="!stat.higherWins">${iconSvg('arrow-down', 'w-2 h-2')}</span>
+                        <span x-text="stat.higherWins ? (lang === 'de' ? 'Höher' : 'Max') : (lang === 'de' ? 'Niedriger' : 'Min')"></span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- Technical Specifications Box -->
+              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3 sm:p-3.5 space-y-2 text-xs">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+                  <div class="flex justify-between gap-2">
+                    <span class="text-[#3C5866]" x-text="t.card.drivetrain"></span>
+                    <span class="font-bold text-[#173240] text-right truncate" x-text="cardLocale(inspectedCard).drivetrain"></span>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <span class="text-[#3C5866]" x-text="t.card.sweptArea"></span>
+                    <span class="font-mono tabular-nums font-bold text-[#173240] text-right" x-text="formatNumber(inspectedCard.sweptAreaM2) + ' m²'"></span>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <span class="text-[#3C5866]" x-text="t.card.flagshipPlant"></span>
+                    <span class="font-bold text-[#173240] text-right truncate" x-text="inspectedCard.flagshipPlant"></span>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <span class="text-[#3C5866]" x-text="t.card.deployedYear"></span>
+                    <span class="font-mono tabular-nums font-bold text-[#173240] text-right" x-text="inspectedCard.year"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Field Guide Fact & Source Link Button -->
+              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-3.5 space-y-2.5">
+                <div class="space-y-1">
+                  <div class="text-xs font-bold text-[#2F6F4E] flex items-center gap-1.5">
+                    ${iconSvg('wind', 'w-3.5 h-3.5')}
+                    <span x-text="t.card.engineeringSummary"></span>
+                  </div>
+                  <p class="text-xs sm:text-sm text-[#173240] leading-relaxed" x-text="cardLocale(inspectedCard).engineeringNote"></p>
+                </div>
+
+                <div class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-[#173240]/15">
+                  <span class="text-[11px] text-[#4B6675] truncate max-w-[240px]" :title="inspectedCard.sourceLabel" x-text="inspectedCard.sourceLabel"></span>
+                  <a
+                    :href="inspectedCard.sourceUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="px-3.5 py-1.5 rounded-lg bg-[#1E7898] hover:bg-[#155B75] text-white border-2 border-[#173240] font-bold text-xs inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 shadow-[0_2px_0_#173240]"
+                  >
+                    <span x-text="t.card.technicalSource"></span>
+                    ${iconSvg('external-link', 'w-3.5 h-3.5')}
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1371,6 +1469,8 @@ export function renderAppShell(): string {
   return `
     <div
       @keydown.escape.window="if (inspectedCard) closeModal()"
+      @keydown.arrow-left.window="if (inspectedCard) inspectPrevCard()"
+      @keydown.arrow-right.window="if (inspectedCard) inspectNextCard()"
       class="min-h-screen flex flex-col bg-[#F5EFE0] text-[#173240] paper-grain"
     >
       ${renderHeader()}

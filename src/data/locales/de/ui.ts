@@ -68,6 +68,8 @@ export const DE_UI: Translations = {
     engineeringSummary: 'Wissenswertes',
     technicalSource: 'Datenquelle öffnen',
     close: 'Schließen',
+    prevCard: 'Vorherige Karte',
+    nextCard: 'Nächste Karte',
   },
   stats: {
     ratedPowerMw: {
