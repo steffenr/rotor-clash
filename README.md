@@ -2,7 +2,7 @@
 
 **Rotor Clash** is a real-time 2-player multiplayer and solo-bot wind turbine Quartet card game with an **Illustrated Field Guide** visual theme and full **English (`EN`) / German (`DE`)** localization.
 
-> **Images:** real photographs come from Wikimedia Commons under free licences (credits in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md)). The concept images shown on cards without a free photo, and the arena background, are **AI-generated**.
+> **Images:** real photographs come from Wikimedia Commons under free licences (credits in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md)). The concept images shown on cards without a free photo are **AI-generated**.
 
 Players battle across **64 real-world wind turbines** in two decks of **8 Quartet groups** each — *Modern Giants* (`1A`–`8D`) and *Records & Firsts* (`9A`–`16D`) — comparing five engineering metrics each round. In *Modern Giants* the **smallest** *Start Wind* wins; in *Records & Firsts* the **oldest** machine wins on *First Power* year.
 

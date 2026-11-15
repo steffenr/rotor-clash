@@ -490,16 +490,10 @@ export function renderArena(): string {
         id="arena-root"
         :class="'relative overflow-hidden border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16 ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
       >
-        <div
-          class="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none"
-          :style="'background-image: url(' + fieldDeskImg + ')'"
-          aria-hidden="true"
-        ></div>
-        <div class="absolute inset-0 bg-c-canvas/60 pointer-events-none" aria-hidden="true"></div>
 
         <div :class="'relative z-10 max-w-6xl mx-auto p-3 sm:p-6 space-y-3 sm:space-y-5 ' + (isReveal() && activeMatch.lastRound ? 'max-lg:pb-56' : '')">
           <!-- Field Guide Match Scoreboard -->
-          <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-3 sm:px-4 py-2 sm:py-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-3 sm:px-4 py-2 sm:py-2.5">
             <div class="order-1 flex flex-1 items-center gap-3 min-w-0">
               <div
                 class="w-10 h-10 rounded-xl bg-c-teal text-white border-2 border-c-ink flex items-center justify-center font-mono text-base font-bold shrink-0"
