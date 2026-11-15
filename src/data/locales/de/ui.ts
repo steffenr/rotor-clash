@@ -174,7 +174,6 @@ export const DE_UI: Translations = {
     searchPlaceholder: 'Turbine, Hersteller oder Ort suchen...',
     allQuartets: 'Alle 8 Gruppen (32)',
     noMatches: 'Keine passende Karte gefunden. Lösche den Suchtext, um alle Karten dieses Decks zu sehen.',
-    inspectFull: 'Vollansicht',
   },
   leaderboard: {
     title: 'Bestenliste',

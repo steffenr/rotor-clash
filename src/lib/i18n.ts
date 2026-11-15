@@ -147,7 +147,6 @@ export interface Translations {
     searchPlaceholder: string;
     allQuartets: string;
     noMatches: string;
-    inspectFull: string;
   };
   leaderboard: {
     title: string;
