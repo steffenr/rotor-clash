@@ -1052,8 +1052,32 @@ export function renderTutorial(): string {
 
       <!-- Step 1 -->
       <div x-show="tutorialStep === 0" class="rounded-2xl bg-c-paper-hi ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <div class="lg:col-span-5 flex justify-center">
-          ${renderTurbineCard("cardById('2A')", {
+        <div class="lg:col-span-5 flex flex-col items-center gap-3">
+          <!-- Both decks have their own fifth stat: Start Wind (Modern Giants) or First Power (Records & Firsts) -->
+          <div
+            x-show="deckModes.includes('records')"
+            class="flex items-center gap-1.5 bg-c-paper p-1.5 rounded-xl border-2 border-c-ink"
+            role="radiogroup"
+            :aria-label="t.decks.title"
+          >
+            <button
+              type="button"
+              role="radio"
+              :aria-checked="tutorialDeck === 'modern'"
+              @click="setTutorialDeck('modern')"
+              :class="'px-3 py-2 min-h-10 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialDeck === 'modern' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink hover:bg-c-sand')"
+              x-text="t.decks.tabModern"
+            ></button>
+            <button
+              type="button"
+              role="radio"
+              :aria-checked="tutorialDeck === 'records'"
+              @click="setTutorialDeck('records')"
+              :class="'px-3 py-2 min-h-10 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialDeck === 'records' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink hover:bg-c-sand')"
+              x-text="t.decks.tabRecords"
+            ></button>
+          </div>
+          ${renderTurbineCard('cardById(tutorialCardId())', {
             selectableExpr: 'true',
             selectedStatExpr: 'tutorialInspectedStat',
             onSelectStatHandler: 'setTutorialInspectedStat(stat.key)',
@@ -1081,7 +1105,7 @@ export function renderTutorial(): string {
             <p class="text-sm text-c-ink" x-text="t.stats[tutorialInspectedStat].description"></p>
             <div
               class="text-xs font-medium text-c-ink-2 pt-1"
-              x-text="tutorialInspectedStat === 'cutInWindMs' ? t.tutorial.step1TipCutIn : (tutorialInspectedStat === 'hubHeightM' ? t.tutorial.step1TipHub : t.tutorial.step1TipDefault)"
+              x-text="tutorialInspectedStat === 'cutInWindMs' ? t.tutorial.step1TipCutIn : (tutorialInspectedStat === 'firstPowerYear' ? t.tutorial.step1TipFirstPower : (tutorialInspectedStat === 'hubHeightM' ? t.tutorial.step1TipHub : t.tutorial.step1TipDefault))"
             ></div>
           </div>
 

@@ -209,7 +209,9 @@ export const EN_UI: Translations = {
       'Secret Trick: Smaller inland turbines start spinning in gentle 2.0–2.5 m/s breezes and beat giant offshore turbines that need stronger wind!',
     step1TipHub:
       'Did you know? Modern land turbines reach 175–179 m tall—almost four times taller than a coastal lighthouse!',
-    step1TipDefault: 'Try tapping the other rows on the Vestas V236 card to explore all 5 stats.',
+    step1TipFirstPower:
+      'Secret Trick: Age wins here. A turbine that fed the grid in 1957 beats every machine from the 2000s, so pioneers can beat giants!',
+    step1TipDefault: 'Try tapping the other rows on the card to explore all 5 stats.',
     nextStep2: 'Try a Practice Round',
     step2Tag: 'Step 2 of 4 · Practice Battle',
     step2Title: 'Can your land turbine beat a giant 20 MW sea prototype?',
