@@ -6,8 +6,8 @@ modelName: Siemens SWT-2.3-101
 manufacturer: Siemens
 deploymentType: Onshore
 imageCategory: onshore
-photoKey: fallback_onshore
-isRealPhoto: false
+photoKey: jeffreys_bay
+isRealPhoto: true
 year: 2014
 sweptAreaM2: 8012
 flagshipPlant: Jeffreys Bay Wind Farm
