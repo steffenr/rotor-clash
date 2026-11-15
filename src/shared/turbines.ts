@@ -23,7 +23,7 @@ export function compareStat(
   v2: number
 ): 1 | 2 | 0 {
   if (Math.abs(v1 - v2) < 1e-6) return 0;
-  if (statKey === 'cutInWindMs') {
+  if (statKey === 'cutInWindMs' || statKey === 'firstPowerYear') {
     return v1 < v2 ? 1 : 2;
   }
   return v1 > v2 ? 1 : 2;

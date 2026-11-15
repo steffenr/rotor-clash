@@ -14,6 +14,18 @@ import {
   SERVER_TURBINE_DECK,
 } from './turbineRepository.ts';
 import { leaderboardStore } from './store.ts';
+import {
+  DECK_MODES,
+  DEFAULT_DECK_MODE,
+  buildMatchCardIds,
+  isDeckMode,
+  maxRoundsForMode,
+  pickStrongestStat,
+  quartetGroupIdsOf,
+  resolveDeckMode,
+  statKeysForMode,
+  type DeckMode,
+} from '../shared/decks.ts';
 
 export interface ActiveMatch {
   id: string;
@@ -36,6 +48,8 @@ export interface ActiveMatch {
   p2EloChange: number | null;
   /** Player who left / dropped out; the match is then not counted. */
   abandonedById: string | null;
+  deckMode: DeckMode;
+  quartetGroupIds: number[];
   turnDeadlineAt: number | null;
   revealTimer?: NodeJS.Timeout;
   turnTimer?: NodeJS.Timeout;
@@ -47,21 +61,17 @@ interface WaitingRoom {
   roomCode: string;
   hostId: string;
   createdAt: number;
+  deckMode: DeckMode;
 }
 
 const TURN_DURATION_MS = 45_000;
 const REVEAL_AUTO_ADVANCE_MS = 5_500;
 const REVEAL_MIN_LOCK_MS = 600;
 const DISCONNECT_GRACE_MS = 25_000;
-const MAX_ROUNDS = 24;
 
-function shuffleIds(ids: string[]): string[] {
-  const arr = [...ids];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
+/** Clients may send anything; unknown or unavailable decks fall back to the default deck. */
+function normalizeDeckMode(raw: unknown): DeckMode {
+  return isDeckMode(raw) ? resolveDeckMode(raw, SERVER_TURBINE_DECK) : DEFAULT_DECK_MODE;
 }
 
 export type EmitToPlayerFn = (playerId: string, event: string, payload: unknown) => void;
@@ -78,7 +88,8 @@ export interface MatchStoreLike {
 export class MatchEngine {
   private matches = new Map<string, ActiveMatch>();
   private playerToMatch = new Map<string, string>();
-  private queue: string[] = [];
+  /** One waiting line per deck, so players are only paired with someone who wants the same deck. */
+  private queues = new Map<DeckMode, string[]>(DECK_MODES.map((m) => [m, []]));
   private rooms = new Map<string, WaitingRoom>();
 
   constructor(
@@ -96,7 +107,7 @@ export class MatchEngine {
     }
     this.matches.clear();
     this.playerToMatch.clear();
-    this.queue = [];
+    for (const mode of DECK_MODES) this.queues.set(mode, []);
     this.rooms.clear();
   }
 
@@ -110,12 +121,13 @@ export class MatchEngine {
           hostCallsign: host.callsign,
           hostElo: host.elo,
           createdAt: room.createdAt,
+          deckMode: room.deckMode,
         };
       });
 
     return {
       onlineCount,
-      queueCount: this.queue.length,
+      queueCount: [...this.queues.values()].reduce((sum, q) => sum + q.length, 0),
       openRooms,
     };
   }
@@ -140,6 +152,7 @@ export class MatchEngine {
           hostCallsign: host.callsign,
           hostElo: host.elo,
           createdAt: room.createdAt,
+          deckMode: room.deckMode,
         };
       }
     }
@@ -199,7 +212,8 @@ export class MatchEngine {
     }
   }
 
-  public joinQueue(playerId: string): { ok: boolean; error?: string } {
+  public joinQueue(playerId: string, rawDeckMode?: unknown): { ok: boolean; error?: string } {
+    const deckMode = normalizeDeckMode(rawDeckMode);
     if (this.playerToMatch.has(playerId)) {
       const existing = this.matches.get(this.playerToMatch.get(playerId)!);
       if (existing && existing.status !== 'FINISHED') {
@@ -209,18 +223,19 @@ export class MatchEngine {
     }
 
     this.cancelHostedRooms(playerId);
+    this.removeFromQueue(playerId);
 
-    if (!this.queue.includes(playerId)) {
-      this.queue.push(playerId);
-    }
+    const queue = this.queues.get(deckMode)!;
+    queue.push(playerId);
 
-    // Attempt pairing connected players
-    this.queue = this.queue.filter((id) => this.isPlayerConnected(id));
-    if (this.queue.length >= 2) {
-      const p1 = this.queue.shift()!;
-      const p2 = this.queue.shift()!;
+    // Attempt pairing connected players who chose the same deck
+    const waiting = queue.filter((id) => this.isPlayerConnected(id));
+    this.queues.set(deckMode, waiting);
+    if (waiting.length >= 2) {
+      const p1 = waiting.shift()!;
+      const p2 = waiting.shift()!;
       if (p1 !== p2) {
-        this.createAndStartMatch(p1, p2, 'ranked');
+        this.createAndStartMatch(p1, p2, 'ranked', deckMode);
       }
     }
 
@@ -228,10 +243,16 @@ export class MatchEngine {
   }
 
   public removeFromQueue(playerId: string) {
-    this.queue = this.queue.filter((id) => id !== playerId);
+    for (const [mode, queue] of this.queues) {
+      this.queues.set(mode, queue.filter((id) => id !== playerId));
+    }
   }
 
-  public createRoom(playerId: string): { ok: boolean; room?: OpenRoomSummary; error?: string } {
+  public createRoom(
+    playerId: string,
+    rawDeckMode?: unknown
+  ): { ok: boolean; room?: OpenRoomSummary; error?: string } {
+    const deckMode = normalizeDeckMode(rawDeckMode);
     if (this.playerToMatch.has(playerId)) {
       const existing = this.matches.get(this.playerToMatch.get(playerId)!);
       if (existing && existing.status !== 'FINISHED') {
@@ -253,6 +274,7 @@ export class MatchEngine {
       roomCode: code,
       hostId: playerId,
       createdAt: Date.now(),
+      deckMode,
     };
     this.rooms.set(code, room);
 
@@ -264,6 +286,7 @@ export class MatchEngine {
         hostCallsign: host.callsign,
         hostElo: host.elo,
         createdAt: room.createdAt,
+        deckMode: room.deckMode,
       },
     };
   }
@@ -294,7 +317,7 @@ export class MatchEngine {
     this.removeFromQueue(playerId);
     this.cancelHostedRooms(playerId);
 
-    this.createAndStartMatch(room.hostId, playerId, 'room', code);
+    this.createAndStartMatch(room.hostId, playerId, 'room', room.deckMode, code);
     return { ok: true };
   }
 
@@ -302,11 +325,13 @@ export class MatchEngine {
     p1Id: string,
     p2Id: string,
     mode: 'ranked' | 'room',
+    deckMode: DeckMode,
     roomCode?: string
   ) {
-    const shuffled = shuffleIds(SERVER_TURBINE_DECK.map((c) => c.id));
-    const p1Deck = shuffled.slice(0, 16);
-    const p2Deck = shuffled.slice(16, 32);
+    const shuffled = buildMatchCardIds(deckMode, SERVER_TURBINE_DECK);
+    const half = Math.floor(shuffled.length / 2);
+    const p1Deck = shuffled.slice(0, half);
+    const p2Deck = shuffled.slice(half);
     const startingPlayer = Math.random() < 0.5 ? p1Id : p2Id;
 
     const match: ActiveMatch = {
@@ -321,7 +346,7 @@ export class MatchEngine {
       tiePot: [],
       turnPlayerId: startingPlayer,
       roundNumber: 1,
-      maxRounds: MAX_ROUNDS,
+      maxRounds: maxRoundsForMode(deckMode),
       lastRound: null,
       revealLockedUntil: 0,
       winnerId: null,
@@ -329,6 +354,8 @@ export class MatchEngine {
       p1EloChange: null,
       p2EloChange: null,
       abandonedById: null,
+      deckMode,
+      quartetGroupIds: quartetGroupIdsOf(shuffled, SERVER_TURBINE_DECK),
       turnDeadlineAt: Date.now() + TURN_DURATION_MS,
     };
 
@@ -561,21 +588,9 @@ export class MatchEngine {
       if (!topCard) return;
 
       // Auto-pick best stat on timeout so game stays moving
-      const bestStat = this.pickStrongestStat(topCard.stats);
+      const bestStat = pickStrongestStat(topCard.stats, statKeysForMode(match.deckMode));
       this.playStat(activeId, match.id, bestStat);
     }, TURN_DURATION_MS);
-  }
-
-  private pickStrongestStat(stats: Record<StatKey, number>): StatKey {
-    const normalized: { key: StatKey; score: number }[] = [
-      { key: 'ratedPowerMw', score: stats.ratedPowerMw / 26 },
-      { key: 'rotorDiameterM', score: stats.rotorDiameterM / 310 },
-      { key: 'hubHeightM', score: stats.hubHeightM / 185 },
-      { key: 'cutInWindMs', score: Math.max(0, (4.2 - stats.cutInWindMs) / 2.2) },
-      { key: 'plantCapacityMw', score: Math.log10(Math.max(10, stats.plantCapacityMw)) / 4.1 },
-    ];
-    normalized.sort((a, b) => b.score - a.score);
-    return normalized[0].key;
   }
 
   private clearTimers(match: ActiveMatch) {
@@ -636,6 +651,8 @@ export class MatchEngine {
       winReason: match.winReason,
       eloChange: isP1 ? match.p1EloChange : match.p2EloChange,
       abandonedBy: match.abandonedById === null ? null : match.abandonedById === playerId ? 'you' : 'opponent',
+      deckMode: match.deckMode,
+      quartetGroupIds: match.quartetGroupIds,
     };
   }
 }

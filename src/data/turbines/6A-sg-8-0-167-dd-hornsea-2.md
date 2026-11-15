@@ -6,8 +6,8 @@ modelName: SG 8.0-167 DD (Hornsea 2)
 manufacturer: Siemens Gamesa
 deploymentType: Offshore
 imageCategory: offshore
-photoKey: hornsea_2
-isRealPhoto: true
+photoKey: fallback_offshore
+isRealPhoto: false
 year: 2022
 sweptAreaM2: 21900
 flagshipPlant: Ørsted Hornsea 2

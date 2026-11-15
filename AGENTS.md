@@ -47,12 +47,20 @@ This file defines the architectural rules, conventions, and verification steps f
    - `server.ts` must continue supporting both numeric TCP ports and Unix socket strings in `process.env.PORT` (used by Phusion Passenger on the target host).
    - Keep `MatchEngine`'s optional `store` constructor injection and `dispose()` method working so `tests/matchEngine.test.ts` never mutates `data/leaderboard.json` or leaves open timers.
 
-5. **Card Photography & Detail View (Two-Column Field-Guide Dossier)**:
-   - All turbine photos are mapped in `src/lib/cardImages.ts` (`CARD_PHOTO_MAP`).
-   - Floating offshore turbines (Group 4) must use floating ocean platform assets (`hywind`, `kincardine_floating`, `windfloat_atlantic`, `fallback_floating`), never onshore test-centre imagery.
+5. **Decks & Deck Modes**:
+   - There are two decks of 8 quartets (32 cards) each, told apart by group id: groups 1–8 are `modern` (cards `1A`–`8D`), groups 9–16 are `records` (cards `9A`–`16D`). The rules live in `src/shared/decks.ts` (keep it free of Vite/browser imports).
+   - A match uses one **deck mode**: `modern`, `records`, `mixed` (8 random whole quartets of 16) or `grand` (all 64 cards, 16 quartets, 48 rounds). The stat set belongs to the **match**, not the card: `modern` compares cut-in speed, every other mode compares first-power year (older wins). Always use `statKeysForMode(match.deckMode)` / `statDefsFor(card, activeMatch.deckMode)`; never infer stats from a single card inside a match.
+   - Deck-2 cards have no `cutInWindMs` (leave it out of the markdown); `firstPowerYear` is taken from the card's `year`.
+   - Quick-match queues are separate per deck mode, rooms carry their deck mode, and clients may send any string: the server normalises unknown or unavailable modes to `modern`.
+   - New cards need EN **and** DE text in `src/data/locales/*/turbines.md`, a source URL, and a photo credit (see below). Research notes and confidence per figure live in `docs/research/second-deck-verification.md`.
+
+6. **Card Photography, Licences & Detail View (Two-Column Field-Guide Dossier)**:
+   - Real photos live in `src/assets/images/real/` and are registered **by file name** in `src/lib/cardImages.ts` (`hywind.jpg` → photo key `hywind`). Concept illustrations (`fallback_*`) were made for Rotor Clash.
+   - **Every real photo must come from Wikimedia Commons under a free licence (CC0, public domain, CC BY, CC BY-SA)** and have an entry in `src/data/photoCredits.ts` (author, licence, licence URL, Commons file page). `tests/photoCredits.test.ts` fails CI for an image without a credit or a non-free licence. The credit is shown in the card detail and listed in `docs/PHOTO_CREDITS.md`. Never add a photo from anywhere else.
+   - Floating offshore turbines (Group 4) must use floating ocean platform assets (`hywind`, `windfloat_atlantic`, `fallback_floating`; `kincardine_floating` once a licensed photo exists), never onshore test-centre imagery.
    - The card detail modal (`renderCardDetailModal()`) uses an uncropped (`object-contain`) mounted specimen gallery on the left and technical dossier on the right, with deck flip navigation (`inspectPrevCard()`, `inspectNextCard()`) bound to buttons and <kbd>←</kbd> / <kbd>→</kbd> arrow keys.
 
-6. **Platform Manifest Constraint**:
+7. **Platform Manifest Constraint**:
    - Do **not** rename `"name"` inside `metadata.json` (required by AI Studio's applet manifest). All user-facing branding, `<title>`, OpenGraph metadata, storage keys, and UI copy must use **Rotor Clash**.
 
 ---

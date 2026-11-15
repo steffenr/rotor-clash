@@ -31,7 +31,7 @@ export const QUARTET_GROUPS: QuartetGroup[] = parseGroupsMarkdown(groupsMd, grou
 
 export const TURBINE_DECK: TurbineCard[] = Object.values(turbineMarkdownModules)
   .map((raw) => parseTurbineMarkdown(raw, turbineLocales))
-  .sort((a, b) => a.id.localeCompare(b.id));
+  .sort((a, b) => a.groupId - b.groupId || a.slot.localeCompare(b.slot));
 
 export const CARD_BY_ID: Record<string, TurbineCard> = Object.fromEntries(
   TURBINE_DECK.map((c) => [c.id, c])

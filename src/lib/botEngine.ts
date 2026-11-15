@@ -1,4 +1,5 @@
 import { ClientMatchState, StatKey } from '../shared/gameTypes.ts';
+import type { DeckMode } from '../shared/decks.ts';
 import {
   advanceBotRound,
   BotDifficulty,
@@ -17,9 +18,10 @@ export function createLocalBotMatch(
   playerId: string,
   playerCallsign: string,
   playerElo: number,
-  difficulty: BotDifficulty
+  difficulty: BotDifficulty,
+  deckMode?: DeckMode
 ): LocalBotMatch {
-  return createLocalBotMatchFromDeck(playerId, playerCallsign, playerElo, difficulty, TURBINE_DECK);
+  return createLocalBotMatchFromDeck(playerId, playerCallsign, playerElo, difficulty, TURBINE_DECK, deckMode);
 }
 
 export function chooseBotStat(match: LocalBotMatch): StatKey {

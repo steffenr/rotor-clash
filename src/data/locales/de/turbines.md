@@ -191,3 +191,195 @@
 - country: Dänemark
 - drivetrain: 3-Stufen-Planetengetriebe
 - engineeringNote: Leichte 3-MW-Anlage, die viele der ersten großen Windparks an der Küste geprägt hat.
+
+## 9A — Brush Windmill
+- id: 9A
+- country: USA
+- drivetrain: Rad mit 144 Blättern, riemengetriebene Dynamomaschine
+- engineeringNote: Ein Holzrad mit 144 Blättern auf einem 18 m hohen Turm lud Batterien, die etwa 20 Jahre lang eine Villa in Cleveland beleuchteten.
+
+## 9B — Smith-Putnam Turbine
+- id: 9B
+- country: USA
+- drivetrain: Zweiblattrotor mit Blattverstellung
+- engineeringNote: Die erste Anlage im Megawattbereich an einem US-Netz. Die Angaben schwanken zwischen 1,0 und 1,5 MW; ein Blattbruch beendete den Betrieb.
+
+## 9C — Gedser Wind Turbine
+- id: 9C
+- country: Dänemark
+- drivetrain: Stall-geregelter Dreiblattrotor, Luvläufer
+- engineeringNote: Sein Aufbau mit drei Blättern, Luvläufer und Stall-Regelung wurde zur Vorlage moderner Anlagen.
+
+## 9D — GROWIAN
+- id: 9D
+- country: Deutschland
+- drivetrain: Zweiblattrotor im Lee, mit Blattverstellung
+- engineeringNote: Das deutsche Zweiblatt-Großexperiment lief nur rund 400 Stunden, bevor es 1987 abgeschaltet wurde.
+
+## 10A — Éole Darrieus Turbine
+- id: 10A
+- country: Kanada
+- drivetrain: Senkrechtachs-Rotor (Darrieus)
+- engineeringNote: Die größte je gebaute Senkrechtachs-Anlage: 96 m hoch und 64 m breit. Sie lief von 1988 bis April 1993.
+
+## 10B — Vestas 4R-V29 Multi-Rotor
+- id: 10B
+- country: Dänemark
+- drivetrain: Vier 225-kW-Rotoren an einem Turm
+- engineeringNote: Vier V29-Rotoren teilen sich einen Turm, in 29 m und 59,5 m Nabenhöhe. Im Dezember 2018 wurde die Anlage abgebaut.
+
+## 10C — GE 3.4-137 Hybrid Tower
+- id: 10C
+- country: Deutschland
+- drivetrain: Getriebe-Generator auf einem Hybridturm
+- engineeringNote: Die Turmfundamente dienen als Wasserspeicher: eine Wasserbatterie mit 70 MWh und 246,5 m Gesamthöhe.
+
+## 10D — Tvindkraft
+- id: 10D
+- country: Dänemark
+- drivetrain: Glasfaser-Blätter, 27 m lang
+- engineeringNote: Von einer Schulgemeinschaft gebaut und etwas größer geplant als die Smith-Putnam-Anlage von 1941.
+
+## 11A — Bonus B35/450 (Vindeby)
+- id: 11A
+- country: Dänemark
+- drivetrain: Stall-geregelt, mit Getriebe
+- engineeringNote: Der erste Offshore-Windpark der Welt. In rund 25 Jahren erzeugte er 243 GWh, bevor er abgebaut wurde.
+
+## 11B — Vestas V80-2.0 MW
+- id: 11B
+- country: Dänemark
+- drivetrain: Pitch-geregelt, mit Getriebe
+- engineeringNote: Mit 160 MW war er viermal so groß wie jeder zuvor gebaute Offshore-Windpark.
+
+## 11C — Haliade 150-6MW (Block Island)
+- id: 11C
+- country: USA
+- drivetrain: Permanentmagnet-Direktantrieb
+- engineeringNote: Der erste Offshore-Windpark der USA: fünf 6-MW-Anlagen versorgen Block Island.
+
+## 11D — SG 6.0-154 DD (Hywind Scotland)
+- id: 11D
+- country: Schottland, Großbritannien
+- drivetrain: Direktantrieb auf einer Spar-Boje
+- engineeringNote: Der erste schwimmende Windpark der Welt, in 95–120 m Wassertiefe. Jeder Turm misst 253 m von der Basis bis zur Blattspitze.
+
+## 12A — Vestas V52-850 kW
+- id: 12A
+- country: Kenia
+- drivetrain: Pitch-geregelt mit OptiSpeed
+- engineeringNote: 365 kleine Anlagen bilden den größten Windpark Afrikas mit rund 310 MW im Ostafrikanischen Graben.
+
+## 12B — Siemens SWT-3.2-113
+- id: 12B
+- country: Australien
+- drivetrain: Permanentmagnet-Direktantrieb
+- engineeringNote: 99 Direktantrieb-Anlagen, in drei Bauabschnitten errichtet, teilen sich das Gelände mit einer bekannten Großbatterie.
+
+## 12C — Vestas V112-3.0 MW
+- id: 12C
+- country: Australien
+- drivetrain: Pitch-geregelt, mit Getriebe
+- engineeringNote: 140 Anlagen bilden einen der größten Windparks der Südhalbkugel: 420 MW.
+
+## 12D — Suzlon S144 3 MW
+- id: 12D
+- country: Indien
+- drivetrain: Doppelt gespeister Generator, Carbonfaser-Blätter
+- engineeringNote: Der Prototyp steht auf einem 160 m hohen Gitter-Rohr-Hybridturm, hoch genug für Indiens windschwache Standorte.
+
+## 13A — GE 1.5sle
+- id: 13A
+- country: USA
+- drivetrain: Getriebe mit doppelt gespeistem Generator
+- engineeringNote: Einst der größte Windpark der Welt: 291 GE-1,5-MW- und 130 Siemens-2,3-MW-Anlagen.
+
+## 13B — Mitsubishi MWT-1000A
+- id: 13B
+- country: USA
+- drivetrain: Getriebe-Antriebsstrang
+- engineeringNote: 627 Anlagen von drei Herstellern bilden einen Park mit 781,5 MW; 406 davon sind Mitsubishi-1-MW-Anlagen.
+
+## 13C — GE 2.5-100
+- id: 13C
+- country: USA
+- drivetrain: Getriebe mit Permanentmagnet-Generator
+- engineeringNote: Das US-Debüt von GEs 2,5-MW-Anlage war zugleich der größte Einzelauftrag: 338 Anlagen, 845 MW.
+
+## 13D — Siemens SWT-2.3-93
+- id: 13D
+- country: Kanada
+- drivetrain: Getriebe mit Asynchrongenerator
+- engineeringNote: 86 Anlagen auf 80 m hohen Türmen machen den Wind am Ontariosee zu 197,8 MW.
+
+## 14A — Enercon E33
+- id: 14A
+- country: Antarktis
+- drivetrain: Getriebelos, drehzahlvariabel
+- engineeringNote: Der südlichste Windpark der Erde: drei 330-kW-Anlagen helfen, Scott Base und McMurdo zu versorgen.
+
+## 14B — Enercon E-70
+- id: 14B
+- country: Spanien
+- drivetrain: Getriebelos, drehzahlvariabel
+- engineeringNote: Fünf Anlagen plus Pumpspeicher versorgen eine Insel: 11,5 MW Wind und ein Wasserspeicher für Flauten.
+
+## 14C — Bonus B82/2300
+- id: 14C
+- country: Dänemark
+- drivetrain: Stall-geregelt, dreistufiges Getriebe
+- engineeringNote: Zehn Anlagen halfen Samsø, zur Erneuerbare-Energien-Insel zu werden; die Genehmigung gilt nun bis 2037.
+
+## 14D — Vestas V47-660 kW
+- id: 14D
+- country: Schottland, Großbritannien
+- drivetrain: Pitch-geregelt, mit Getriebe
+- engineeringNote: Drei V47- und zwei V52-Anlagen auf den Shetlands erreichen einen gemeldeten Auslastungsgrad von rund 57 %.
+
+## 15A — SG DD-276 Prototype
+- id: 15A
+- country: Dänemark
+- drivetrain: Direktantrieb
+- engineeringNote: 135 m lange Blätter an einem 276-m-Rotor: die stärkste Anlage Europas, 2025 errichtet.
+
+## 15B — GE Haliade-X 12 MW Prototype
+- id: 15B
+- country: Niederlande
+- drivetrain: Permanentmagnet-Direktantrieb
+- engineeringNote: Erzeugte im November 2019 seine erste Kilowattstunde als stärkste Anlage der Welt, mit 107 m langen Blättern.
+
+## 15C — CRRC Qihang 20 MW
+- id: 15C
+- country: China
+- drivetrain: Prototyp der Klasse für schwimmende Anlagen
+- engineeringNote: Im Januar 2025 auf der Dongying-Testbasis errichtet, mit 260-m-Rotor auf 151 m Nabenhöhe.
+
+## 15D — Dongfang 17 MW Floating
+- id: 15D
+- country: China
+- drivetrain: Schwimmende Direktantriebsanlage
+- engineeringNote: Eine schwimmende Direktantriebsanlage, im Juli 2025 vorgestellt, ausgelegt für 24 m hohe Wellen und Supertaifune.
+
+## 16A — Bonus 2.0 MW (Middelgrunden)
+- id: 16A
+- country: Dänemark
+- drivetrain: Getriebe mit Asynchrongenerator
+- engineeringNote: Zwanzig Anlagen in einem 3,5 km langen Bogen vor Kopenhagen, zur Hälfte im Besitz einer Genossenschaft mit 8.500 Mitgliedern.
+
+## 16B — REpower 5M (alpha ventus)
+- id: 16B
+- country: Deutschland
+- drivetrain: Getriebe mit doppelt gespeistem Generator
+- engineeringNote: Der erste deutsche Offshore-Windpark: sechs REpower-5M- und sechs AREVA-M5000-Anlagen in 30 m Wassertiefe.
+
+## 16C — Senvion 6.2M126
+- id: 16C
+- country: Belgien
+- drivetrain: Getriebe mit doppelt gespeistem Generator
+- engineeringNote: In drei Bauphasen ab 2009 errichtet; die späteren Phasen nutzen 6,15-MW-Anlagen, 28 km vor der Küste.
+
+## 16D — Siemens SWT-3.6-120
+- id: 16D
+- country: Dänemark
+- drivetrain: Mit Getriebe, pitch-geregelt
+- engineeringNote: 111 Anlagen machten ihn von 2013 bis 2019 zum größten Windpark Dänemarks, mit 399,6 MW.

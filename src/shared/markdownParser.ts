@@ -121,8 +121,10 @@ export function parseTurbineMarkdown(
       ratedPowerMw: Number(kv.ratedPowerMw),
       rotorDiameterM: Number(kv.rotorDiameterM),
       hubHeightM: Number(kv.hubHeightM),
-      cutInWindMs: Number(kv.cutInWindMs),
+      // Cut-in speed is only documented for deck 1; deck-2 cards leave it out (0 = unused).
+      cutInWindMs: kv.cutInWindMs === undefined ? 0 : Number(kv.cutInWindMs),
       plantCapacityMw: Number(kv.plantCapacityMw),
+      firstPowerYear: Number(kv.year),
     },
     translations: {
       en: enLocale,

@@ -147,7 +147,7 @@ async function bootstrap() {
             break;
           }
           case 'queue:join': {
-            const res = engine.joinQueue(playerId);
+            const res = engine.joinQueue(playerId, payload.deckMode);
             if (!res.ok) {
               sendJson(ws, 'error:toast', { message: res.error });
             } else {
@@ -163,7 +163,7 @@ async function bootstrap() {
             break;
           }
           case 'room:create': {
-            const res = engine.createRoom(playerId);
+            const res = engine.createRoom(playerId, payload.deckMode);
             if (!res.ok) {
               sendJson(ws, 'error:toast', { message: res.error });
             } else {
