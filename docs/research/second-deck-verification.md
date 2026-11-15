@@ -166,9 +166,9 @@ derived, typical for the model, or from a single source. They are flagged in eac
 | Shepherds Flat (13C) | hub 85 m | GE 2.5-100 offers 75 or 85 m | ≈ |
 | Ross Island (14A) | hub 37 m, rotor 33 m | "37 m-high" turbines (hub or tip not stated); E33 rotor from the model | ≈ |
 | Burradale (14D) | hub 45 m | One listing's average across V47 and V52 | ≈ |
-| Gedser (9C) | hub 25 m | Database | ≈ |
+| Gedser (9C) | hub 25 m | Tower height 25 m in Wikipedia's Juul and Gedser articles; rotor 24 m from Wind-Works | exact |
 | Vindeby (11A) | hub 35 m | Database (a mirror says 37.5 m) | ≈ |
-| Growian (9D) | hub 100 m | Reference tables 100 m, a German article 96 m | ≈ |
+| Growian (9D) | hub 100 m | NASA's translation of the GROWIAN final report (TM-75404) lists tower height 100 m (one German article says 96 m) | exact |
 | Smith-Putnam (9B) | rated 1.25 MW | Sources give 1.0, 1.25 and 1.5 MW | ≈ |
 | Suzlon S144 (12D) | year 2023 | Prototype reported installed by November 2023; no exact commissioning date | ≈ |
 
