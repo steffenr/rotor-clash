@@ -256,11 +256,6 @@
   0% { transform: translateY(-6px) scale(1.05); opacity: 0; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
-@keyframes confettiFall {
-  0% { transform: translate3d(0, -12vh, 0) rotate(0deg); opacity: 1; }
-  100% { transform: translate3d(var(--drift, 0px), 105vh, 0) rotate(720deg); opacity: 0.9; }
-}
-
 .anim-pop-in { animation: popIn 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards; }
 .anim-slide-up { animation: slideUp 0.28s ease-out backwards; }
 .anim-flip-in { animation: flipIn 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) backwards; }
@@ -277,21 +272,83 @@ main > [x-show] { animation: slideUp 0.26s ease-out backwards; }
 button:not(:disabled) { transition-property: transform, background-color, border-color, color, box-shadow, opacity; transition-duration: 0.15s; }
 button:not(:disabled):active { transform: scale(0.97); }
 
-/* CSS-only confetti for winning a whole game */
-.confetti { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 45; }
-.confetti-piece {
-  position: absolute; top: 0; width: 9px; height: 14px; border-radius: 2px;
-  left: calc(var(--i) * 4.2%);
-  background: var(--c-orange);
-  --drift: calc((var(--i) - 12) * 6px);
-  animation: confettiFall calc(2.4s + (var(--i) * 0.07s)) cubic-bezier(0.3, 0.1, 0.6, 1) calc(var(--i) * 0.06s) both;
+/* ---------- Victory screen ---------- */
+@keyframes raysSpin { to { transform: rotate(360deg); } }
+@keyframes raysIn { from { opacity: 0; transform: scale(0.4) rotate(-40deg); } }
+@keyframes shineSweep {
+  0% { background-position: 220% 0; }
+  55%, 100% { background-position: -120% 0; }
 }
-.confetti-piece:nth-child(4n + 1) { background: var(--c-teal); }
-.confetti-piece:nth-child(4n + 2) { background: var(--c-green); width: 7px; }
-.confetti-piece:nth-child(4n + 3) { background: var(--c-amber); border-radius: 50%; width: 10px; height: 10px; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1) rotate(45deg); }
+  70% { opacity: 0.2; transform: scale(0.6) rotate(90deg); }
+}
+@keyframes headlinePop {
+  0% { opacity: 0; transform: scale(0.7) translateY(8px); letter-spacing: 0.08em; }
+  100% { opacity: 1; transform: none; letter-spacing: normal; }
+}
+@keyframes headlineGlow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 22px color-mix(in oklab, var(--c-orange) 60%, transparent); }
+}
+
+.win-panel { isolation: isolate; }
+.win-rays { display: none; }
+.win-panel .win-rays {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 4.5rem;
+  width: 44rem;
+  height: 44rem;
+  margin: -22rem 0 0 -22rem;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg,
+    color-mix(in oklab, var(--c-orange) 26%, transparent) 0 7deg,
+    transparent 7deg 18deg
+  );
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 66%);
+  mask-image: radial-gradient(circle, #000 0%, transparent 66%);
+  animation: raysIn 0.9s ease-out backwards, raysSpin 36s linear infinite;
+}
+
+/* Trophy: bounce in, then a light sweep every few seconds */
+.win-panel .trophy-shine {
+  cursor: pointer;
+  background-image: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.75) 50%, transparent 62%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: trophyBounce 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) 0.15s backwards, shineSweep 3s ease-in-out 1.1s infinite;
+}
+.win-panel .trophy-shine:active { transform: scale(0.94); }
+
+.win-sparkles { display: none; position: absolute; inset: -22px; pointer-events: none; }
+.win-panel .win-sparkles { display: block; }
+.win-sparkles i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--c-amber);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: twinkle 2s ease-in-out infinite;
+}
+.win-sparkles i:nth-child(1) { top: 0; left: 6%; animation-delay: 0.5s; }
+.win-sparkles i:nth-child(2) { top: 14%; right: 0; animation-delay: 0.9s; width: 10px; height: 10px; }
+.win-sparkles i:nth-child(3) { bottom: 10%; left: 0; animation-delay: 1.3s; width: 10px; height: 10px; }
+.win-sparkles i:nth-child(4) { bottom: 0; right: 10%; animation-delay: 0.2s; }
+.win-sparkles i:nth-child(5) { top: -6%; right: 36%; animation-delay: 1.6s; width: 9px; height: 9px; background: var(--c-orange); }
+.win-sparkles i:nth-child(6) { bottom: -6%; left: 38%; animation-delay: 1.1s; width: 9px; height: 9px; background: var(--c-teal); }
+
+.win-headline {
+  animation: headlinePop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.3) 0.25s backwards, headlineGlow 2.6s ease-in-out 1.2s infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .confetti { display: none; }
+  .win-rays, .win-sparkles { display: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
