@@ -1,5 +1,6 @@
 import { renderTurbineCard, renderTurbineCardBack } from './cardMarkup';
 import { iconSvg } from './icons';
+import { renderDeckPicker } from './deckPicker';
 
 export function renderQuartetMatrix(
   ownedIdsExpr: string,
@@ -275,25 +276,7 @@ export function renderLobby(): string {
           </div>
 
           <div class="space-y-4">
-            <!-- Deck choice: applies to robot games, friend rooms and online matches -->
-            <div x-show="deckModes.length > 1" class="space-y-2">
-              <div class="flex items-baseline justify-between gap-3">
-                <span class="text-xs font-bold text-c-ink-2" x-text="t.decks.title"></span>
-                <span class="text-[11px] text-c-ink-3 text-right" x-text="t.decks[deckMode].desc"></span>
-              </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" :aria-label="t.decks.title">
-                <template x-for="m in deckModes" :key="m">
-                  <button
-                    type="button"
-                    role="radio"
-                    :aria-checked="deckMode === m"
-                    @click="setDeckMode(m)"
-                    :class="'px-2 py-2.5 min-h-11 rounded-xl border-2 text-xs font-bold leading-tight transition-colors ' + (deckMode === m ? 'bg-c-teal border-c-ink text-white' : 'bg-c-paper border-c-ink/30 text-c-ink hover:bg-c-sand')"
-                    x-text="deckModeName(m)"
-                  ></button>
-                </template>
-              </div>
-            </div>
+            ${renderDeckPicker()}
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
