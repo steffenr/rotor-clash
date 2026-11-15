@@ -75,13 +75,13 @@ jobs:
 
           # Sync app, compiled dist/, compiled dist-server/server.cjs, and src/data/
           rsync -avz --delete \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            --exclude '.aistudio/' \
-            --exclude 'node_modules/' \
-            --exclude 'data/' \
-            --exclude 'tmp/' \
-            --exclude 'tests/' \
+            --exclude '/.git/' \
+            --exclude '/.github/' \
+            --exclude '/.aistudio/' \
+            --exclude '/node_modules/' \
+            --exclude '/data/' \
+            --exclude '/tmp/' \
+            --exclude '/tests/' \
             -e "ssh -p $SSH_PORT -i ~/.ssh/deploy_key" \
             ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
 
