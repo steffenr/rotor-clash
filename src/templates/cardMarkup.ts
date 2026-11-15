@@ -7,6 +7,8 @@ export interface CardRenderOptions {
   selectedStatExpr?: string;
   highlightOutcomeExpr?: string;
   onSelectStatHandler?: string;
+  /** In-match phone layout: hide photo, lighthouse diagram and source link so the stats are the first thing visible. */
+  hideMediaOnMobile?: boolean;
 }
 
 export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}): string {
@@ -17,7 +19,9 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
     selectedStatExpr = 'null',
     highlightOutcomeExpr = 'null',
     onSelectStatHandler = '',
+    hideMediaOnMobile = false,
   } = opts;
+  const mobileHide = hideMediaOnMobile ? 'max-sm:hidden' : '';
 
   const widthClass = compact ? 'w-full max-w-[308px]' : 'w-full max-w-[356px]';
   const photoHeightClass = compact ? 'h-28' : 'h-32';
@@ -100,7 +104,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
                 @click="inspectCard(${cardExpr})"
                 :title="t.card.fullView"
                 :aria-label="t.card.fullView + ': ' + ${cardExpr}.modelName"
-                class="w-6 h-6 rounded-md bg-c-paper-hi hover:bg-c-sky border border-c-ink/35 text-c-ink flex items-center justify-center transition-colors"
+                class="${hideMediaOnMobile ? 'max-sm:hidden' : ''} w-8 h-8 -my-1 -mr-1 rounded-md bg-c-paper-hi hover:bg-c-sky border border-c-ink/35 text-c-ink flex items-center justify-center transition-colors"
               >
                 ${iconSvg('maximize', 'w-3.5 h-3.5')}
               </button>
@@ -119,10 +123,33 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             <span x-text="cardLocale(${cardExpr}).country"></span>
           </div>
         </div>
+        ${
+          hideMediaOnMobile
+            ? `<!-- Phone-only thumbnail: keeps the field photo without pushing the stats down -->
+        <button
+          type="button"
+          @click="inspectCard(${cardExpr})"
+          :aria-label="t.card.fullView + ': ' + ${cardExpr}.modelName"
+          class="sm:hidden shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 border-c-ink/30 bg-c-sand-soft"
+          x-data="{ imgFailed: false }"
+          x-effect="void (${cardExpr}?.id); imgFailed = false"
+        >
+          <img
+            x-show="!imgFailed"
+            :src="photoUrl(${cardExpr})"
+            alt=""
+            referrerpolicy="no-referrer"
+            @error="imgFailed = true"
+            class="h-full w-full object-cover"
+          />
+          <span x-show="imgFailed" class="h-full w-full flex items-center justify-center text-c-teal">${iconSvg('wind', 'w-6 h-6')}</span>
+        </button>`
+            : ''
+        }
       </div>
 
       <!-- Mounted Field Photo + Coastal Sky Arch Lighthouse Scale Diagram -->
-      <div class="px-3.5 pt-3 pb-2 grid grid-cols-12 gap-2.5 items-stretch bg-c-paper-hi">
+      <div class="px-3.5 pt-3 pb-2 grid grid-cols-12 gap-2.5 items-stretch bg-c-paper-hi ${mobileHide}">
         <div
           class="col-span-8 bg-c-paper p-1 rounded-xl border-2 border-c-ink/25 shadow-sm flex flex-col"
           x-data="{ imgFailed: false }"
@@ -264,7 +291,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             target="_blank"
             rel="noopener noreferrer"
             :title="${cardExpr}.sourceLabel"
-            class="inline-flex items-center gap-1 font-bold text-c-teal hover:text-c-ink hover:underline"
+            class="inline-flex items-center gap-1 py-1.5 font-bold text-c-teal hover:text-c-ink hover:underline ${hideMediaOnMobile ? 'max-sm:hidden' : ''}"
           >
             <span x-text="t.card.source"></span>
             ${iconSvg('external-link', 'w-3 h-3')}
