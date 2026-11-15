@@ -3,11 +3,27 @@ name: Release — Deploy to netcup
 on:
   workflow_dispatch:
     inputs:
+      bump:
+        description: 'Version bump (semver)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
       release_note:
-        description: 'Optional release note for deployment summary'
+        description: 'Optional release note (added to the GitHub Release)'
         required: false
-        default: 'Manual release deployment'
+        default: ''
         type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -15,13 +31,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout selected branch
-        uses: actions/checkout@v7
+      - name: Require main branch
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "Error: Releases can only be started from main (selected: ${GITHUB_REF_NAME})." >&2
+            exit 1
+          fi
 
-      - name: Set up Node.js 22
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js (version from .nvmrc)
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
+
+      - name: Bump version
+        id: version
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          NEW_VERSION="$(npm version "$BUMP" --no-git-tag-version)"
+          if git rev-parse -q --verify "refs/tags/${NEW_VERSION}" >/dev/null; then
+            echo "Error: Tag ${NEW_VERSION} already exists." >&2
+            exit 1
+          fi
+          echo "tag=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Releasing ${NEW_VERSION} (${BUMP})"
 
       - name: Install dependencies
         run: |
@@ -95,11 +135,39 @@ jobs:
              npm install --omit=dev && \
              touch tmp/restart.txt"
 
+      - name: Commit version, create tag & push to main
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git add package.json
+          if [ -f package-lock.json ]; then git add package-lock.json; fi
+          git commit -m "chore(release): ${TAG}"
+          git tag -a "${TAG}" -m "Release ${TAG}"
+          git push origin HEAD:main "${TAG}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_NOTE: ${{ inputs.release_note }}
+        run: |
+          printf '%s\n' "$RELEASE_NOTE" > release-note.txt
+          gh release create "$TAG" \
+            --title "Rotor Clash ${TAG}" \
+            --generate-notes \
+            --notes-file release-note.txt \
+            --verify-tag
+
       - name: Write deployment summary
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          BUMP: ${{ inputs.bump }}
+          RELEASE_NOTE: ${{ inputs.release_note }}
         run: |
           {
-            echo "### Rotor Clash deployed to netcup"
-            echo "- **Branch:** \`${{ github.ref_name }}\`"
-            echo "- **Commit:** \`${{ github.sha }}\`"
-            echo "- **Note:** ${{ github.event.inputs.release_note }}"
+            echo "### Rotor Clash ${TAG} deployed to netcup"
+            echo "- **Bump:** \`${BUMP}\`"
+            echo "- **Tag:** \`${TAG}\`"
+            echo "- **Commit:** \`$(git rev-parse HEAD)\`"
+            echo "- **Note:** ${RELEASE_NOTE:-–}"
           } >> "$GITHUB_STEP_SUMMARY"
