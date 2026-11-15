@@ -6,7 +6,7 @@ modelName: V164-9.5 MW (Kincardine)
 manufacturer: MHI Vestas
 deploymentType: Floating Offshore
 imageCategory: floating
-photoKey: vestas_v164
+photoKey: kincardine_floating
 isRealPhoto: true
 year: 2021
 sweptAreaM2: 21124

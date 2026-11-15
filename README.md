@@ -15,8 +15,9 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
 - **Quartet Collector Mechanics**:
   - Ties build a central **Tie Pile** (`Stich-Stapel`) scooped by the winner of the next decisive round.
   - Collecting all 4 turbines (`A–D`) in a group awards a Quartet badge tracked in the live collector grid.
-- **Field Guide Card Album & Interactive Tutorial**:
-  - Browse and filter all 32 turbines, compare turbine hub height & rotor span against a **45 m coastal lighthouse**, inspect full engineering sheets, and verify every stat via external source links.
+- **Field Guide Card Album & Split-Dossier Detail Modal**:
+  - Browse and filter all 32 turbines, compare hub height & rotor span against a **45 m coastal lighthouse**, and open the **Two-Column Split Field-Guide Dossier** modal.
+  - Features 100% uncropped full-length turbine photography (`object-contain`) from blade tip to foundation, technical specs, provenance tags, and seamless deck flip browsing (<kbd>←</kbd> / <kbd>→</kbd> arrow keys or Prev/Next buttons).
   - 4-step interactive onboarding guide teaching card reading, lower-wins strategy, tie piles, and multiplayer modes.
 - **Zero-Signup Browser Identity (`localStorage`)**:
   - Player ID, callsign, cached stats, sound mute preference, and selected language persist automatically in browser `localStorage` (`rotor_clash_*`).
@@ -26,9 +27,9 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
 
 ## Tech Stack
 
-- **Frontend**: [Alpine.js](https://alpinejs.dev/) (`^3.17`) + [Tailwind CSS 4.x](https://tailwindcss.com/) (`@tailwindcss/vite`) + TypeScript + Vite 8
-- **Backend**: Node.js (v20/22) + Express + WebSockets (`ws`)
-- **Bundling & Tooling**: `tsx`, `esbuild`, `tsc`, Node built-in test runner (`node:test`)
+- **Frontend**: [Alpine.js](https://alpinejs.dev/) (`v3.17.5`) + [Tailwind CSS 4.x](https://tailwindcss.com/) (`v4.3.5` via `@tailwindcss/vite`) + TypeScript (`v7.0.2`) + Vite (`v8.3.8`)
+- **Backend**: Node.js (`>=22.0.0`, tested on v22 LTS, v24 LTS, and v26 LTS) + Express (`v5.3.0`) + WebSockets (`ws v8.23.0`)
+- **Bundling & Tooling**: `tsx` (`v4.23.15`), `esbuild` (`v0.28.2`), `tsc`, Node built-in test runner (`node:test` via `tsx --test`)
 
 ---
 
