@@ -3,39 +3,39 @@
 ## 1
 - id: 1
 - name: Mega-Prototypen
-- subtitle: Meeres-Giganten der nächsten Generation (16–26 MW)
+- subtitle: Riesige Prototypen für das Meer (16–26 MW)
 
 ## 2
 - id: 2
 - name: Nordsee-Kraftwerke
-- subtitle: Große europäische Meeres-Windturbinen
+- subtitle: Große Offshore-Turbinen aus Europa
 
 ## 3
 - id: 3
-- name: Schwachwind-Riesen (Land)
-- subtitle: Hohe Hybridtürme für Standorte im Binnenland
+- name: Riesen für wenig Wind (Land)
+- subtitle: Hohe Türme für windarme Standorte im Binnenland
 
 ## 4
 - id: 4
-- name: Schwimmende Tiefsee-Pioniere
-- subtitle: Verankerte Plattformen für tiefes Wasser
+- name: Schwimmende Pioniere
+- subtitle: Turbinen auf schwimmenden Plattformen, im tiefen Wasser verankert
 
 ## 5
 - id: 5
-- name: Kontinentale Mega-Windparks
-- subtitle: Riesige Gigawatt-Windparks auf der ganzen Welt
+- name: Mega-Windparks an Land
+- subtitle: Riesige Windparks mit Gigawatt-Leistung
 
 ## 6
 - id: 6
-- name: Bekannte Meeres-Windparks
-- subtitle: Große Offshore-Pioniere in Nordeuropa
+- name: Bekannte Offshore-Windparks
+- subtitle: Berühmte Windparks auf See in Nordeuropa
 
 ## 7
 - id: 7
 - name: Binnenland-Spezialisten
-- subtitle: Leise, starke Technik für ruhigere Windlagen
+- subtitle: Leise, ertragreiche Technik für ruhige Standorte im Binnenland
 
 ## 8
 - id: 8
 - name: Meilensteine der Windkraft
-- subtitle: Weltrekordhalter und frühe Pioniere
+- subtitle: Rekordhalter und frühe Pioniere

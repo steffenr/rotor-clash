@@ -46,7 +46,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             class="text-[10px] font-bold text-[#C94213] inline-flex items-center gap-0.5 shrink-0"
           >
             ${iconSvg('arrow-down', 'w-2.5 h-2.5')}
-            <span x-text="lang === 'de' ? 'Kleiner' : 'Min'"></span>
+            <span x-text="lang === 'de' ? 'Niedriger' : 'Min'"></span>
           </span>
         </div>
         <div class="flex items-baseline gap-1 shrink-0">

@@ -755,15 +755,15 @@ export function createRotorClashApp() {
       if (this.lang !== 'de') return name;
       switch (name) {
         case 'Rotor Clash Grandmaster':
-          return 'Sturm-Großmeister';
+          return 'Rotor-Großmeister';
         case 'Offshore Ace':
           return 'Offshore-Ass';
         case 'Turbine Lead':
-          return 'Turbinen-Profi';
+          return 'Turbinenprofi';
         case 'Grid Engineer':
-          return 'Netz-Ingenieur';
+          return 'Netzingenieur';
         case 'Wind Cadet':
-          return 'Wind-Kadett';
+          return 'Windkadett';
         default:
           return name;
       }
