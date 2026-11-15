@@ -6,7 +6,7 @@ modelName: V164-8.4 MW (WindFloat Atlantic)
 manufacturer: MHI Vestas
 deploymentType: Floating Offshore
 imageCategory: floating
-photoKey: vestas_v164
+photoKey: windfloat_atlantic
 isRealPhoto: true
 year: 2020
 sweptAreaM2: 21124

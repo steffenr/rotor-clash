@@ -22,6 +22,8 @@ import vestasV150 from '../assets/images/real/vestas_v150.jpg';
 import vestasV164 from '../assets/images/real/vestas_v164.jpg';
 import vestasV90 from '../assets/images/real/vestas_v90.jpg';
 import walney from '../assets/images/real/walney.jpg';
+import kincardineFloating from '../assets/images/real/kincardine_floating.jpg';
+import windfloatAtlantic from '../assets/images/real/windfloat_atlantic.jpg';
 
 export const CARD_PHOTO_MAP: Record<string, string> = {
   fallback_offshore: offshoreFallback,
@@ -37,6 +39,7 @@ export const CARD_PHOTO_MAP: Record<string, string> = {
   haliade_x: haliadeX,
   hornsea_2: hornsea2,
   hywind: hywind,
+  kincardine_floating: kincardineFloating,
   london_array: londonArray,
   nordex_n149: nordexN149,
   osterild: osterild,
@@ -47,6 +50,7 @@ export const CARD_PHOTO_MAP: Record<string, string> = {
   vestas_v164: vestasV164,
   vestas_v90: vestasV90,
   walney: walney,
+  windfloat_atlantic: windfloatAtlantic,
 };
 
 export function resolveCardPhoto(photoKey: string): string {

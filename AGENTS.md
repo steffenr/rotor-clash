@@ -38,12 +38,19 @@ This file defines the architectural rules, conventions, and verification steps f
    - Keep **all human-readable translations** in `src/data/locales/en/` and `src/data/locales/de/` (`groups.md`, `turbines.md`, `ui.ts`).
    - Any new key added to `EN_UI` must also be added to `DE_UI` and `Translations` (`src/lib/i18n.ts`). `tests/deckIntegrity.test.ts` enforces strict key parity.
 
-4. **Server & Plesk Production Compatibility**:
+4. **Server, Node.js & Plesk Production Compatibility**:
+   - Requires Node.js `>=22.0.0` (actively verified across Node 22 LTS, 24 LTS, and 26 LTS).
+   - `.nvmrc` and `.node-version` lock the target version (`26`).
    - `server.ts` must lazy-import `vite` inside `if (!IS_PROD)` so production builds never load Vite dev dependencies at runtime.
    - `server.ts` must continue supporting both numeric TCP ports and Unix socket strings in `process.env.PORT` (used by Phusion Passenger on netcup).
    - Keep `MatchEngine`'s optional `store` constructor injection and `dispose()` method working so `tests/matchEngine.test.ts` never mutates `data/leaderboard.json` or leaves open timers.
 
-5. **Platform Manifest Constraint**:
+5. **Card Photography & Detail View (Two-Column Field-Guide Dossier)**:
+   - All turbine photos are mapped in `src/lib/cardImages.ts` (`CARD_PHOTO_MAP`).
+   - Floating offshore turbines (Group 4) must use floating ocean platform assets (`hywind`, `kincardine_floating`, `windfloat_atlantic`, `fallback_floating`), never onshore test-centre imagery.
+   - The card detail modal (`renderCardDetailModal()`) uses an uncropped (`object-contain`) mounted specimen gallery on the left and technical dossier on the right, with deck flip navigation (`inspectPrevCard()`, `inspectNextCard()`) bound to buttons and <kbd>←</kbd> / <kbd>→</kbd> arrow keys.
+
+6. **Platform Manifest Constraint**:
    - Do **not** rename `"name"` inside `metadata.json` (required by AI Studio's applet manifest). All user-facing branding, `<title>`, OpenGraph metadata, storage keys, and UI copy must use **Rotor Clash**.
 
 ---

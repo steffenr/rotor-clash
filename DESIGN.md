@@ -64,6 +64,12 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
    - *Start Wind* (`cutInWindMs`) displays an explicit Beacon Orange `Min` / `Kleiner` indicator so younger players immediately spot that lower values win.
 4. **Field Guide Footer**: Swept area (`m²`), rule reminder, and verified external technical source link.
 
+### Card Detail Modal (`renderCardDetailModal`)
+- **Two-Column Split Field-Guide Dossier**:
+  - **Left Gallery Column (`md:col-span-5`)**: Mounted `#FFFDF7` ivory field frame with vertical measurement ticks, uncropped turbine photography (`object-contain`, `max-h-[480px]`) preserving the full turbine anatomy from blade tip to tower foundation across all aspect ratios, specimen provenance tag with installation count and verified photo status (`Real Photo` / `Concept & Prototype`), and previous/next card flip buttons.
+  - **Right Dossier Column (`md:col-span-7`)**: Stamped Quartet category seal, model heading, manufacturer, country, deployment badge, 5-stat comparison grid with win indicators, technical specifications box, and Field Guide Fact with external engineering documentation button.
+  - **Accessibility & Shortcuts**: Closed via <kbd>Escape</kbd>, backdrop click, or close button; deck flipping via <kbd>←</kbd> and <kbd>→</kbd> arrow keys.
+
 ### Card Back (`renderTurbineCardBack`)
 - Features a **Harbor Navy (`#173240`)** interior framed by `#FAF4E4` cream stock, traversed by **Coastal Teal & Beacon Orange horizontal speed-stripes** behind a circular cream collector medallion displaying the **Rotor Clash logo** (`/assets/aistudio/logo_rotor_clash_3a6e5dcc.png`) and remaining deck counter.
 

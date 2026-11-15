@@ -37,6 +37,14 @@ test('all 32 turbine cards have valid engineering stats, source URLs, and EN/DE 
     assert.ok(card.manufacturer.trim().length > 0, `${card.id} missing manufacturer`);
     assert.ok(card.sourceUrl.startsWith('https://'), `${card.id} sourceUrl must be https`);
     assert.ok(card.sweptAreaM2 > 0, `${card.id} sweptAreaM2 must be > 0`);
+    assert.ok(card.photoKey && card.photoKey.trim().length > 0, `${card.id} missing photoKey`);
+
+    if (card.id === '4C') {
+      assert.equal(card.photoKey, 'kincardine_floating', '4C must use kincardine_floating photoKey');
+    }
+    if (card.id === '4D') {
+      assert.equal(card.photoKey, 'windfloat_atlantic', '4D must use windfloat_atlantic photoKey');
+    }
 
     assert.ok(card.stats.ratedPowerMw > 0, `${card.id} ratedPowerMw`);
     assert.ok(card.stats.rotorDiameterM > 0, `${card.id} rotorDiameterM`);
