@@ -18,6 +18,6 @@ rotorDiameterM: 236
 hubHeightM: 140
 cutInWindMs: 3
 plantCapacityMw: 1400
-sourceUrl: https://www.siemensgamesa.com/en-int/products-and-services/offshore/wind-turbine-sg-14-236-dd
+sourceUrl: https://www.siemensgamesa.com/global/en/home/products-and-services/offshore/wind-turbine-sg-14-236-dd.html
 sourceLabel: Siemens Gamesa Official · SG 14-236 DD
 ---

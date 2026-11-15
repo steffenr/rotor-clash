@@ -18,6 +18,6 @@ rotorDiameterM: 170
 hubHeightM: 165
 cutInWindMs: 3
 plantCapacityMw: 372
-sourceUrl: https://www.siemensgamesa.com/en-int/products-and-services/onshore/sg-6-6-170
+sourceUrl: https://www.siemensgamesa.com/global/en/home/press-releases/husum-fair-upgrade-5x.html
 sourceLabel: Siemens Gamesa Official · SG 6.6-170
 ---

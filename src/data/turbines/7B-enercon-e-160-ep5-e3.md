@@ -18,6 +18,6 @@ rotorDiameterM: 160
 hubHeightM: 166
 cutInWindMs: 2.2
 plantCapacityMw: 195
-sourceUrl: https://www.enercon.de/en/products/ep5/e-160-ep5/
+sourceUrl: https://www.enercon.de/en/turbines/e-160-ep5
 sourceLabel: Enercon Official · E-160 EP5
 ---

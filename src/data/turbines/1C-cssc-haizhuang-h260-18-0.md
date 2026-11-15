@@ -18,6 +18,6 @@ rotorDiameterM: 260
 hubHeightM: 155
 cutInWindMs: 3
 plantCapacityMw: 18
-sourceUrl: https://en.wind-turbine-models.com/turbines/2397-cssc-haizhuang-h260-18.0mw
-sourceLabel: Wind-Turbine-Models · CSSC H260-18
+sourceUrl: https://www.windtech-international.com/product-news/cssc-haizhuang-launches-18mw-offshore-wind-turbine
+sourceLabel: Windtech Reference · CSSC H260-18
 ---

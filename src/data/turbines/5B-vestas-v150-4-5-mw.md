@@ -18,6 +18,6 @@ rotorDiameterM: 150
 hubHeightM: 125
 cutInWindMs: 3
 plantCapacityMw: 3600
-sourceUrl: https://www.vestas.com/en/products/onshore/V150-4-5mw
+sourceUrl: https://www.vestas.com/en/energy-solutions/onshore-wind-turbines/4-mw-platform/v150-4-5-mw
 sourceLabel: Vestas Official · V150-4.5 MW
 ---

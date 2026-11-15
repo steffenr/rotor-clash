@@ -18,6 +18,6 @@ rotorDiameterM: 172
 hubHeightM: 175
 cutInWindMs: 3
 plantCapacityMw: 280
-sourceUrl: https://www.vestas.com/en/products/onshore/V172-7-2mw
+sourceUrl: https://www.vestas.com/en/energy-solutions/onshore-wind-turbines/enventus-platform/V172-7-2-MW
 sourceLabel: Vestas Official · V172-7.2 MW
 ---

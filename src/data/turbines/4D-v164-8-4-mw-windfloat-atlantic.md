@@ -18,6 +18,6 @@ rotorDiameterM: 164
 hubHeightM: 105
 cutInWindMs: 3.5
 plantCapacityMw: 25
-sourceUrl: https://www.oceanwinds.com/projects/windfloat-atlantic/
+sourceUrl: https://www.oceanwinds.com/projects/windfloat-atlantic-project/
 sourceLabel: Ocean Winds Official · WindFloat Atlantic
 ---

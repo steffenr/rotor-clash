@@ -18,6 +18,6 @@ rotorDiameterM: 236
 hubHeightM: 142
 cutInWindMs: 3
 plantCapacityMw: 960
-sourceUrl: https://www.vestas.com/en/products/offshore/V236-15mw
+sourceUrl: https://www.vestas.com/en/energy-solutions/offshore-wind-turbines/V236-15MW
 sourceLabel: Vestas Official · V236-15.0 MW
 ---

@@ -18,6 +18,6 @@ rotorDiameterM: 180
 hubHeightM: 110
 cutInWindMs: 3
 plantCapacityMw: 17
-sourceUrl: https://en.wind-turbine-models.com/turbines/2470-mingyang-oceanx-16.6mw
-sourceLabel: Wind-Turbine-Models · MingYang OceanX
+sourceUrl: https://www.ccs.org.cn/ccswzen/articleDetail?id=202407240311485089
+sourceLabel: CCS Technical Notice · MingYang OceanX
 ---

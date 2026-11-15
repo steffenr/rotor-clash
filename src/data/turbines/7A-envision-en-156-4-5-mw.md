@@ -18,6 +18,6 @@ rotorDiameterM: 156
 hubHeightM: 140
 cutInWindMs: 2.5
 plantCapacityMw: 1200
-sourceUrl: https://en.wind-turbine-models.com/turbines/1884-envision-en-156-3.3
-sourceLabel: Wind-Turbine-Models · Envision EN-156
+sourceUrl: https://www.thewindpower.net/turbine_en_2055_en-156-4.5.php
+sourceLabel: TheWindPower · Envision EN-156/4.5
 ---

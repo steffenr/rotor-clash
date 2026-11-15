@@ -18,6 +18,6 @@ rotorDiameterM: 167
 hubHeightM: 110
 cutInWindMs: 3
 plantCapacityMw: 1320
-sourceUrl: https://www.orsted.co.uk/wind-energy/hornsea-two
+sourceUrl: https://orsted.com/en/media/news/2022/08/20220831559011
 sourceLabel: Ørsted Official · Hornsea 2
 ---
