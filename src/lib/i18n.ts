@@ -36,6 +36,10 @@ export interface Translations {
     botTactical: string;
     openRoomsTitle: string;
     yourRoom: string;
+    listRoom: string;
+    listRoomHint: string;
+    authReset: string;
+    authFailed: string;
     joinDuel: string;
     tutorialPrompt: string;
     launchTutorial: string;

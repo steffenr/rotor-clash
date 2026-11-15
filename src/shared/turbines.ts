@@ -22,6 +22,10 @@ export function compareStat(
   v1: number,
   v2: number
 ): 1 | 2 | 0 {
+  // An unknown stat key yields `undefined` values; never let that silently decide a round.
+  if (!Number.isFinite(v1) || !Number.isFinite(v2)) {
+    throw new Error(`compareStat: "${statKey}" has no numeric value on both cards`);
+  }
   if (Math.abs(v1 - v2) < 1e-6) return 0;
   if (statKey === 'cutInWindMs' || statKey === 'firstPowerYear') {
     return v1 < v2 ? 1 : 2;

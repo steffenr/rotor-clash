@@ -28,7 +28,52 @@ function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
-  return `p_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return `p_${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+}
+
+const SECRET_KEY = 'rotor_clash_secret_v1';
+
+/** 32 random bytes as hex: the credential that proves this browser owns its player id. */
+function generateSecret(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** The player id is public (it shows up in rankings); this secret never leaves the browser except to log in. */
+export function getOrCreateSecret(): string {
+  try {
+    const saved = localStorage.getItem(SECRET_KEY);
+    if (saved && /^[a-f0-9]{64}$/.test(saved)) return saved;
+  } catch {
+    // storage unavailable: fall through to a session-only secret
+  }
+  const secret = generateSecret();
+  try {
+    localStorage.setItem(SECRET_KEY, secret);
+  } catch {
+    // ignore storage errors
+  }
+  return secret;
+}
+
+/**
+ * Starts over with a brand-new player id and secret, e.g. after the server refused the old pair.
+ * The saved callsign is kept; ranking progress belongs to the old id and stays with it.
+ */
+export function resetIdentity(): { playerId: string; callsign: string } {
+  try {
+    localStorage.removeItem(PLAYER_ID_KEY);
+    localStorage.removeItem(LEGACY_KEYS.playerId);
+    localStorage.removeItem(PROFILE_KEY);
+    localStorage.removeItem(LEGACY_KEYS.profile);
+    localStorage.removeItem(SECRET_KEY);
+  } catch {
+    // ignore storage errors
+  }
+  return getOrCreateIdentity();
 }
 
 export function getOrCreateIdentity(): { playerId: string; callsign: string } {

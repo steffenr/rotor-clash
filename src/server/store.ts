@@ -1,9 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { MatchRecord, PlayerProfile } from '../shared/gameTypes.ts';
+import { SECRET_PATTERN, hashSecret, isForbiddenKey, secretMatchesHash } from './security.ts';
 
-interface PersistedData {
+interface StoreData {
   players: Record<string, PlayerProfile>;
+  /** sha256 of each player's client secret. Never sent to clients. */
+  secrets: Record<string, string>;
   matches: MatchRecord[];
 }
 
@@ -13,14 +16,29 @@ const DEFAULT_DATA_FILE = path.join(path.resolve(process.cwd(), 'data'), 'leader
 const INACTIVE_VISITOR_MS = 30 * 24 * 60 * 60 * 1000;
 const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
 const DEFAULT_LEADERBOARD_LIMIT = 50;
+/** Upper bound for profiles held in memory; ranked players are never evicted, unranked ones are. */
+const MAX_PROFILES = 5000;
+/** Disk writes are coalesced, so a burst of changes costs one write. */
+const PERSIST_DELAY_MS = 500;
+const MAX_CALLSIGN_INPUT = 64;
+
+/**
+ * Prototype-less dictionary: keys such as `__proto__` or `constructor` are plain data, never the
+ * Object.prototype accessors. Player ids come from clients, so this is a security boundary.
+ */
+function dictionary<T>(): Record<string, T> {
+  return Object.create(null) as Record<string, T>;
+}
 
 export class LeaderboardStore {
-  private data: PersistedData = { players: {}, matches: [] };
+  private data: StoreData = { players: dictionary(), secrets: dictionary(), matches: [] };
   private writeQueue: Promise<void> = Promise.resolve();
   private readonly dataDir: string;
   /** All ranked players (>= 1 game), best first. Rebuilt lazily after any ranking change. */
   private rankedCache: PlayerProfile[] | null = null;
   private lastPruneAt = Date.now();
+  private dirty = false;
+  private persistTimer: NodeJS.Timeout | undefined;
 
   constructor(private readonly dataFile: string = DEFAULT_DATA_FILE) {
     this.dataDir = path.dirname(dataFile);
@@ -37,11 +55,16 @@ export class LeaderboardStore {
     let removed = 0;
     for (const [id, player] of Object.entries(this.data.players)) {
       if (player.gamesPlayed === 0 && now - player.updatedAt >= INACTIVE_VISITOR_MS) {
-        delete this.data.players[id];
+        this.deletePlayer(id);
         removed += 1;
       }
     }
     return removed;
+  }
+
+  private deletePlayer(id: string) {
+    delete this.data.players[id];
+    delete this.data.secrets[id];
   }
 
   private load() {
@@ -51,20 +74,62 @@ export class LeaderboardStore {
       }
       if (fs.existsSync(this.dataFile)) {
         const raw = fs.readFileSync(this.dataFile, 'utf-8');
-        const parsed = JSON.parse(raw) as Partial<PersistedData>;
-        this.data = {
-          players: parsed.players ?? {},
-          matches: Array.isArray(parsed.matches) ? parsed.matches : [],
+        const parsed = JSON.parse(raw) as {
+          players?: Record<string, PlayerProfile>;
+          secrets?: Record<string, unknown>;
+          matches?: MatchRecord[];
         };
+        const data: StoreData = { players: dictionary(), secrets: dictionary(), matches: [] };
+        for (const [id, profile] of Object.entries(parsed.players ?? {})) {
+          if (isForbiddenKey(id) || !profile || typeof profile !== 'object') continue;
+          data.players[id] = profile;
+        }
+        for (const [id, hash] of Object.entries(parsed.secrets ?? {})) {
+          if (isForbiddenKey(id) || typeof hash !== 'string' || !SECRET_PATTERN.test(hash)) continue;
+          data.secrets[id] = hash;
+        }
+        data.matches = Array.isArray(parsed.matches) ? parsed.matches : [];
+        this.data = data;
       }
     } catch (err) {
       console.error('Failed to load leaderboard store:', err);
-      this.data = { players: {}, matches: [] };
+      this.data = { players: dictionary(), secrets: dictionary(), matches: [] };
     }
   }
 
+  /** Only ranked players are worth keeping across restarts; visitors without a game are cheap to recreate. */
+  private serialize(): string {
+    const players: Record<string, PlayerProfile> = {};
+    const secrets: Record<string, string> = {};
+    for (const [id, profile] of Object.entries(this.data.players)) {
+      if (profile.gamesPlayed <= 0) continue;
+      players[id] = profile;
+      const hash = this.data.secrets[id];
+      if (hash) secrets[id] = hash;
+    }
+    return JSON.stringify({ players, secrets, matches: this.data.matches }, null, 2);
+  }
+
+  /** Marks the data as changed and schedules one coalesced write. */
   private persist() {
-    const snapshot = JSON.stringify(this.data, null, 2);
+    this.dirty = true;
+    if (this.persistTimer) return;
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = undefined;
+      void this.flush();
+    }, PERSIST_DELAY_MS);
+    this.persistTimer.unref?.();
+  }
+
+  /** Writes pending changes now (atomic temp-file + rename). Call before the process exits. */
+  public flush(): Promise<void> {
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = undefined;
+    }
+    if (!this.dirty) return this.writeQueue;
+    this.dirty = false;
+    const snapshot = this.serialize();
     this.writeQueue = this.writeQueue
       .then(async () => {
         if (!fs.existsSync(this.dataDir)) {
@@ -77,11 +142,32 @@ export class LeaderboardStore {
       .catch((err) => {
         console.error('Failed to persist leaderboard store:', err);
       });
+    return this.writeQueue;
+  }
+
+  private findPlayer(id: string): PlayerProfile | undefined {
+    return Object.hasOwn(this.data.players, id) ? this.data.players[id] : undefined;
+  }
+
+  /**
+   * Checks the client's secret for this player id. The first secret presented for an id is bound to it
+   * ('bound'); every later login must present the same secret ('ok'), otherwise it is a 'mismatch'.
+   */
+  public authenticate(id: string, secret: string): 'ok' | 'bound' | 'mismatch' {
+    if (isForbiddenKey(id)) return 'mismatch';
+    const stored = Object.hasOwn(this.data.secrets, id) ? this.data.secrets[id] : undefined;
+    if (!stored) {
+      this.data.secrets[id] = hashSecret(secret);
+      this.persist();
+      return 'bound';
+    }
+    return secretMatchesHash(secret, stored) ? 'ok' : 'mismatch';
   }
 
   public getOrCreatePlayer(id: string, callsign?: string): PlayerProfile {
+    if (isForbiddenKey(id)) throw new Error('Invalid player id');
     const cleanCallsign = this.sanitizeCallsign(callsign);
-    const existing = this.data.players[id];
+    const existing = this.findPlayer(id);
     if (existing) {
       if (cleanCallsign && existing.callsign !== cleanCallsign) {
         existing.callsign = cleanCallsign;
@@ -109,23 +195,37 @@ export class LeaderboardStore {
     };
     this.data.players[id] = created;
     if (Date.now() - this.lastPruneAt >= PRUNE_INTERVAL_MS) this.pruneInactive();
+    if (Object.keys(this.data.players).length > MAX_PROFILES) this.evictUnranked();
     return created;
   }
 
+  /** Drops the oldest visitors without a game so random ids cannot grow memory without bound. */
+  private evictUnranked() {
+    const unranked = Object.values(this.data.players)
+      .filter((p) => p.gamesPlayed === 0)
+      .sort((a, b) => a.updatedAt - b.updatedAt);
+    const excess = Object.keys(this.data.players).length - Math.floor(MAX_PROFILES * 0.9);
+    for (const profile of unranked.slice(0, Math.max(0, excess))) {
+      this.deletePlayer(profile.id);
+    }
+  }
+
   public updateCallsign(id: string, callsign: string): PlayerProfile {
-    const player = this.getOrCreatePlayer(id, callsign);
+    const player = this.getOrCreatePlayer(id);
     const clean = this.sanitizeCallsign(callsign);
-    if (clean) {
+    if (clean && clean !== player.callsign) {
       player.callsign = clean;
       player.updatedAt = Date.now();
-      if (player.gamesPlayed > 0) this.rankedCache = null;
-      this.persist();
+      if (player.gamesPlayed > 0) {
+        this.rankedCache = null;
+        this.persist();
+      }
     }
     return player;
   }
 
   public getPlayer(id: string): PlayerProfile | null {
-    return this.data.players[id] ?? null;
+    return this.findPlayer(id) ?? null;
   }
 
   public recordPvpMatch(params: {
@@ -237,9 +337,10 @@ export class LeaderboardStore {
     return this.data.matches.slice(0, limit);
   }
 
+  /** Bounded before the regex runs, so an oversized value cannot cost CPU. */
   private sanitizeCallsign(raw?: string): string {
     if (!raw) return '';
-    return raw.trim().replace(/[^\w\s-]/g, '').slice(0, 20).trim();
+    return raw.slice(0, MAX_CALLSIGN_INPUT).trim().replace(/[^\w\s-]/g, '').slice(0, 20).trim();
   }
 }
 
