@@ -268,3 +268,17 @@ Secondary (used for tier B/C values):
 - [Alpha Ventus (Offshore Stiftung)](https://www.offshore-stiftung.de/en/alpha-ventus)
 - [Thornton Bank (C-Power, TETHYS)](https://tethys.pnnl.gov/sites/default/files/publications/C-Power-2012.pdf)
 - [Anholt (TETHYS)](https://tethys.pnnl.gov/wind-project-sites/anholt-offshore-wind-farm)
+
+## Round 2 replacements (2026-11-15): five of ten "≈" cards swapped
+
+| Card | Replaced | New card | Figures and source | Confidence |
+|---|---|---|---|---|
+| 9B | Smith-Putnam (rating disputed 1.0–1.5 MW) | NASA Mod-0, Plum Brook, 1975 | 100 kW, rotor 125 ft (38.1 m), tower 100 ft (30.5 m): [OSTI 5252397](https://www.osti.gov/biblio/5252397), NASA NTRS 19750021473 | High |
+| 12D | Suzlon S144 (year approximate) | Siemens SWT-2.3-101, Jeffreys Bay, 2014 | 60 × 2.3 MW = 138 MW, hub 80 m, rotor 101 m, all 60 commissioned May 2014: [Engineering News](https://www.engineeringnews.co.za/article/all-60-jeffreys-bay-wind-farm-turbines-commissioned-2014-05-09) | Medium-high (one source says rotor 100 m) |
+| 15A | SG DD-276 (hub approximate) | Enercon E-112, Egeln, 2002 | 4.5 MW, rotor 112.8 m, hub 124 m: [Enercon datasheet copy](https://offshore-wind.de/media/article000279/E112.pdf) | Medium (a database lists 114 m for the later rotor) |
+| 15B | Haliade-X (hub approximate) | Vestas V164-8.0 MW prototype, Østerild, 2014 | 8 MW, rotor 164 m, hub 140 m, first power 28 Jan 2014: [offshoreWIND.biz](https://www.offshorewind.biz/2014/01/28/worlds-most-powerful-wind-turbine-produces-power/) | High |
+| 15D | Dongfang 17 MW (hub approximate) | Enercon E-126 prototype, Emden, 2007 | 6 MW at install (uprated to 7.58 MW in 2009), rotor 126 m, hub 135 m: [Wikipedia](https://en.wikipedia.org/wiki/Enercon_E-126) | Medium (single table; Emden site not confirmed in the search results) |
+
+Still flagged "≈" after this round, because no candidate had a fully published hub height: 11A Vindeby (hub 35 m, conflicts with a 33 m record), 13A Horse Hollow, 13C Shepherds Flat, 14A Ross Island, 14D Burradale.
+Candidates checked and rejected: Nibe B (no hub), Blyth (hub 62 m vs 40 m), Ashegoda (no hub or rotor), Judith Gap (hub and rotor from one site), Fowler Ridge (mixed phases), Cabeólica and Huxley Hill (no hub), Tunø Knob (45 m may be tip height), Utgrunden and Tilos (no hub), REpower 5M (databases conflict), Thanet (single listing).
+Cards 9B, 12D, 15A, 15B and 15D use concept art until a Commons photo is licensed. The Smith-Putnam and Haliade-X photos stay in `src/assets/images/real/` with their credits.

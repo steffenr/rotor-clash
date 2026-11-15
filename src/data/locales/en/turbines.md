@@ -198,11 +198,11 @@
 - drivetrain: 144-blade wheel, belt-driven dynamo
 - engineeringNote: A 144-blade wooden wheel on an 18 m tower charged batteries that lit a Cleveland mansion for about 20 years.
 
-## 9B — Smith-Putnam Turbine
+## 9B — NASA Mod-0
 - id: 9B
 - country: USA
-- drivetrain: Two-blade rotor with variable pitch
-- engineeringNote: The first megawatt-class turbine on a US grid. Sources rate it between 1.0 and 1.5 MW; a blade failure ended its run.
+- drivetrain: Two-blade downwind rotor with variable pitch
+- engineeringNote: The 1975 test bed for the US federal wind programme: a 125 ft rotor on a 100 ft tower, built to validate design methods for the larger Mod machines.
 
 ## 9C — Gedser Wind Turbine
 - id: 9C
@@ -282,11 +282,11 @@
 - drivetrain: Pitch-regulated, geared
 - engineeringNote: 140 turbines make up one of the largest wind farms in the Southern Hemisphere: 420 MW.
 
-## 12D — Suzlon S144 3 MW
+## 12D — Siemens SWT-2.3-101
 - id: 12D
-- country: India
-- drivetrain: Doubly-fed generator, carbon-fibre blades
-- engineeringNote: The prototype stands on a 160 m hybrid lattice-tubular tower, tall for India’s low-wind sites.
+- country: South Africa
+- drivetrain: Geared induction generator, three-blade upwind rotor
+- engineeringNote: Sixty of these turbines stand at Jeffreys Bay in the Eastern Cape, all commissioned by May 2014 for 138 MW.
 
 ## 13A — GE 1.5sle
 - id: 13A
@@ -335,17 +335,17 @@
 - drivetrain: Pitch-regulated, geared
 - engineeringNote: Three V47 and two V52 turbines on Shetland reach a reported load factor of about 57%.
 
-## 15A — SG DD-276 Prototype
+## 15A — Enercon E-112
 - id: 15A
-- country: Denmark
-- drivetrain: Direct-drive
-- engineeringNote: 135 m blades on a 276 m rotor: the most powerful turbine in Europe, installed in 2025.
+- country: Germany
+- drivetrain: Direct-drive, ring generator
+- engineeringNote: Erected near Magdeburg in 2002 as the world’s largest turbine, at 4.5 MW on a 124 m tower.
 
-## 15B — GE Haliade-X 12 MW Prototype
+## 15B — Vestas V164-8.0 MW Prototype
 - id: 15B
-- country: Netherlands
-- drivetrain: Direct-drive permanent magnet
-- engineeringNote: Produced its first kilowatt-hour in November 2019 as the world’s most powerful turbine, with 107 m blades.
+- country: Denmark
+- drivetrain: Medium-speed geared, permanent magnet
+- engineeringNote: Produced its first power on 28 January 2014 as the world’s most powerful turbine, with 80 m blades on a 140 m tower.
 
 ## 15C — CRRC Qihang 20 MW
 - id: 15C
@@ -353,11 +353,11 @@
 - drivetrain: Floating-class offshore prototype
 - engineeringNote: Installed in January 2025 at the Dongying testing base, with a 260 m rotor on a 151 m hub.
 
-## 15D — Dongfang 17 MW Floating
+## 15D — Enercon E-126 Prototype
 - id: 15D
-- country: China
-- drivetrain: Direct-drive floating turbine
-- engineeringNote: A direct-drive floating turbine rolled out in July 2025, built to withstand 24 m waves and super typhoons.
+- country: Germany
+- drivetrain: Direct-drive, ring generator
+- engineeringNote: The 2007 prototype began at 6 MW with a 126 m rotor; Enercon later uprated the type to 7.58 MW.
 
 ## 16A — Bonus 2.0 MW (Middelgrunden)
 - id: 16A
