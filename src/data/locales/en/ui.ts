@@ -68,6 +68,8 @@ export const EN_UI: Translations = {
     engineeringSummary: 'Field Guide Fact',
     technicalSource: 'Read Fact Source',
     close: 'Close',
+    prevCard: 'Previous Card',
+    nextCard: 'Next Card',
   },
   stats: {
     ratedPowerMw: {

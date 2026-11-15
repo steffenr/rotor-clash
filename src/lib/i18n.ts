@@ -70,6 +70,8 @@ export interface Translations {
     engineeringSummary: string;
     technicalSource: string;
     close: string;
+    prevCard: string;
+    nextCard: string;
   };
   stats: Record<
     'ratedPowerMw' | 'rotorDiameterM' | 'hubHeightM' | 'cutInWindMs' | 'plantCapacityMw',

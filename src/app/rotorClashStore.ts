@@ -750,6 +750,22 @@ export function createRotorClashApp() {
       this.inspectedCard = null;
     },
 
+    inspectNextCard() {
+      if (!this.inspectedCard) return;
+      soundFx.playCardFlip();
+      const idx = TURBINE_DECK.findIndex((c) => c.id === this.inspectedCard?.id);
+      const nextIdx = (idx + 1) % TURBINE_DECK.length;
+      this.inspectedCard = TURBINE_DECK[nextIdx];
+    },
+
+    inspectPrevCard() {
+      if (!this.inspectedCard) return;
+      soundFx.playCardFlip();
+      const idx = TURBINE_DECK.findIndex((c) => c.id === this.inspectedCard?.id);
+      const prevIdx = (idx - 1 + TURBINE_DECK.length) % TURBINE_DECK.length;
+      this.inspectedCard = TURBINE_DECK[prevIdx];
+    },
+
     // Shared Card / Locale / Formatting Helpers
     localizeTierName(name: string): string {
       if (this.lang !== 'de') return name;
