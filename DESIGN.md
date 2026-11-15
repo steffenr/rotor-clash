@@ -73,6 +73,12 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 ### Card Back (`renderTurbineCardBack`)
 - Features a **Harbor Navy (`#173240`)** interior framed by `#FAF4E4` cream stock, traversed by **Coastal Teal & Beacon Orange horizontal speed-stripes** behind a circular cream collector medallion displaying the **Rotor Clash logo** (`/assets/aistudio/logo_rotor_clash_3a6e5dcc.png`) and remaining deck counter.
 
+### Deck Chooser (`renderDeckPicker`, `src/templates/deckPicker.ts`)
+- Each deck is drawn as a **stack of card backs**, not a button: the top card is a miniature of the card back (Harbor Navy, cream hairline, speed-stripes, cream medallion) and 3–5 cream cards peek out behind it. Stack depth hints at deck size (Grand Tour is the tallest); a mono seal shows the card count dealt in a match.
+- Identity per deck lives in the stripes and emblem only: Modern Giants = teal stripes + turbine, Records & Firsts = orange stripes + rosette, Mixed Deck = diagonal teal/orange face + shuffle arrows, Grand Tour = teal and orange stripes + compass star.
+- **Selected** = the stack lifts 5 px and fans out, the tile frames like an ivory card (`2px` ink border, `0 4px 0` press lip) and a Beacon Orange check badge pops in. **Hover** = a smaller fan. The deck description for the selected deck stays on the right of the title row.
+- The face colour is the `--c-back` token, which stays Harbor Navy in dark mode like a real card back. Motion is limited to `transform`/`opacity` and is neutralised by the global `prefers-reduced-motion` rule. Tiles keep `role="radio"` inside a `radiogroup`.
+
 ### Arena Table & Collector Strip (`renderArena`)
 - Plays over the illustrated desk backdrop (`src/assets/images/field_guide_desk_1794678472040.jpg`) softened with a warm parchment scrim (`bg-[#F5EFE0]/60`).
 - 3-column battle table: **Your Card** | **Center Duel Feedback / Turn Cue** (`animate-gentle-bob` on active turn) | **Opponent Card / Card Back**.

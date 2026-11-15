@@ -355,3 +355,173 @@ button:not(:disabled):active { transform: scale(0.97); }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Deck chooser: decks drawn as stacks of card backs ---------- */
+:root,
+.dark {
+  /* The card-back navy stays navy in dark mode, like the back of a real card. */
+  --c-back: #173240;
+}
+
+.deck-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.1rem 0.5rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.deck-option:hover {
+  background: color-mix(in srgb, var(--c-sand) 55%, transparent);
+}
+.deck-option:focus-visible {
+  outline: 2px solid var(--c-teal);
+  outline-offset: 2px;
+}
+.deck-option.is-selected {
+  background: var(--c-paper-hi);
+  border-color: var(--c-ink);
+  box-shadow: 0 4px 0 var(--c-line);
+}
+
+.deck-name {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--c-ink-2);
+  text-align: center;
+  text-wrap: balance;
+}
+.deck-option.is-selected .deck-name {
+  color: var(--c-ink);
+}
+
+.deck-stack {
+  position: relative;
+  display: block;
+  width: 4.75rem;
+  height: 6.4rem;
+  margin: 0 0.6rem 0.35rem 0;
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.deck-option.is-selected .deck-stack {
+  transform: translateY(-5px);
+}
+
+.deck-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.65rem;
+  border: 2px solid var(--c-line);
+  background: var(--c-paper);
+  box-shadow: 0 2px 5px rgba(23, 50, 64, 0.16);
+  transform-origin: 0% 100%;
+  transform: translate(calc(var(--i) * 2.5px), calc(var(--i) * 2.5px)) rotate(calc(var(--i) * 1.3deg));
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+.deck-option:hover .deck-layer {
+  transform: translate(calc(var(--i) * 4px), calc(var(--i) * 2.5px)) rotate(calc(var(--i) * 2.2deg));
+}
+.deck-option.is-selected .deck-layer {
+  transform: translate(calc(var(--i) * 5px), calc(var(--i) * 2px)) rotate(calc(var(--i) * 3deg));
+}
+
+/* Top card: the back of a Rotor Clash card, shrunk down. */
+.deck-face {
+  --stripe-a: var(--c-teal);
+  --stripe-b: var(--c-teal);
+  background: var(--c-back);
+  overflow: hidden;
+}
+.deck-face::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1.7rem;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    to bottom,
+    var(--stripe-a) 0 42%,
+    transparent 42% 58%,
+    var(--stripe-b) 58% 100%
+  );
+}
+.deck-face::after {
+  content: "";
+  position: absolute;
+  inset: 0.28rem;
+  border: 1px solid rgba(250, 244, 228, 0.32);
+  border-radius: 0.4rem;
+}
+.deck-tone-records .deck-face {
+  --stripe-a: var(--c-orange);
+  --stripe-b: var(--c-orange);
+}
+.deck-tone-mixed .deck-face {
+  --stripe-a: var(--c-paper);
+  --stripe-b: var(--c-paper);
+  background: linear-gradient(135deg, var(--c-teal-deep) 0 50%, var(--c-orange-deep) 50% 100%);
+}
+.deck-tone-grand .deck-face {
+  --stripe-a: var(--c-teal);
+  --stripe-b: var(--c-orange);
+}
+
+.deck-seal {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--c-line);
+  border-radius: 9999px;
+  background: var(--c-paper-hi);
+  color: var(--c-ink);
+}
+.deck-count {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  bottom: 0.4rem;
+  transform: translateX(-50%);
+  padding: 0 0.35rem;
+  border-radius: 9999px;
+  background: var(--c-paper);
+  color: var(--c-ink);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.deck-check {
+  position: absolute;
+  z-index: 20;
+  top: -0.45rem;
+  right: -0.35rem;
+  display: grid;
+  place-items: center;
+  width: 1.3rem;
+  height: 1.3rem;
+  border: 2px solid var(--c-line);
+  border-radius: 9999px;
+  background: var(--c-orange);
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.2s, transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+.deck-option.is-selected .deck-check {
+  opacity: 1;
+  transform: scale(1);
+}
