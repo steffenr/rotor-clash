@@ -38,7 +38,7 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
 ```text
 ├── .github/workflows/
 │   ├── ci.yml                  # Lint, test & build checks on PRs to develop and pushes to main/develop
-│   └── release.yml             # Manual workflow_dispatch build & rsync/SSH deploy to the target host
+│   └── release.yml             # Manual workflow_dispatch build & SCP/tar deploy to the target host
 ├── server.ts                   # Express + WebSocket server (dev Vite middleware / prod dist/)
 ├── index.html                  # Alpine.js root mount & font imports
 ├── src/
