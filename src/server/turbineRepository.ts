@@ -40,7 +40,7 @@ function loadTurbinesFromDisk(): TurbineCard[] {
     .map((f) =>
       parseTurbineMarkdown(fs.readFileSync(path.join(TURBINES_DIR, f), 'utf-8'), turbineLocales)
     )
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => a.groupId - b.groupId || a.slot.localeCompare(b.slot));
 }
 
 export const SERVER_QUARTET_GROUPS: QuartetGroup[] = loadGroupsFromDisk();

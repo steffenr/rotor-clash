@@ -191,3 +191,195 @@
 - country: Denmark
 - drivetrain: 3-Stage Planetary-Helical Gearbox
 - engineeringNote: Pioneering 3 MW lightweight nacelle design that standardized early gigawatt-scale coastal wind farms.
+
+## 9A — Brush Windmill
+- id: 9A
+- country: USA
+- drivetrain: 144-blade wheel, belt-driven dynamo
+- engineeringNote: A 144-blade wooden wheel on an 18 m tower charged batteries that lit a Cleveland mansion for about 20 years.
+
+## 9B — Smith-Putnam Turbine
+- id: 9B
+- country: USA
+- drivetrain: Two-blade rotor with variable pitch
+- engineeringNote: The first megawatt-class turbine on a US grid. Sources rate it between 1.0 and 1.5 MW; a blade failure ended its run.
+
+## 9C — Gedser Wind Turbine
+- id: 9C
+- country: Denmark
+- drivetrain: Stall-regulated three-blade upwind rotor
+- engineeringNote: Its three-blade, upwind, stall-regulated layout became the template for modern turbines.
+
+## 9D — GROWIAN
+- id: 9D
+- country: Germany
+- drivetrain: Two-blade downwind rotor with pitch control
+- engineeringNote: Germany’s giant two-blade experiment ran only about 400 hours before it was shut down in 1987.
+
+## 10A — Éole Darrieus Turbine
+- id: 10A
+- country: Canada
+- drivetrain: Vertical-axis Darrieus rotor
+- engineeringNote: The largest vertical-axis turbine ever built: 96 m tall and 64 m wide. It ran from 1988 until April 1993.
+
+## 10B — Vestas 4R-V29 Multi-Rotor
+- id: 10B
+- country: Denmark
+- drivetrain: Four 225 kW rotors on one tower
+- engineeringNote: Four V29 rotors share one tower, at 29 m and 59.5 m hub height. It was dismantled in December 2018.
+
+## 10C — GE 3.4-137 Hybrid Tower
+- id: 10C
+- country: Germany
+- drivetrain: Geared generator on a hybrid tower
+- engineeringNote: The tower foundations double as water reservoirs: a 70 MWh water battery and a 246.5 m tip height.
+
+## 10D — Tvindkraft
+- id: 10D
+- country: Denmark
+- drivetrain: Glass-fibre blades, 27 m long
+- engineeringNote: Built by a school community and designed to be slightly larger than the Smith-Putnam machine of 1941.
+
+## 11A — Bonus B35/450 (Vindeby)
+- id: 11A
+- country: Denmark
+- drivetrain: Stall-regulated, geared
+- engineeringNote: The world’s first offshore wind farm. It produced 243 GWh over about 25 years before it was dismantled.
+
+## 11B — Vestas V80-2.0 MW
+- id: 11B
+- country: Denmark
+- drivetrain: Pitch-regulated, geared
+- engineeringNote: At 160 MW it was four times larger than any offshore farm built before it.
+
+## 11C — Haliade 150-6MW (Block Island)
+- id: 11C
+- country: USA
+- drivetrain: Direct-drive permanent magnet
+- engineeringNote: America’s first offshore wind farm: five 6 MW turbines that power Block Island.
+
+## 11D — SG 6.0-154 DD (Hywind Scotland)
+- id: 11D
+- country: Scotland, UK
+- drivetrain: Direct-drive turbine on a spar buoy
+- engineeringNote: The world’s first floating wind farm, in 95–120 m of water. Each tower stands 253 m tall from keel to blade tip.
+
+## 12A — Vestas V52-850 kW
+- id: 12A
+- country: Kenya
+- drivetrain: Pitch-regulated with OptiSpeed
+- engineeringNote: 365 small turbines make Africa’s largest wind farm, about 310 MW in the Great Rift Valley.
+
+## 12B — Siemens SWT-3.2-113
+- id: 12B
+- country: Australia
+- drivetrain: Direct-drive permanent magnet
+- engineeringNote: 99 direct-drive turbines, built in three stages, share the site with a famous big battery.
+
+## 12C — Vestas V112-3.0 MW
+- id: 12C
+- country: Australia
+- drivetrain: Pitch-regulated, geared
+- engineeringNote: 140 turbines make up one of the largest wind farms in the Southern Hemisphere: 420 MW.
+
+## 12D — Suzlon S144 3 MW
+- id: 12D
+- country: India
+- drivetrain: Doubly-fed generator, carbon-fibre blades
+- engineeringNote: The prototype stands on a 160 m hybrid lattice-tubular tower, tall for India’s low-wind sites.
+
+## 13A — GE 1.5sle
+- id: 13A
+- country: USA
+- drivetrain: Geared doubly-fed generator
+- engineeringNote: Once the world’s largest wind farm: 291 GE 1.5 MW and 130 Siemens 2.3 MW turbines.
+
+## 13B — Mitsubishi MWT-1000A
+- id: 13B
+- country: USA
+- drivetrain: Geared drivetrain
+- engineeringNote: 627 turbines from three makers fill a farm of 781.5 MW; 406 of them are Mitsubishi 1 MW units.
+
+## 13C — GE 2.5-100
+- id: 13C
+- country: USA
+- drivetrain: Geared permanent-magnet generator
+- engineeringNote: The US debut of GE’s 2.5 MW machine was the largest single order for it: 338 turbines, 845 MW.
+
+## 13D — Siemens SWT-2.3-93
+- id: 13D
+- country: Canada
+- drivetrain: Geared induction generator
+- engineeringNote: 86 turbines on 80 m towers turn the winds off Lake Ontario into 197.8 MW.
+
+## 14A — Enercon E33
+- id: 14A
+- country: Antarctica
+- drivetrain: Gearless, variable speed
+- engineeringNote: The southernmost wind farm on Earth: three 330 kW turbines that help power Scott Base and McMurdo.
+
+## 14B — Enercon E-70
+- id: 14B
+- country: Spain
+- drivetrain: Gearless, variable speed
+- engineeringNote: Five turbines plus pumped hydro supply an island: 11.5 MW of wind and a water reservoir for calm days.
+
+## 14C — Bonus B82/2300
+- id: 14C
+- country: Denmark
+- drivetrain: Stall-controlled, three-stage gearbox
+- engineeringNote: Ten turbines helped Samsø become a renewable-energy island; its licence now runs until 2037.
+
+## 14D — Vestas V47-660 kW
+- id: 14D
+- country: Scotland, UK
+- drivetrain: Pitch-regulated, geared
+- engineeringNote: Three V47 and two V52 turbines on Shetland reach a reported load factor of about 57%.
+
+## 15A — SG DD-276 Prototype
+- id: 15A
+- country: Denmark
+- drivetrain: Direct-drive
+- engineeringNote: 135 m blades on a 276 m rotor: the most powerful turbine in Europe, installed in 2025.
+
+## 15B — GE Haliade-X 12 MW Prototype
+- id: 15B
+- country: Netherlands
+- drivetrain: Direct-drive permanent magnet
+- engineeringNote: Produced its first kilowatt-hour in November 2019 as the world’s most powerful turbine, with 107 m blades.
+
+## 15C — CRRC Qihang 20 MW
+- id: 15C
+- country: China
+- drivetrain: Floating-class offshore prototype
+- engineeringNote: Installed in January 2025 at the Dongying testing base, with a 260 m rotor on a 151 m hub.
+
+## 15D — Dongfang 17 MW Floating
+- id: 15D
+- country: China
+- drivetrain: Direct-drive floating turbine
+- engineeringNote: A direct-drive floating turbine rolled out in July 2025, built to withstand 24 m waves and super typhoons.
+
+## 16A — Bonus 2.0 MW (Middelgrunden)
+- id: 16A
+- country: Denmark
+- drivetrain: Geared induction generator
+- engineeringNote: Twenty turbines in a 3.5 km arc off Copenhagen, half owned by a cooperative of 8,500 members.
+
+## 16B — REpower 5M (alpha ventus)
+- id: 16B
+- country: Germany
+- drivetrain: Geared doubly-fed generator
+- engineeringNote: Germany’s first offshore wind farm: six REpower 5M and six AREVA M5000 turbines in 30 m of water.
+
+## 16C — Senvion 6.2M126
+- id: 16C
+- country: Belgium
+- drivetrain: Gearbox with doubly-fed generator
+- engineeringNote: Built in three phases from 2009; the later phases use 6.15 MW turbines on 28 km offshore.
+
+## 16D — Siemens SWT-3.6-120
+- id: 16D
+- country: Denmark
+- drivetrain: Geared, pitch-regulated
+- engineeringNote: 111 turbines made it the largest wind farm in Denmark from 2013 to 2019, at 399.6 MW.

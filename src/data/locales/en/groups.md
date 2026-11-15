@@ -39,3 +39,43 @@
 - id: 8
 - name: Historic Engineering Landmarks
 - subtitle: Record-setting turbines that defined the industry
+
+## 9
+- id: 9
+- name: Pioneers of Wind Power
+- subtitle: Machines from 1888 to 1983 that proved the idea
+
+## 10
+- id: 10
+- name: Wind Power Oddballs
+- subtitle: Vertical axes, four rotors and towers that store water
+
+## 11
+- id: 11
+- name: Firsts at Sea
+- subtitle: The farms that opened the ocean for wind power
+
+## 12
+- id: 12
+- name: Southern Winds
+- subtitle: Wind power in Africa, Australia and India
+
+## 13
+- id: 13
+- name: Prairie Powerhouses
+- subtitle: Great Plains giants and wind farms of North America
+
+## 14
+- id: 14
+- name: Islands & Edges
+- subtitle: Wind power at the end of the world
+
+## 15
+- id: 15
+- name: Giants Under Test
+- subtitle: Prototypes pushing past 12 MW
+
+## 16
+- id: 16
+- name: North Sea Builders
+- subtitle: Early European offshore farms, 2000–2013

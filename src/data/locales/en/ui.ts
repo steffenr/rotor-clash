@@ -11,10 +11,10 @@ export const EN_UI: Translations = {
     searching: 'Searching...',
   },
   lobby: {
-    kicker: '32 Wind Turbines · Illustrated Explorer Quartet',
+    kicker: '64 Wind Turbines · Two Illustrated Decks',
     heroTitle: 'Collect real wind giants and challenge friends to a card duel',
     heroSubtitle:
-      'Discover massive ocean turbines, tall mountain towers, and mega wind parks. Pick your strongest stat each round to win cards and complete all 8 Quartet sets!',
+      'Discover massive ocean turbines, tall mountain towers, and mega wind parks. Pick your strongest stat each round to win cards and complete Quartet sets!',
     searchingTitle: 'Looking for another player...',
     inQueue: 'waiting',
     online: 'online',
@@ -71,6 +71,20 @@ export const EN_UI: Translations = {
     prevCard: 'Previous Card',
     nextCard: 'Next Card',
   },
+  decks: {
+    title: 'Choose your deck',
+    modern: { name: 'Modern Giants', desc: '32 cards · today’s biggest turbines' },
+    records: { name: 'Records & Firsts', desc: '32 cards · pioneers, oddballs and record-setters' },
+    mixed: { name: 'Mixed Deck', desc: '8 random quartets from both decks' },
+    grand: { name: 'Grand Tour', desc: 'All 64 cards · 16 quartets · a longer match' },
+    tabModern: 'Modern Giants',
+    tabRecords: 'Records & Firsts',
+    photoCredit: 'Photo credit',
+    photoBy: 'Photo by',
+    photoLicense: 'License',
+    photoViewSource: 'View source on Wikimedia Commons',
+    photoConcept: 'Concept illustration made for Rotor Clash',
+  },
   stats: {
     ratedPowerMw: {
       label: 'Power',
@@ -97,6 +111,11 @@ export const EN_UI: Translations = {
       shortLabel: 'Farm',
       description: 'Total power of the whole wind farm where this turbine works.',
     },
+    firstPowerYear: {
+      label: 'First Power',
+      shortLabel: 'Since',
+      description: 'Year this turbine first fed electricity into the grid (oldest wins!).',
+    },
   },
   arena: {
     you: 'You',
@@ -109,8 +128,8 @@ export const EN_UI: Translations = {
     matchDrawn: 'It’s a Tie!',
     victorySecured: 'You Won the Duel!',
     matchDefeat: 'Good Game!',
-    reasonAllCardsWin: 'Amazing! You collected all 32 wind turbine cards.',
-    reasonAllCardsLoss: 'collected all 32 cards this time.',
+    reasonAllCardsWin: 'Amazing! You collected every wind turbine card.',
+    reasonAllCardsLoss: 'collected every card this time.',
     reasonRoundLimit: 'All 24 rounds played — winner decided by most cards!',
     reasonForfeitWin: 'left the match. No points were awarded or lost.',
     reasonForfeitLoss: 'You left the match. No points were awarded or lost.',
@@ -150,10 +169,10 @@ export const EN_UI: Translations = {
   compendium: {
     title: 'Wind Turbine Field Guide Album',
     subtitle:
-      'Browse all 32 real wind turbines across 8 Quartet groups—compare heights against a coastal lighthouse and open any card for full details.',
+      'Browse all 64 wind turbines in two decks of 8 Quartet groups—compare heights against a coastal lighthouse and open any card for full details.',
     searchPlaceholder: 'Search turbine, maker, or place...',
     allQuartets: 'All 8 Groups (32)',
-    noMatches: 'No cards match your search yet. Clear the search box to see all 32 cards.',
+    noMatches: 'No cards match your search yet. Clear the search box to see all cards in this deck.',
     inspectFull: 'Full View',
   },
   leaderboard: {
@@ -214,7 +233,7 @@ export const EN_UI: Translations = {
       'If both cards have the exact same number, both cards wait in the center Tie Pile. Whoever wins the very next round scoops up ALL the cards in the pile!',
     quartetTitle: 'Building Quartet Sets',
     quartetDesc:
-      'The 32 cards belong to 8 groups (1–8) with 4 cards each (A, B, C, D). Collecting all 4 cards in a group completes a Quartet badge!',
+      'Each deck has 32 cards in 8 groups of 4 cards (A, B, C, D). Collecting all 4 cards in a group completes a Quartet badge!',
     exampleMatrix: 'Example Collector Grid (2 Quartets Complete)',
     nextStep4: 'Next: Play With Friends',
     mpTitle: 'Play Solo or With a Friend',

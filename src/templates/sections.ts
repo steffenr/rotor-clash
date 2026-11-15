@@ -4,7 +4,9 @@ import { iconSvg } from './icons';
 export function renderQuartetMatrix(
   ownedIdsExpr: string,
   completedExpr: string,
-  titleExpr: string
+  titleExpr: string,
+  groupsExpr = 'quartetGroups',
+  totalExpr = '8'
 ): string {
   return `
     <div class="rounded-xl bg-c-paper-hi border-2 border-c-ink p-4">
@@ -12,12 +14,12 @@ export function renderQuartetMatrix(
         <h3 class="font-display text-sm font-bold text-c-ink" x-text="${titleExpr}"></h3>
         <span
           class="font-mono tabular-nums text-xs font-bold text-c-green"
-          x-text="(${completedExpr}).length + '/8 ' + (lang === 'de' ? 'Quartette' : 'Quartets')"
+          x-text="(${completedExpr}).length + '/' + (${totalExpr}) + ' ' + (lang === 'de' ? 'Quartette' : 'Quartets')"
         ></span>
       </div>
 
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <template x-for="group in quartetGroups" :key="group.id">
+        <template x-for="group in ${groupsExpr}" :key="group.id">
           <div
             :class="'rounded-lg p-2 border-2 transition-colors ' + ((${completedExpr}).includes(group.id) ? 'bg-c-mint border-c-green' : 'bg-c-paper border-c-ink/20')"
           >
@@ -273,6 +275,26 @@ export function renderLobby(): string {
           </div>
 
           <div class="space-y-4">
+            <!-- Deck choice: applies to robot games, friend rooms and online matches -->
+            <div x-show="deckModes.length > 1" class="space-y-2">
+              <div class="flex items-baseline justify-between gap-3">
+                <span class="text-xs font-bold text-c-ink-2" x-text="t.decks.title"></span>
+                <span class="text-[11px] text-c-ink-3 text-right" x-text="t.decks[deckMode].desc"></span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" role="radiogroup" :aria-label="t.decks.title">
+                <template x-for="m in deckModes" :key="m">
+                  <button
+                    type="button"
+                    role="radio"
+                    :aria-checked="deckMode === m"
+                    @click="setDeckMode(m)"
+                    :class="'px-2 py-2.5 min-h-11 rounded-xl border-2 text-xs font-bold leading-tight transition-colors ' + (deckMode === m ? 'bg-c-teal border-c-ink text-white' : 'bg-c-paper border-c-ink/30 text-c-ink hover:bg-c-sand')"
+                    x-text="deckModeName(m)"
+                  ></button>
+                </template>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <button
                 type="button"
@@ -344,6 +366,7 @@ export function renderLobby(): string {
                       <span class="font-mono font-bold text-c-orange mr-2" x-text="room.roomCode"></span>
                       <span class="text-c-ink font-bold" x-text="room.hostCallsign"></span>
                       <span class="text-c-ink-3 ml-1.5 font-mono tabular-nums" x-text="'(' + room.hostElo + ' pts)'"></span>
+                      <span class="text-c-ink-3 ml-1.5" x-text="'· ' + deckModeName(room.deckMode)"></span>
                     </div>
                     <span
                       x-show="hostedRoom && hostedRoom.roomCode === room.roomCode"
@@ -648,7 +671,7 @@ export function renderArena(): string {
                 <div class="text-xs font-bold text-c-ink-2" x-text="t.arena.quartetsBuilt"></div>
                 <div
                   class="mt-1 font-mono tabular-nums text-xl font-bold text-c-green"
-                  x-text="activeMatch.you.completedQuartets.length + ' / 8'"
+                  x-text="activeMatch.you.completedQuartets.length + ' / ' + matchQuartetTotal()"
                 ></div>
               </div>
               <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-3.5">
@@ -698,6 +721,7 @@ export function renderArena(): string {
                     highlightOutcomeExpr: 'arenaYourOutcome()',
                     onSelectStatHandler: 'selectStat(stat.key)',
                     hideMediaOnMobile: true,
+                    statModeExpr: 'activeMatch.deckMode',
                   })}
                 </div>
               </div>
@@ -783,6 +807,7 @@ export function renderArena(): string {
                     selectedStatExpr: 'activeMatch.lastRound ? activeMatch.lastRound.chosenStat : null',
                     highlightOutcomeExpr: 'arenaOppOutcome()',
                     hideMediaOnMobile: true,
+                    statModeExpr: 'activeMatch.deckMode',
                   })}
                 </div>
                 <div x-show="!(isReveal() && arenaOppCard())" class="w-full flex justify-center">
@@ -797,7 +822,7 @@ export function renderArena(): string {
                 <div class="flex items-center gap-3 flex-wrap">
                   <span class="text-xs font-bold text-c-ink" x-text="t.arena.quartetStripLabel + ':'"></span>
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <template x-for="g in quartetGroups" :key="g.id">
+                    <template x-for="g in matchGroups()" :key="g.id">
                       <div
                         :title="g.code + '. ' + groupName(g.id) + ' (' + ownedGroupCount(g.id) + '/4)'"
                         :class="'px-2 py-1 rounded-lg border font-mono text-[11px] font-bold flex items-center gap-1 ' + (activeMatch.you.completedQuartets.includes(g.id) ? 'bg-c-green border-c-ink text-white' : (ownedGroupCount(g.id) > 0 ? 'bg-c-sky border-c-teal text-c-ink' : 'bg-c-paper border-c-ink/20 text-c-ink-4'))"
@@ -821,7 +846,7 @@ export function renderArena(): string {
               </div>
 
               <div x-show="showMatrixDrawer">
-                ${renderQuartetMatrix('activeMatch.you.ownedCardIds', 'activeMatch.you.completedQuartets', 't.arena.quartetStripLabel')}
+                ${renderQuartetMatrix('activeMatch.you.ownedCardIds', 'activeMatch.you.completedQuartets', 't.arena.quartetStripLabel', 'matchGroups()', 'matchQuartetTotal()')}
               </div>
             </div>
           </div>
@@ -854,6 +879,19 @@ export function renderCompendium(): string {
           </div>
         </div>
 
+        <div x-show="deckModes.includes('records')" class="flex flex-wrap items-center gap-1.5 pt-1" role="tablist">
+          <template x-for="d in [{ id: 'modern', label: t.decks.tabModern }, { id: 'records', label: t.decks.tabRecords }]" :key="d.id">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="compendiumDeck === d.id"
+              @click="setCompendiumDeck(d.id)"
+              :class="'px-3.5 py-2 min-h-10 rounded-xl text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumDeck === d.id ? 'bg-c-orange border-c-ink text-c-paper-hi' : 'bg-c-paper-hi text-c-ink hover:bg-c-sand border-c-ink/30')"
+              x-text="d.label"
+            ></button>
+          </template>
+        </div>
+
         <div class="flex flex-wrap items-center gap-1.5 pt-1">
           <button
             type="button"
@@ -861,7 +899,7 @@ export function renderCompendium(): string {
             :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumGroup === 'all' ? 'bg-c-green border-c-ink text-white' : 'bg-c-paper text-c-ink hover:bg-c-sand border-c-ink/25')"
             x-text="t.compendium.allQuartets"
           ></button>
-          <template x-for="g in quartetGroups" :key="g.id">
+          <template x-for="g in compendiumGroups()" :key="g.id">
             <button
               type="button"
               @click="compendiumGroup = g.id"
@@ -1214,7 +1252,9 @@ export function renderTutorial(): string {
           ${renderQuartetMatrix(
             "['1A', '1B', '1C', '1D', '2A', '2B', '2C', '3A', '3B', '5A', '5B', '5C', '5D', '8A', '8C']",
             '[1, 5]',
-            't.tutorial.exampleMatrix'
+            't.tutorial.exampleMatrix',
+            'quartetGroups.filter((g) => g.id <= 8)',
+            '8'
           )}
         </div>
       </div>
@@ -1364,6 +1404,32 @@ export function renderCardDetailModal(): string {
                   <span class="truncate" x-text="inspectedCard.flagshipLocation"></span>
                   <span class="font-mono tabular-nums font-semibold shrink-0" x-text="formatNumber(inspectedCard.turbineCountInPlant) + ' ' + (lang === 'de' ? 'Anlagen' : 'turbines')"></span>
                 </div>
+                <!-- Photo credit: author, licence and source for every real photograph -->
+                <template x-if="photoCredit(inspectedCard)">
+                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-[10px] leading-snug text-c-ink-3">
+                    <span x-text="t.decks.photoBy + ' '"></span>
+                    <span class="font-semibold text-c-ink-2" x-text="photoCredit(inspectedCard).author"></span>
+                    <span aria-hidden="true"> · </span>
+                    <a
+                      :href="photoCredit(inspectedCard).licenseUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline hover:text-c-ink"
+                      x-text="photoCredit(inspectedCard).license"
+                    ></a>
+                    <span aria-hidden="true"> · </span>
+                    <a
+                      :href="photoCredit(inspectedCard).sourceUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline hover:text-c-ink"
+                      x-text="t.decks.photoViewSource"
+                    ></a>
+                  </div>
+                </template>
+                <template x-if="!photoCredit(inspectedCard)">
+                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-[10px] leading-snug text-c-ink-3" x-text="t.decks.photoConcept"></div>
+                </template>
               </div>
 
               <!-- Deck Navigation -->
@@ -1376,7 +1442,7 @@ export function renderCardDetailModal(): string {
                   ${iconSvg('arrow-left', 'w-3.5 h-3.5')}
                   <span x-text="t.card.prevCard"></span>
                 </button>
-                <span class="font-mono tabular-nums text-xs font-bold text-c-ink-2" x-text="inspectedCard.id + ' / 8D'"></span>
+                <span class="font-mono tabular-nums text-xs font-bold text-c-ink-2" x-text="inspectedCard.id + ' / ' + lastCardId(inspectedCard)"></span>
                 <button
                   type="button"
                   @click="inspectNextCard()"
@@ -1434,7 +1500,7 @@ export function renderCardDetailModal(): string {
               <div class="space-y-1.5">
                 <div class="text-xs font-bold text-c-ink-2" x-text="lang === 'de' ? 'Vergleichswerte im Quartett' : 'Quartet Battle Stats'"></div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                  <template x-for="stat in statDefinitions" :key="stat.key">
+                  <template x-for="stat in statDefsFor(inspectedCard)" :key="stat.key">
                     <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-2 sm:p-2.5 flex flex-col justify-between">
                       <div class="text-[10px] font-bold text-c-ink-2 truncate" x-text="t.stats[stat.key].shortLabel"></div>
                       <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-c-ink leading-tight">

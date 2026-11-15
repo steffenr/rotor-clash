@@ -11,10 +11,10 @@ export const DE_UI: Translations = {
     searching: 'Suche...',
   },
   lobby: {
-    kicker: '32 echte Windturbinen · Das Quartett-Kartenspiel',
+    kicker: '64 echte Windturbinen · Zwei Kartendecks',
     heroTitle: 'Sammle echte Windturbinen und fordere Freunde heraus',
     heroSubtitle:
-      'Entdecke riesige Windräder auf dem Meer, hohe Türme an Land und gewaltige Windparks. Wähle in jeder Runde deinen stärksten Wert, gewinne Karten und vervollständige alle 8 Quartette.',
+      'Entdecke riesige Windräder auf dem Meer, hohe Türme an Land und gewaltige Windparks. Wähle in jeder Runde deinen stärksten Wert, gewinne Karten und vervollständige Quartette.',
     searchingTitle: 'Suche nach einem Mitspieler...',
     inQueue: 'wartend',
     online: 'online',
@@ -71,6 +71,20 @@ export const DE_UI: Translations = {
     prevCard: 'Vorherige Karte',
     nextCard: 'Nächste Karte',
   },
+  decks: {
+    title: 'Wähle dein Deck',
+    modern: { name: 'Moderne Riesen', desc: '32 Karten · die größten Anlagen von heute' },
+    records: { name: 'Rekorde & Premieren', desc: '32 Karten · Pioniere, Exoten und Rekordhalter' },
+    mixed: { name: 'Mixed-Deck', desc: '8 zufällige Quartette aus beiden Decks' },
+    grand: { name: 'Grand Tour', desc: 'Alle 64 Karten · 16 Quartette · längeres Spiel' },
+    tabModern: 'Moderne Riesen',
+    tabRecords: 'Rekorde & Premieren',
+    photoCredit: 'Bildnachweis',
+    photoBy: 'Foto von',
+    photoLicense: 'Lizenz',
+    photoViewSource: 'Quelle auf Wikimedia Commons ansehen',
+    photoConcept: 'Für Rotor Clash gestaltete Illustration',
+  },
   stats: {
     ratedPowerMw: {
       label: 'Leistung',
@@ -97,6 +111,11 @@ export const DE_UI: Translations = {
       shortLabel: 'Windpark',
       description: 'Gesamtleistung des Windparks, in dem diese Anlage steht.',
     },
+    firstPowerYear: {
+      label: 'Erster Strom',
+      shortLabel: 'Seit',
+      description: 'Jahr, in dem die Anlage zum ersten Mal Strom ins Netz einspeiste. Die älteste gewinnt!',
+    },
   },
   arena: {
     you: 'Du',
@@ -109,8 +128,8 @@ export const DE_UI: Translations = {
     matchDrawn: 'Unentschieden!',
     victorySecured: 'Du hast gewonnen!',
     matchDefeat: 'Diesmal verloren',
-    reasonAllCardsWin: 'Du hast alle 32 Karten gewonnen.',
-    reasonAllCardsLoss: 'hat diesmal alle 32 Karten gewonnen.',
+    reasonAllCardsWin: 'Du hast alle Karten gewonnen.',
+    reasonAllCardsLoss: 'hat diesmal alle Karten gewonnen.',
     reasonRoundLimit: 'Alle 24 Runden sind gespielt. Wer die meisten Karten hat, gewinnt.',
     reasonForfeitWin: 'hat das Spiel verlassen. Es wurden keine Punkte vergeben oder abgezogen.',
     reasonForfeitLoss: 'Du hast das Spiel verlassen. Es wurden keine Punkte vergeben oder abgezogen.',
@@ -150,10 +169,10 @@ export const DE_UI: Translations = {
   compendium: {
     title: 'Windkraft-Kartenalbum',
     subtitle:
-      'Alle 32 Windturbinen in 8 Quartetten. Vergleiche ihre Höhe mit einem Leuchtturm und öffne jede Karte für mehr Details.',
+      'Alle 64 Windturbinen in zwei Decks mit je 8 Quartetten. Vergleiche ihre Höhe mit einem Leuchtturm und öffne jede Karte für mehr Details.',
     searchPlaceholder: 'Turbine, Hersteller oder Ort suchen...',
     allQuartets: 'Alle 8 Gruppen (32)',
-    noMatches: 'Keine passende Karte gefunden. Lösche den Suchtext, um alle 32 Karten zu sehen.',
+    noMatches: 'Keine passende Karte gefunden. Lösche den Suchtext, um alle Karten dieses Decks zu sehen.',
     inspectFull: 'Vollansicht',
   },
   leaderboard: {
@@ -214,7 +233,7 @@ export const DE_UI: Translations = {
       'Haben beide Karten genau denselben Wert, kommen sie in die Mitte. Wer die nächste Runde gewinnt, bekommt ALLE Karten aus der Mitte.',
     quartetTitle: 'Quartette vervollständigen',
     quartetDesc:
-      'Die 32 Karten gehören zu 8 Gruppen (1–8) mit je 4 Karten (A, B, C, D). Wenn du alle 4 Karten einer Gruppe hast, bekommst du ein Quartett-Abzeichen.',
+      'Jedes Deck hat 32 Karten in 8 Gruppen mit je 4 Karten (A, B, C, D). Wenn du alle 4 Karten einer Gruppe hast, bekommst du ein Quartett-Abzeichen.',
     exampleMatrix: 'Beispiel-Übersicht (2 Quartette komplett)',
     nextStep4: 'Weiter: Mit Freunden spielen',
     mpTitle: 'Allein oder mit Freunden',

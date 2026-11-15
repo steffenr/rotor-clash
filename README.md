@@ -2,7 +2,7 @@
 
 **Rotor Clash** is a real-time 2-player multiplayer and solo-bot wind turbine Quartet card game with an **Illustrated Field Guide** visual theme and full **English (`EN`) / German (`DE`)** localization.
 
-Players battle across **32 real-world wind turbines** organized into **8 Quartet groups (`1A`–`8D`)**, comparing five engineering metrics each round—including *Start Wind / Cut-In Speed* where the **smallest** number wins.
+Players battle across **64 real-world wind turbines** in two decks of **8 Quartet groups** each — *Modern Giants* (`1A`–`8D`) and *Records & Firsts* (`9A`–`16D`) — comparing five engineering metrics each round. In *Modern Giants* the **smallest** *Start Wind* wins; in *Records & Firsts* the **oldest** machine wins on *First Power* year.
 
 ---
 
@@ -12,15 +12,20 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
   - **Play vs Robot**: Offline-friendly solo duels against `Standard` or `Tactical` AI opponents.
   - **Play a Friend**: Create a 6-character private room code and share a direct invite link (`/?room=XXXXXX`).
   - **Online Match**: Real-time 2-player matchmaking queue over WebSockets (`/ws`) with ELO points and Explorer Rank tiers.
+- **Four deck modes** (choose in the lobby for robot games, friend rooms and online matches):
+  - **Modern Giants** and **Records & Firsts**: 32 cards, 8 quartets each.
+  - **Mixed Deck**: 8 random whole quartets drawn from both decks.
+  - **Grand Tour**: all 64 cards, 16 quartets and up to 48 rounds.
 - **Quartet Collector Mechanics**:
   - Ties build a central **Tie Pile** (`Stich-Stapel`) scooped by the winner of the next decisive round.
   - Collecting all 4 turbines (`A–D`) in a group awards a Quartet badge tracked in the live collector grid.
 - **Field Guide Card Album & Split-Dossier Detail Modal**:
-  - Browse and filter all 32 turbines, compare hub height & rotor span against a **45 m coastal lighthouse**, and open the **Two-Column Split Field-Guide Dossier** modal.
+  - Browse and filter all 64 turbines (deck tabs), compare hub height & rotor span against a **45 m coastal lighthouse**, and open the **Two-Column Split Field-Guide Dossier** modal.
   - Features 100% uncropped full-length turbine photography (`object-contain`) from blade tip to foundation, technical specs, provenance tags, and seamless deck flip browsing (<kbd>←</kbd> / <kbd>→</kbd> arrow keys or Prev/Next buttons).
   - 4-step interactive onboarding guide teaching card reading, lower-wins strategy, tie piles, and multiplayer modes.
 - **Zero-Signup Browser Identity (`localStorage`)**:
   - Player ID, callsign, cached stats, sound mute preference, and selected language persist automatically in browser `localStorage` (`rotor_clash_*`).
+- **Photo credits**: every real photograph comes from Wikimedia Commons under a free licence; the author and licence are shown in the card detail and listed in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md).
   - Global online leaderboard and recent match history persist on the server in `data/leaderboard.json`.
 
 ---

@@ -213,3 +213,70 @@ test('MatchEngine quick-match queue pairs two connected players', () => {
     engine.dispose();
   }
 });
+
+test('MatchEngine deck modes: a Grand Tour room deals 32 cards each, allows 48 rounds and reports its mode', () => {
+  const engine = new MatchEngine(() => {}, () => {}, () => true, createMemoryStore());
+  try {
+    const created = engine.createRoom('alice', 'grand');
+    assert.equal(created.ok, true);
+    assert.equal(created.room?.deckMode, 'grand');
+    assert.equal(engine.getLobbySnapshot(2).openRooms[0].deckMode, 'grand');
+
+    assert.equal(engine.joinRoom('bob', created.room!.roomCode).ok, true);
+    const state = engine.getMatchForPlayer('alice') as ClientMatchState;
+    assert.equal(state.deckMode, 'grand');
+    assert.equal(state.maxRounds, 48);
+    assert.equal(state.you.cardCount, 32);
+    assert.equal(state.opponent.cardCount, 32);
+    assert.equal(state.quartetGroupIds.length, 16);
+  } finally {
+    engine.dispose();
+  }
+});
+
+test('MatchEngine deck modes: records and mixed rooms deal 32 cards each from the right pool', () => {
+  const engine = new MatchEngine(() => {}, () => {}, () => true, createMemoryStore());
+  try {
+    const records = engine.createRoom('a1', 'records').room!;
+    engine.joinRoom('b1', records.roomCode);
+    const r = engine.getMatchForPlayer('a1') as ClientMatchState;
+    assert.equal(r.deckMode, 'records');
+    assert.equal(r.you.cardCount, 16);
+    assert.ok(r.quartetGroupIds.every((g) => g >= 9 && g <= 16));
+    assert.equal(r.quartetGroupIds.length, 8);
+
+    const mixed = engine.createRoom('a2', 'mixed').room!;
+    engine.joinRoom('b2', mixed.roomCode);
+    const m = engine.getMatchForPlayer('a2') as ClientMatchState;
+    assert.equal(m.deckMode, 'mixed');
+    assert.equal(m.you.cardCount, 16);
+    assert.equal(m.quartetGroupIds.length, 8);
+    assert.equal(m.maxRounds, 24);
+  } finally {
+    engine.dispose();
+  }
+});
+
+test('MatchEngine deck modes: quick-match queues are separate per deck, and unknown modes fall back to modern', () => {
+  const engine = new MatchEngine(() => {}, () => {}, () => true, createMemoryStore());
+  try {
+    assert.equal(engine.joinQueue('a', 'modern').ok, true);
+    assert.equal(engine.joinQueue('b', 'records').ok, true);
+    assert.equal(engine.getMatchForPlayer('a'), null, 'different decks must not be paired');
+    assert.equal(engine.getMatchForPlayer('b'), null);
+
+    assert.equal(engine.joinQueue('c', 'modern').ok, true);
+    const pair = engine.getMatchForPlayer('a') as ClientMatchState;
+    assert.ok(pair);
+    assert.equal(pair.deckMode, 'modern');
+    assert.equal(engine.getMatchForPlayer('b'), null, 'the records player keeps waiting');
+
+    // Invalid input from a client is treated as the default deck.
+    const bogus = engine.createRoom('d', 'definitely-not-a-deck' as never);
+    assert.equal(bogus.room?.deckMode, 'modern');
+    // Lobby counts every waiting player, whichever deck they chose.
+    assert.equal(engine.getLobbySnapshot(4).queueCount, 1);
+  } finally {
+    engine.dispose();
+  }
+});

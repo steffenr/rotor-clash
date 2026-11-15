@@ -9,6 +9,8 @@ export interface CardRenderOptions {
   onSelectStatHandler?: string;
   /** In-match phone layout: hide photo, lighthouse diagram and source link so the stats are the first thing visible. */
   hideMediaOnMobile?: boolean;
+  /** Alpine expression for the match's deck mode; in a match all cards are compared on one stat set. */
+  statModeExpr?: string;
 }
 
 export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}): string {
@@ -20,6 +22,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
     highlightOutcomeExpr = 'null',
     onSelectStatHandler = '',
     hideMediaOnMobile = false,
+    statModeExpr = 'null',
   } = opts;
   const mobileHide = hideMediaOnMobile ? 'max-sm:hidden' : '';
 
@@ -42,6 +45,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             <span x-show="stat.key === 'rotorDiameterM'">${iconSvg('disc', 'w-3.5 h-3.5')}</span>
             <span x-show="stat.key === 'hubHeightM'">${iconSvg('arrow-up-from-line', 'w-3.5 h-3.5')}</span>
             <span x-show="stat.key === 'cutInWindMs'">${iconSvg('wind', 'w-3.5 h-3.5')}</span>
+            <span x-show="stat.key === 'firstPowerYear'">${iconSvg('clock', 'w-3.5 h-3.5')}</span>
             <span x-show="stat.key === 'plantCapacityMw'">${iconSvg('factory', 'w-3.5 h-3.5')}</span>
           </span>
           <span class="text-xs font-bold truncate" x-text="t.stats[stat.key].label"></span>
@@ -247,7 +251,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
 
       <!-- 5 Kid-Friendly Stat Rows -->
       <div class="px-3.5 pb-3 pt-1 flex flex-col gap-1.5 bg-c-paper-hi">
-        <template x-for="stat in statDefinitions" :key="stat.key">
+        <template x-for="stat in statDefsFor(${cardExpr}, ${statModeExpr})" :key="stat.key">
           <div>
             ${
               onSelectStatHandler
