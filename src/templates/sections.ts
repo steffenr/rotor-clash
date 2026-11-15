@@ -254,6 +254,15 @@ export function renderLobby(): string {
           <div x-show="hostedRoom" class="rounded-xl bg-c-mint border-2 border-c-ink p-4 flex flex-wrap items-center justify-between gap-4">
             <div>
               <div class="text-xs text-c-green font-bold" x-text="t.lobby.roomReady"></div>
+              <label class="mt-2 flex items-center gap-2 text-xs font-bold text-c-ink cursor-pointer select-none" :title="t.lobby.listRoomHint">
+                <input
+                  type="checkbox"
+                  class="w-4 h-4 accent-[var(--c-green)] cursor-pointer"
+                  :checked="hostedRoom?.listed === true"
+                  @change="setRoomListed($event.target.checked)"
+                />
+                <span x-text="t.lobby.listRoom"></span>
+              </label>
               <div class="mt-1 flex items-center gap-3">
                 <span class="font-mono text-2xl font-bold tracking-widest text-c-ink" x-text="hostedRoom?.roomCode || ''"></span>
                 <button

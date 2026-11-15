@@ -220,6 +220,9 @@ test('MatchEngine deck modes: a Grand Tour room deals 32 cards each, allows 48 r
     const created = engine.createRoom('alice', 'grand');
     assert.equal(created.ok, true);
     assert.equal(created.room?.deckMode, 'grand');
+    assert.equal(created.room?.listed, false, 'new rooms are private until the host lists them');
+    assert.equal(engine.getLobbySnapshot(2).openRooms.length, 0);
+    assert.equal(engine.setRoomListed('alice', true)?.listed, true);
     assert.equal(engine.getLobbySnapshot(2).openRooms[0].deckMode, 'grand');
 
     assert.equal(engine.joinRoom('bob', created.room!.roomCode).ok, true);

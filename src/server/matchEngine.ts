@@ -62,7 +62,12 @@ interface WaitingRoom {
   hostId: string;
   createdAt: number;
   deckMode: DeckMode;
+  /** Unlisted rooms can only be joined with their code or invite link. */
+  listed: boolean;
 }
+
+/** Uniform float in [0, 1) from the OS random source, for shuffles and coin flips. */
+const secureRandom = () => crypto.randomInt(0, 2 ** 32) / 2 ** 32;
 
 const TURN_DURATION_MS = 45_000;
 const REVEAL_AUTO_ADVANCE_MS = 5_500;
@@ -113,17 +118,9 @@ export class MatchEngine {
 
   public getLobbySnapshot(onlineCount: number) {
     const openRooms: OpenRoomSummary[] = Array.from(this.rooms.values())
+      .filter((room) => room.listed)
       .sort((a, b) => b.createdAt - a.createdAt)
-      .map((room) => {
-        const host = this.store.getOrCreatePlayer(room.hostId);
-        return {
-          roomCode: room.roomCode,
-          hostCallsign: host.callsign,
-          hostElo: host.elo,
-          createdAt: room.createdAt,
-          deckMode: room.deckMode,
-        };
-      });
+      .map((room) => this.summarizeRoom(room));
 
     return {
       onlineCount,
@@ -145,15 +142,29 @@ export class MatchEngine {
 
   public getWaitingRoomForPlayer(playerId: string): OpenRoomSummary | null {
     for (const room of this.rooms.values()) {
+      if (room.hostId === playerId) return this.summarizeRoom(room);
+    }
+    return null;
+  }
+
+  private summarizeRoom(room: WaitingRoom): OpenRoomSummary {
+    const host = this.store.getOrCreatePlayer(room.hostId);
+    return {
+      roomCode: room.roomCode,
+      hostCallsign: host.callsign,
+      hostElo: host.elo,
+      createdAt: room.createdAt,
+      deckMode: room.deckMode,
+      listed: room.listed,
+    };
+  }
+
+  /** Lets the host show or hide their waiting room in the public open-rooms list. */
+  public setRoomListed(playerId: string, listed: boolean): OpenRoomSummary | null {
+    for (const room of this.rooms.values()) {
       if (room.hostId === playerId) {
-        const host = this.store.getOrCreatePlayer(room.hostId);
-        return {
-          roomCode: room.roomCode,
-          hostCallsign: host.callsign,
-          hostElo: host.elo,
-          createdAt: room.createdAt,
-          deckMode: room.deckMode,
-        };
+        room.listed = listed;
+        return this.summarizeRoom(room);
       }
     }
     return null;
@@ -267,7 +278,7 @@ export class MatchEngine {
     let code = '';
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     do {
-      code = Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+      code = Array.from({ length: 6 }, () => alphabet[crypto.randomInt(alphabet.length)]).join('');
     } while (this.rooms.has(code));
 
     const room: WaitingRoom = {
@@ -275,20 +286,11 @@ export class MatchEngine {
       hostId: playerId,
       createdAt: Date.now(),
       deckMode,
+      listed: false,
     };
     this.rooms.set(code, room);
 
-    const host = this.store.getOrCreatePlayer(playerId);
-    return {
-      ok: true,
-      room: {
-        roomCode: room.roomCode,
-        hostCallsign: host.callsign,
-        hostElo: host.elo,
-        createdAt: room.createdAt,
-        deckMode: room.deckMode,
-      },
-    };
+    return { ok: true, room: this.summarizeRoom(room) };
   }
 
   public cancelHostedRooms(playerId: string) {
@@ -328,11 +330,11 @@ export class MatchEngine {
     deckMode: DeckMode,
     roomCode?: string
   ) {
-    const shuffled = buildMatchCardIds(deckMode, SERVER_TURBINE_DECK);
+    const shuffled = buildMatchCardIds(deckMode, SERVER_TURBINE_DECK, secureRandom);
     const half = Math.floor(shuffled.length / 2);
     const p1Deck = shuffled.slice(0, half);
     const p2Deck = shuffled.slice(half);
-    const startingPlayer = Math.random() < 0.5 ? p1Id : p2Id;
+    const startingPlayer = crypto.randomInt(2) === 0 ? p1Id : p2Id;
 
     const match: ActiveMatch = {
       id: crypto.randomUUID(),
@@ -372,6 +374,8 @@ export class MatchEngine {
     if (!match) return { ok: false, error: 'Match not found.' };
     if (match.status !== 'PLAYING') return { ok: false, error: 'Wait for the next round.' };
     if (match.turnPlayerId !== playerId) return { ok: false, error: 'It is not your turn.' };
+    // Clients may send anything: only the stats this match's deck actually compares are legal.
+    if (!statKeysForMode(match.deckMode).includes(statKey)) return { ok: false, error: 'Invalid stat.' };
 
     this.clearTimers(match);
 
