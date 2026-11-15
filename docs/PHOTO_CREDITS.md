@@ -4,20 +4,8 @@ Every real photograph in Rotor Clash comes from [Wikimedia Commons](https://comm
 licence (public domain, CC0, CC BY or CC BY-SA). The images were resized for the game; no other changes were made.
 Adaptations of CC BY-SA images (such as resizing) are shared under the same licence as the original.
 
-The author, licence and original file are also shown in the card detail view.
-
-## AI-generated images
-
-Cards without a free photograph show an **AI-generated concept image** (`fallback_*`), and the arena uses an
-AI-generated table background. Every image the project made for itself (the files in `src/assets/images/`,
-outside `real/`) embeds C2PA Content Credentials signed by "Google C2PA Media Services" that mark it as
-AI-generated ("trainedAlgorithmicMedia"). They were produced with a Google generative AI service while the project
-was built in Google AI Studio. They are listed with their hashes in `src/data/projectImages.ts`; a test checks that
-evidence and fails for an undocumented or modified file. Nine of the fourteen files (design mockups and UI
-explorations) are not used by the app and are not shipped in the bundle.
-
-The project owner confirmed these AI-generated images may be used in the game, provided the description says they are
-AI-generated; that disclosure is in the README, the page description and the card detail ("AI Concept Image").
+The author, licence and original file are also shown in the card detail view. The "concept" illustrations
+(`fallback_*`) were created for Rotor Clash and contain no third-party material.
 
 | Photo key | Image | Author | Licence |
 | --- | --- | --- | --- |
@@ -52,8 +40,7 @@ AI-generated; that disclosure is in the README, the page description and the car
 | `roscoe` | [Roscoe Wind Farm in West Texas.jpg](https://commons.wikimedia.org/wiki/File:Roscoe_Wind_Farm_in_West_Texas.jpg) | Matthew T Rader | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
 | `shepherds_flat` | [Shepherds Flat Wind Farm 2011.jpg](https://commons.wikimedia.org/wiki/File:Shepherds_Flat_Wind_Farm_2011.jpg) | Steve Wilson from Orpington, UK | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) |
 | `wolfe_island` | [Wolfe island wind farm, Kingston Ontario Canada - Laslovarga (157).JPG](https://commons.wikimedia.org/wiki/File:Wolfe_island_wind_farm,_Kingston_Ontario_Canada_-_Laslovarga_(157).JPG) | Laslovarga | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `el_hierro` | [Parque eólico de la isla de El Hierro, Canarias, España.JPG](https://commons.wikimedia.org/wiki/File:Parque_e%C3%B3lico_de_la_isla_de_El_Hierro,_Canarias,_Espa%C3%B1a.JPG) | CARLOS TEIXIDOR CADENAS | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
 | `middelgrunden` | [Middelgrunden offshore wind farm 03.jpg](https://commons.wikimedia.org/wiki/File:Middelgrunden_offshore_wind_farm_03.jpg) | Kritzolina | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `thornton_bank` | [Windmills D1-D6 (Thornton Bank) - final construction phase.jpg](https://commons.wikimedia.org/wiki/File:Windmills_D1-D6_(Thornton_Bank)_-_final_construction_phase.jpg) | Hans Hillewaert | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
-| `anholt` | [Anholt Havmøllepark.jpg](https://commons.wikimedia.org/wiki/File:Anholt_Havm%C3%B8llepark.jpg) | Old Dane | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
 | `burradale` | [Aerogenerators on Hill of Burradale - geograph.org.uk - 1906905.jpg](https://commons.wikimedia.org/wiki/File:Aerogenerators_on_Hill_of_Burradale_-_geograph.org.uk_-_1906905.jpg) | Mike Pennington | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
+| `husahagi` | [Wind turbines in the Faroe Islands - 26541854115.jpg](https://commons.wikimedia.org/wiki/File:Wind_turbines_in_the_Faroe_Islands_-_26541854115.jpg) | Arild Finne Nybø | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
+| `kentish_flats` | [Kentish Flats 185488397 729bb056f4 o.jpg](https://commons.wikimedia.org/wiki/File:Kentish_Flats_185488397_729bb056f4_o.jpg) | Phil Hollman from London, UK | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) |
