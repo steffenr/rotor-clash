@@ -33,6 +33,7 @@ import {
   serializeBotMatch,
 } from '../lib/botEngine';
 import { soundFx } from '../lib/soundFx';
+import { launchConfetti } from '../lib/celebrate';
 import { Theme, applyTheme, loadSavedTheme, resolveInitialTheme, saveTheme } from '../lib/theme';
 import { Language, TRANSLATIONS, Translations } from '../lib/i18n';
 import fieldDeskImg from '../assets/images/field_guide_desk_1794678472040.jpg';
@@ -329,8 +330,11 @@ export function createRotorClashApp() {
         // Let the round-result sound finish before the game-result jingle starts.
         const finished = this.activeMatch;
         setTimeout(() => {
-          if (finished.winnerId === null) soundFx.playDraw();
-          else if (finished.winnerId === finished.you.id) soundFx.playVictory();
+          if (finished.winReason === 'FORFEIT' || finished.winnerId === null) soundFx.playDraw();
+          else if (finished.winnerId === finished.you.id) {
+            soundFx.playVictory();
+            launchConfetti();
+          }
           else soundFx.playDefeat();
         }, 450);
       }
@@ -391,6 +395,12 @@ export function createRotorClashApp() {
       this.lang = nextLang;
       this.t = TRANSLATIONS[nextLang];
       saveLanguage(nextLang);
+    },
+
+    /** Tap the trophy on the win screen to celebrate again. */
+    celebrate() {
+      soundFx.playQuartetChime();
+      launchConfetti();
     },
 
     toggleTheme() {
@@ -687,6 +697,7 @@ export function createRotorClashApp() {
     finishedHeadline(): string {
       const m = this.activeMatch;
       if (!m) return '';
+      if (m.winReason === 'FORFEIT') return this.t.arena.matchAbandoned;
       if (m.winnerId === null) return this.t.arena.matchDrawn;
       return m.winnerId === m.you.id ? this.t.arena.victorySecured : this.t.arena.matchDefeat;
     },
@@ -701,9 +712,9 @@ export function createRotorClashApp() {
       }
       if (m.winReason === 'ROUND_LIMIT') return this.t.arena.reasonRoundLimit;
       if (m.winReason === 'FORFEIT') {
-        return m.winnerId === m.you.id
-          ? `${m.opponent.callsign} ${this.t.arena.reasonForfeitWin}`
-          : this.t.arena.reasonForfeitLoss;
+        return m.abandonedBy === 'you'
+          ? this.t.arena.reasonForfeitLoss
+          : `${m.opponent.callsign} ${this.t.arena.reasonForfeitWin}`;
       }
       if (m.winReason === 'DRAW') return this.t.arena.reasonDraw;
       return '';
