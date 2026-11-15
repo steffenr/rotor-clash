@@ -1,5 +1,5 @@
 {
-  "name": "Aeolian Quartet",
+  "name": "Rotor Clash",
   "description": "Real-time 2-player multiplayer Quartet card game featuring verified technical specifications of modern wind turbines and global wind power plants, interactive onboarding, and ELO rankings.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
