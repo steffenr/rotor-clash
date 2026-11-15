@@ -16,8 +16,8 @@ was built in Google AI Studio. They are listed with their hashes in `src/data/pr
 evidence and fails for an undocumented or modified file. Nine of the fourteen files (design mockups and UI
 explorations) are not used by the app and are not shipped in the bundle.
 
-Rights in generated images follow the terms of the service that produced them. The repository owner should confirm
-that those terms allow this use; this repository does not claim copyright in them beyond what those terms grant.
+The project owner confirmed these AI-generated images may be used in the game, provided the description says they are
+AI-generated; that disclosure is in the README, the page description and the card detail ("AI Concept Image").
 
 | Photo key | Image | Author | Licence |
 | --- | --- | --- | --- |

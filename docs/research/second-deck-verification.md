@@ -194,8 +194,8 @@ file are in `src/data/photoCredits.ts`; a readable list is in [`../PHOTO_CREDITS
   the Thanet card), the card still names the right plant and model; the photo is illustrative.
 - The concept images (`fallback_*`) and every other image in `src/assets/images/` are **AI-generated**: each file embeds
   C2PA Content Credentials signed by "Google C2PA Media Services" with source type `trainedAlgorithmicMedia`. They are
-  documented in `src/data/projectImages.ts`, labelled "AI concept image" in the game, and the rights follow the terms of
-  the service that generated them, which the repository owner must confirm.
+  documented in `src/data/projectImages.ts`, labelled "AI concept image" in the game, and the project owner
+  confirmed their use, provided the game's description says they are AI-generated (it does).
 
 ## Original options (for the record)
 
