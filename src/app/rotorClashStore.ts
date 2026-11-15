@@ -1,0 +1,909 @@
+import {
+  ClientMatchState,
+  getRankTier,
+  ImageCategory,
+  MatchRecord,
+  OpenRoomSummary,
+  PlayerProfile,
+  RANK_TIERS,
+  STAT_DEFINITIONS,
+  StatDefinition,
+  StatKey,
+  TurbineCard,
+} from '../shared/gameTypes';
+import { compareStat } from '../shared/turbines';
+import { CARD_BY_ID, GROUP_BY_ID, QUARTET_GROUPS, TURBINE_DECK } from '../lib/turbineDeck';
+import { resolveCardPhoto } from '../lib/cardImages';
+import {
+  getOrCreateIdentity,
+  loadCachedProfile,
+  loadSavedLanguage,
+  saveCachedProfile,
+  saveCallsignLocally,
+  saveLanguage,
+} from '../lib/playerIdentity';
+import {
+  advanceBotRound,
+  BotDifficulty,
+  chooseBotStat,
+  createLocalBotMatch,
+  LocalBotMatch,
+  resolveBotRound,
+  serializeBotMatch,
+} from '../lib/botEngine';
+import { soundFx } from '../lib/soundFx';
+import { Language, TRANSLATIONS, Translations } from '../lib/i18n';
+import fieldDeskImg from '../assets/images/field_guide_desk_1794678472040.jpg';
+
+type NavTab = 'arena' | 'compendium' | 'leaderboard' | 'tutorial';
+
+interface LobbyState {
+  onlineCount: number;
+  queueCount: number;
+  openRooms: OpenRoomSummary[];
+}
+
+const CATEGORY_THEME: Record<
+  ImageCategory,
+  { border: string; stampBg: string; stampText: string; bar: string }
+> = {
+  offshore: { border: '#0E7490', stampBg: '#0E7490', stampText: '#FFFFFF', bar: '#0E7490' },
+  onshore: { border: '#1B6B52', stampBg: '#1B6B52', stampText: '#FFFFFF', bar: '#1B6B52' },
+  floating: { border: '#1D4ED8', stampBg: '#1D4ED8', stampText: '#FFFFFF', bar: '#1D4ED8' },
+  windbase: { border: '#EA580C', stampBg: '#EA580C', stampText: '#FFFFFF', bar: '#EA580C' },
+};
+
+export function createRotorClashApp() {
+  const identity = getOrCreateIdentity();
+  const initialLang = loadSavedLanguage();
+  let ws: WebSocket | null = null;
+  let disposed = false;
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  let countdownInterval: ReturnType<typeof setInterval> | null = null;
+  let botTurnTimer: ReturnType<typeof setTimeout> | null = null;
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
+  let backoffMs = 800;
+  let pendingRoomInvite: string | null =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('room')
+      : null;
+
+  return {
+    // Core Reactive State
+    playerId: identity.playerId,
+    lang: initialLang as Language,
+    t: TRANSLATIONS[initialLang] as Translations,
+    activeTab: 'arena' as NavTab,
+    profile: loadCachedProfile(identity.playerId, identity.callsign) as PlayerProfile,
+    callsignDraft: identity.callsign,
+    callsignSaved: false,
+    muted: soundFx.isMuted(),
+    inspectedCard: null as TurbineCard | null,
+
+    // Lobby & WS
+    wsConnected: false,
+    lobby: { onlineCount: 0, queueCount: 0, openRooms: [] } as LobbyState,
+    inQueue: false,
+    hostedRoom: null as OpenRoomSummary | null,
+    joinCodeInput: '',
+    copiedCode: false,
+    toastError: null as string | null,
+
+    // Leaderboard
+    leaderboard: [] as PlayerProfile[],
+    recentMatches: [] as MatchRecord[],
+
+    // Match State
+    pvpMatch: null as ClientMatchState | null,
+    botMatch: null as LocalBotMatch | null,
+    activeMatch: null as ClientMatchState | null,
+    botDifficulty: 'tactical' as BotDifficulty,
+    previewCardId: '2C',
+    secondsLeft: null as number | null,
+    confirmForfeit: false,
+    showMatrixDrawer: false,
+    isTheaterFull: false,
+    rememberedTopCardId: null as string | null,
+
+    // Compendium & Tutorial State
+    compendiumGroup: 'all' as number | 'all',
+    compendiumSearch: '',
+    tutorialStep: 0,
+    tutorialInspectedStat: 'ratedPowerMw' as StatKey,
+    tutorialPracticeStat: null as StatKey | null,
+
+    // Static References
+    quartetGroups: QUARTET_GROUPS,
+    statDefinitions: STAT_DEFINITIONS,
+    rankTiersReversed: RANK_TIERS.slice().reverse(),
+    fieldDeskImg,
+
+    previewOptions() {
+      return [
+        { id: '2C', label: this.lang === 'de' ? 'Nordsee' : 'North Sea' },
+        { id: '6A', label: 'Hornsea 2' },
+        { id: '4B', label: 'Hywind' },
+        { id: '5A', label: 'Gansu' },
+      ];
+    },
+
+    init() {
+      fetch('/api/leaderboard')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data?.leaderboard) this.leaderboard = data.leaderboard;
+          if (data?.recentMatches) this.recentMatches = data.recentMatches;
+        })
+        .catch(() => {});
+
+      this.connectWebSocket();
+
+      countdownInterval = setInterval(() => {
+        if (!this.activeMatch || !this.activeMatch.turnDeadlineAt || this.activeMatch.status !== 'PLAYING') {
+          this.secondsLeft = null;
+          return;
+        }
+        this.secondsLeft = Math.max(0, Math.ceil((this.activeMatch.turnDeadlineAt - Date.now()) / 1000));
+      }, 500);
+    },
+
+    destroy() {
+      disposed = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (countdownInterval) clearInterval(countdownInterval);
+      if (botTurnTimer) clearTimeout(botTurnTimer);
+      if (toastTimer) clearTimeout(toastTimer);
+      ws?.close();
+    },
+
+    connectWebSocket() {
+      if (disposed) return;
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      ws = socket;
+
+      socket.onopen = () => {
+        if (disposed) return;
+        this.wsConnected = true;
+        backoffMs = 800;
+        socket.send(
+          JSON.stringify({
+            event: 'auth:hello',
+            payload: {
+              playerId: identity.playerId,
+              callsign: localStorage.getItem('aeolian_callsign_v1') || identity.callsign,
+            },
+          })
+        );
+      };
+
+      socket.onmessage = (evt) => {
+        try {
+          const msg = JSON.parse(evt.data) as { event: string; payload: any };
+          switch (msg.event) {
+            case 'auth:ack':
+              if (msg.payload?.profile) {
+                const srvProfile = msg.payload.profile as PlayerProfile;
+                this.profile = srvProfile;
+                this.callsignDraft = srvProfile.callsign;
+                saveCachedProfile(srvProfile);
+              }
+              if (pendingRoomInvite) {
+                const code = pendingRoomInvite.trim().toUpperCase();
+                pendingRoomInvite = null;
+                this.joinCodeInput = code;
+                socket.send(JSON.stringify({ event: 'room:join', payload: { roomCode: code } }));
+              }
+              break;
+            case 'lobby:state':
+              if (msg.payload) this.lobby = msg.payload;
+              break;
+            case 'leaderboard:updated':
+              if (msg.payload?.leaderboard) {
+                this.leaderboard = msg.payload.leaderboard;
+                const me = (msg.payload.leaderboard as PlayerProfile[]).find(
+                  (p) => p.id === identity.playerId
+                );
+                if (me) {
+                  this.profile = me;
+                  saveCachedProfile(me);
+                }
+              }
+              if (msg.payload?.recentMatches) this.recentMatches = msg.payload.recentMatches;
+              break;
+            case 'queue:joined':
+              this.inQueue = true;
+              this.hostedRoom = null;
+              break;
+            case 'queue:left':
+              this.inQueue = false;
+              break;
+            case 'room:created':
+              if (msg.payload?.room) {
+                this.hostedRoom = msg.payload.room;
+                this.inQueue = false;
+              }
+              break;
+            case 'room:cancelled':
+              this.hostedRoom = null;
+              break;
+            case 'match:state':
+              if (msg.payload) {
+                const nextMatch = msg.payload as ClientMatchState;
+                const prevRound = this.activeMatch?.lastRound?.roundNumber;
+                const prevStatus = this.activeMatch?.status;
+                this.pvpMatch = nextMatch;
+                this.botMatch = null;
+                this.inQueue = false;
+                this.hostedRoom = null;
+                this.activeTab = 'arena';
+                this.syncActiveMatch(prevStatus, prevRound);
+              }
+              break;
+            case 'match:cleared':
+              this.pvpMatch = null;
+              this.syncActiveMatch();
+              break;
+            case 'error:toast':
+              if (msg.payload?.message) {
+                this.showToast(String(msg.payload.message));
+              }
+              break;
+          }
+        } catch (err) {
+          console.error('Failed to parse WS message:', err);
+        }
+      };
+
+      socket.onclose = () => {
+        if (disposed) return;
+        this.wsConnected = false;
+        ws = null;
+        reconnectTimer = setTimeout(() => {
+          backoffMs = Math.min(5000, backoffMs * 1.5);
+          this.connectWebSocket();
+        }, backoffMs);
+      };
+    },
+
+    sendWs(event: string, payload: Record<string, unknown> = {}) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ event, payload }));
+        return true;
+      }
+      return false;
+    },
+
+    showToast(message: string) {
+      this.toastError = message;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        this.toastError = null;
+      }, 4500);
+    },
+
+    syncActiveMatch(prevStatus?: string, prevRound?: number) {
+      this.activeMatch = this.pvpMatch ?? (this.botMatch ? serializeBotMatch(this.botMatch) : null);
+      if (!this.activeMatch) {
+        this.secondsLeft = null;
+        this.confirmForfeit = false;
+        return;
+      }
+
+      if (this.activeMatch.status === 'PLAYING' && this.activeMatch.you.topCard) {
+        this.rememberedTopCardId = this.activeMatch.you.topCard.id;
+      }
+
+      // Sound effects on round reveal or match end
+      if (
+        this.activeMatch.status === 'ROUND_REVEAL' &&
+        this.activeMatch.lastRound &&
+        (prevStatus !== 'ROUND_REVEAL' || prevRound !== this.activeMatch.lastRound.roundNumber)
+      ) {
+        soundFx.playCardFlip();
+        const lr = this.activeMatch.lastRound;
+        if (lr.winnerId === null) soundFx.playTie();
+        else if (lr.winnerId === this.activeMatch.you.id) soundFx.playWinRound();
+        else soundFx.playLoseRound();
+
+        if (
+          (lr.newlyCompletedQuartetsP1.length > 0 || lr.newlyCompletedQuartetsP2.length > 0) &&
+          lr.winnerId === this.activeMatch.you.id
+        ) {
+          setTimeout(() => soundFx.playQuartetChime(), 220);
+        }
+      } else if (this.activeMatch.status === 'FINISHED' && prevStatus !== 'FINISHED') {
+        if (this.activeMatch.winnerId === this.activeMatch.you.id) soundFx.playVictory();
+        else soundFx.playLoseRound();
+      }
+
+      this.scheduleBotTurnIfNeeded();
+    },
+
+    scheduleBotTurnIfNeeded() {
+      if (botTurnTimer) {
+        clearTimeout(botTurnTimer);
+        botTurnTimer = null;
+      }
+      if (!this.botMatch || this.botMatch.status !== 'PLAYING') return;
+      if (this.botMatch.turnPlayerId !== this.botMatch.botId) return;
+
+      botTurnTimer = setTimeout(() => {
+        if (!this.botMatch || this.botMatch.status !== 'PLAYING') return;
+        if (this.botMatch.turnPlayerId !== this.botMatch.botId) return;
+        const prevStatus = this.activeMatch?.status;
+        const prevRound = this.activeMatch?.lastRound?.roundNumber;
+        const stat = chooseBotStat(this.botMatch);
+        this.botMatch = resolveBotRound(this.botMatch, stat, this.botMatch.botId);
+        this.syncActiveMatch(prevStatus, prevRound);
+      }, 850);
+    },
+
+    // Navigation & Utility Actions
+    navItems() {
+      return [
+        { id: 'arena' as NavTab, label: this.t.nav.arena },
+        { id: 'compendium' as NavTab, label: this.t.nav.compendium },
+        { id: 'leaderboard' as NavTab, label: this.t.nav.leaderboard },
+        { id: 'tutorial' as NavTab, label: this.t.nav.tutorial },
+      ];
+    },
+
+    setTab(tab: NavTab) {
+      soundFx.playClick();
+      this.activeTab = tab;
+    },
+
+    setLang(nextLang: Language) {
+      soundFx.playClick();
+      this.lang = nextLang;
+      this.t = TRANSLATIONS[nextLang];
+      saveLanguage(nextLang);
+    },
+
+    toggleMute() {
+      const next = soundFx.toggleMute();
+      this.muted = next;
+      if (!next) soundFx.playClick();
+    },
+
+    handleHeaderQuickMatch() {
+      soundFx.playClick();
+      this.activeTab = 'arena';
+      if (!this.activeMatch && !this.inQueue) {
+        this.joinQueue();
+      }
+    },
+
+    saveCallsign() {
+      const cleaned = this.callsignDraft.trim().slice(0, 20);
+      if (!cleaned) return;
+      soundFx.playClick();
+      saveCallsignLocally(cleaned);
+      this.profile = { ...this.profile, callsign: cleaned };
+      saveCachedProfile(this.profile);
+      this.sendWs('profile:rename', { callsign: cleaned });
+      this.callsignSaved = true;
+      setTimeout(() => {
+        this.callsignSaved = false;
+      }, 1800);
+    },
+
+    selectPreviewCard(id: string) {
+      soundFx.playClick();
+      this.previewCardId = id;
+    },
+
+    previewCard(): TurbineCard {
+      return CARD_BY_ID[this.previewCardId] ?? CARD_BY_ID['2C'];
+    },
+
+    // Matchmaking & Rooms
+    startBotMatch(diff?: BotDifficulty) {
+      const chosenDiff = diff ?? this.botDifficulty;
+      soundFx.playClick();
+      if (this.inQueue) this.sendWs('queue:leave');
+      if (this.hostedRoom) this.sendWs('room:cancel');
+      this.pvpMatch = null;
+      this.botMatch = createLocalBotMatch(identity.playerId, this.profile.callsign, this.profile.elo, chosenDiff);
+      this.activeTab = 'arena';
+      this.syncActiveMatch();
+    },
+
+    joinQueue() {
+      soundFx.playClick();
+      if (!this.wsConnected) {
+        this.showToast(
+          this.lang === 'de'
+            ? 'Verbindung zum Server wird hergestellt — bitte kurz warten.'
+            : 'Connecting to multiplayer server — please retry in a moment.'
+        );
+        return;
+      }
+      this.sendWs('queue:join');
+    },
+
+    leaveQueue() {
+      soundFx.playClick();
+      this.sendWs('queue:leave');
+    },
+
+    createRoom() {
+      soundFx.playClick();
+      if (!this.wsConnected) {
+        this.showToast(
+          this.lang === 'de'
+            ? 'Verbindung zum Server wird hergestellt — bitte kurz warten.'
+            : 'Connecting to multiplayer server — please retry in a moment.'
+        );
+        return;
+      }
+      this.sendWs('room:create');
+    },
+
+    cancelRoom() {
+      soundFx.playClick();
+      this.sendWs('room:cancel');
+    },
+
+    joinRoom(code: string) {
+      soundFx.playClick();
+      const clean = code.trim().toUpperCase();
+      if (!clean) {
+        this.showToast(
+          this.lang === 'de'
+            ? 'Bitte einen 6-stelligen Raumcode eingeben.'
+            : 'Enter a 6-character room code.'
+        );
+        return;
+      }
+      if (!this.wsConnected) {
+        this.showToast(
+          this.lang === 'de'
+            ? 'Verbindung zum Server wird hergestellt — bitte kurz warten.'
+            : 'Connecting to multiplayer server — please retry in a moment.'
+        );
+        return;
+      }
+      this.sendWs('room:join', { roomCode: clean });
+    },
+
+    copyInvite(roomCode: string) {
+      if (!roomCode) return;
+      const url = `${window.location.origin}/?room=${roomCode}`;
+      navigator.clipboard?.writeText(url).catch(() => {});
+      this.copiedCode = true;
+      setTimeout(() => {
+        this.copiedCode = false;
+      }, 2000);
+    },
+
+    // Active Gameplay Actions
+    selectStat(statKey: StatKey) {
+      soundFx.playClick();
+      if (this.pvpMatch) {
+        this.sendWs('match:play_stat', { matchId: this.pvpMatch.matchId, statKey });
+      } else if (this.botMatch) {
+        const prevStatus = this.activeMatch?.status;
+        const prevRound = this.activeMatch?.lastRound?.roundNumber;
+        this.botMatch = resolveBotRound(this.botMatch, statKey, this.botMatch.playerId);
+        this.syncActiveMatch(prevStatus, prevRound);
+      }
+    },
+
+    nextRound() {
+      soundFx.playClick();
+      if (this.pvpMatch) {
+        this.sendWs('match:next_round', { matchId: this.pvpMatch.matchId });
+      } else if (this.botMatch) {
+        const prevStatus = this.activeMatch?.status;
+        const prevRound = this.activeMatch?.lastRound?.roundNumber;
+        this.botMatch = advanceBotRound(this.botMatch);
+        this.syncActiveMatch(prevStatus, prevRound);
+      }
+    },
+
+    forfeitMatch() {
+      soundFx.playClick();
+      if (this.pvpMatch) {
+        this.sendWs('match:forfeit', { matchId: this.pvpMatch.matchId });
+      } else if (this.botMatch) {
+        this.botMatch = null;
+        this.syncActiveMatch();
+      }
+    },
+
+    playAgain() {
+      soundFx.playClick();
+      if (this.pvpMatch) {
+        const wasRanked = this.pvpMatch.mode === 'ranked';
+        this.sendWs('match:dismiss');
+        this.pvpMatch = null;
+        this.syncActiveMatch();
+        if (wasRanked) this.sendWs('queue:join');
+      } else if (this.botMatch) {
+        this.startBotMatch(this.botMatch.difficulty);
+      }
+    },
+
+    returnToLobby() {
+      soundFx.playClick();
+      if (this.pvpMatch) {
+        this.sendWs('match:dismiss');
+        this.pvpMatch = null;
+      }
+      this.botMatch = null;
+      this.syncActiveMatch();
+    },
+
+    toggleTheaterFull() {
+      soundFx.playClick();
+      if (!this.isTheaterFull) {
+        this.isTheaterFull = true;
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        this.isTheaterFull = false;
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.().catch(() => {});
+        }
+      }
+    },
+
+    toggleMatrixDrawer() {
+      soundFx.playClick();
+      this.showMatrixDrawer = !this.showMatrixDrawer;
+    },
+
+    // Arena Derived Helpers
+    isYourTurn(): boolean {
+      return Boolean(
+        this.activeMatch &&
+          this.activeMatch.status === 'PLAYING' &&
+          this.activeMatch.turnPlayerId === this.activeMatch.you.id
+      );
+    },
+
+    isReveal(): boolean {
+      return Boolean(
+        this.activeMatch &&
+          this.activeMatch.status === 'ROUND_REVEAL' &&
+          this.activeMatch.lastRound !== null
+      );
+    },
+
+    resolvedReveal() {
+      const m = this.activeMatch;
+      if (!m || !m.lastRound) return null;
+      const lr = m.lastRound;
+      const youWereP1 =
+        this.rememberedTopCardId === lr.p1Card.id ||
+        (this.rememberedTopCardId !== lr.p2Card.id && m.mode === 'bot');
+      return {
+        yourCard: youWereP1 ? lr.p1Card : lr.p2Card,
+        oppCard: youWereP1 ? lr.p2Card : lr.p1Card,
+        yourVal: youWereP1 ? lr.p1Value : lr.p2Value,
+        oppVal: youWereP1 ? lr.p2Value : lr.p1Value,
+      };
+    },
+
+    arenaYourCard(): TurbineCard | null {
+      if (!this.activeMatch) return null;
+      if (this.isReveal()) return this.resolvedReveal()?.yourCard ?? this.activeMatch.you.topCard;
+      return this.activeMatch.you.topCard;
+    },
+
+    arenaOppCard(): TurbineCard | null {
+      if (!this.activeMatch || !this.isReveal()) return null;
+      return this.resolvedReveal()?.oppCard ?? null;
+    },
+
+    arenaYourOutcome(): 'win' | 'loss' | 'tie' | null {
+      if (!this.activeMatch || !this.isReveal() || !this.activeMatch.lastRound) return null;
+      const w = this.activeMatch.lastRound.winnerId;
+      if (w === null) return 'tie';
+      return w === this.activeMatch.you.id ? 'win' : 'loss';
+    },
+
+    arenaOppOutcome(): 'win' | 'loss' | 'tie' | null {
+      const yo = this.arenaYourOutcome();
+      if (yo === 'win') return 'loss';
+      if (yo === 'loss') return 'win';
+      return yo;
+    },
+
+    arenaRevealValues() {
+      const lr = this.activeMatch?.lastRound;
+      const rev = this.resolvedReveal();
+      if (!lr || !rev) return { yourValText: '', oppValText: '' };
+      const unit = this.statDef(lr.chosenStat).unit;
+      return {
+        yourValText: `${rev.yourVal} ${unit}`,
+        oppValText: `${rev.oppVal} ${unit}`,
+      };
+    },
+
+    arenaOutcomeText(): string {
+      const lr = this.activeMatch?.lastRound;
+      if (!lr || !this.activeMatch) return '';
+      const yo = this.arenaYourOutcome();
+      const unit = this.lang === 'de' ? ' Karten' : '';
+      if (yo === 'win') return `${this.t.arena.youWonCards} +${lr.cardsWonCount}${unit}!`;
+      if (yo === 'loss') return `${this.activeMatch.opponent.callsign} ${this.t.arena.oppWonCards} +${lr.cardsWonCount}${unit}`;
+      return `${this.t.arena.tiePotAdded} ${lr.tiePotSizeAfter}`;
+    },
+
+    arenaNewlyCompletedQuartetName(): string {
+      const lr = this.activeMatch?.lastRound;
+      if (!lr || !this.activeMatch || lr.winnerId !== this.activeMatch.you.id) return '';
+      const gId = lr.newlyCompletedQuartetsP1[0] ?? lr.newlyCompletedQuartetsP2[0];
+      if (!gId) return '';
+      return this.groupName(gId);
+    },
+
+    ownedGroupCount(groupId: number): number {
+      if (!this.activeMatch) return 0;
+      const owned = this.activeMatch.you.ownedCardIds;
+      return (['A', 'B', 'C', 'D'] as const).filter((slot) => owned.includes(`${groupId}${slot}`)).length;
+    },
+
+    finishedHeadline(): string {
+      const m = this.activeMatch;
+      if (!m) return '';
+      if (m.winnerId === null) return this.t.arena.matchDrawn;
+      return m.winnerId === m.you.id ? this.t.arena.victorySecured : this.t.arena.matchDefeat;
+    },
+
+    finishedReason(): string {
+      const m = this.activeMatch;
+      if (!m) return '';
+      if (m.winReason === 'ALL_CARDS') {
+        return m.winnerId === m.you.id
+          ? this.t.arena.reasonAllCardsWin
+          : `${m.opponent.callsign} ${this.t.arena.reasonAllCardsLoss}`;
+      }
+      if (m.winReason === 'ROUND_LIMIT') return this.t.arena.reasonRoundLimit;
+      if (m.winReason === 'FORFEIT') {
+        return m.winnerId === m.you.id
+          ? `${m.opponent.callsign} ${this.t.arena.reasonForfeitWin}`
+          : this.t.arena.reasonForfeitLoss;
+      }
+      if (m.winReason === 'DRAW') return this.t.arena.reasonDraw;
+      return '';
+    },
+
+    // Compendium
+    filteredDeck(): TurbineCard[] {
+      const q = this.compendiumSearch.trim().toLowerCase();
+      return TURBINE_DECK.filter((card) => {
+        if (this.compendiumGroup !== 'all' && card.groupId !== this.compendiumGroup) return false;
+        if (!q) return true;
+        const loc = this.cardLocale(card);
+        return (
+          card.modelName.toLowerCase().includes(q) ||
+          card.manufacturer.toLowerCase().includes(q) ||
+          card.flagshipPlant.toLowerCase().includes(q) ||
+          loc.country.toLowerCase().includes(q) ||
+          card.id.toLowerCase().includes(q)
+        );
+      });
+    },
+
+    // Tutorial
+    setTutorialStep(idx: number) {
+      soundFx.playClick();
+      this.tutorialStep = idx;
+    },
+
+    setTutorialInspectedStat(statKey: StatKey) {
+      soundFx.playClick();
+      this.tutorialInspectedStat = statKey;
+    },
+
+    playTutorialPracticeStat(statKey: StatKey) {
+      this.tutorialPracticeStat = statKey;
+      const res = this.tutorialPracticeResult();
+      if (res === 1) soundFx.playWinRound();
+      else if (res === 2) soundFx.playLoseRound();
+      else soundFx.playTie();
+    },
+
+    resetTutorialPractice() {
+      soundFx.playClick();
+      this.tutorialPracticeStat = null;
+    },
+
+    tutorialPracticeResult(): 0 | 1 | 2 | null {
+      if (!this.tutorialPracticeStat) return null;
+      const c1 = CARD_BY_ID['3C'];
+      const c2 = CARD_BY_ID['1B'];
+      return compareStat(
+        this.tutorialPracticeStat,
+        c1.stats[this.tutorialPracticeStat],
+        c2.stats[this.tutorialPracticeStat]
+      );
+    },
+
+    tutorialYourOutcome(): 'win' | 'loss' | 'tie' | null {
+      const r = this.tutorialPracticeResult();
+      if (r === 1) return 'win';
+      if (r === 2) return 'loss';
+      if (r === 0) return 'tie';
+      return null;
+    },
+
+    tutorialOppOutcome(): 'win' | 'loss' | 'tie' | null {
+      const r = this.tutorialPracticeResult();
+      if (r === 2) return 'win';
+      if (r === 1) return 'loss';
+      if (r === 0) return 'tie';
+      return null;
+    },
+
+    // Modal
+    inspectCard(card: TurbineCard) {
+      soundFx.playClick();
+      this.inspectedCard = card;
+    },
+
+    closeModal() {
+      this.inspectedCard = null;
+    },
+
+    // Shared Card / Locale / Formatting Helpers
+    localizeTierName(name: string): string {
+      if (this.lang !== 'de') return name;
+      switch (name) {
+        case 'Aeolian Grandmaster':
+          return 'Sturm-Großmeister';
+        case 'Offshore Ace':
+          return 'Offshore-Ass';
+        case 'Turbine Lead':
+          return 'Turbinen-Profi';
+        case 'Grid Engineer':
+          return 'Netz-Ingenieur';
+        case 'Wind Cadet':
+          return 'Wind-Kadett';
+        default:
+          return name;
+      }
+    },
+
+    allRankTiers() {
+      return this.rankTiersReversed.map((tier) => ({
+        ...tier,
+        displayName: this.localizeTierName(tier.name),
+      }));
+    },
+
+    playerTier() {
+      const tier = getRankTier(this.profile.elo);
+      return { ...tier, name: this.localizeTierName(tier.name) };
+    },
+
+    tierForElo(elo: number) {
+      const tier = getRankTier(elo);
+      return { ...tier, name: this.localizeTierName(tier.name) };
+    },
+
+    deploymentLabel(dep: TurbineCard['deploymentType']): string {
+      if (this.lang !== 'de') return dep;
+      switch (dep) {
+        case 'Floating Offshore':
+          return 'Schwimmend (Offshore)';
+        case 'Offshore Prototype':
+          return 'Offshore-Prototyp';
+        case 'Offshore':
+          return 'Offshore (Meer)';
+        case 'Onshore':
+          return 'Onshore (Land)';
+      }
+    },
+
+    lighthouseTooltip(card: TurbineCard | null): string {
+      if (!card) return '';
+      if (this.lang === 'de') {
+        return `Nabenhöhe ${card.stats.hubHeightM} m / Rotor ${card.stats.rotorDiameterM} m im Vergleich zum 45-m-Leuchtturm`;
+      }
+      return `Turbine Hub ${card.stats.hubHeightM}m / Rotor ${card.stats.rotorDiameterM}m vs 45m Lighthouse`;
+    },
+
+    cardById(id: string): TurbineCard {
+      return CARD_BY_ID[id];
+    },
+
+    cardTitleById(id: string): string {
+      const c = CARD_BY_ID[id];
+      return c ? `${id}: ${c.modelName}` : id;
+    },
+
+    groupName(groupId: number): string {
+      const g = GROUP_BY_ID[groupId];
+      if (!g) return '';
+      return (g.translations[this.lang] ?? g.translations.en).name;
+    },
+
+    cardLocale(card: TurbineCard | null) {
+      if (!card) return { country: '', drivetrain: '', engineeringNote: '' };
+      return card.translations[this.lang] ?? card.translations.en;
+    },
+
+    photoUrl(card: TurbineCard | null): string {
+      return card ? resolveCardPhoto(card.photoKey) : '';
+    },
+
+    cardTheme(card: TurbineCard | null) {
+      return CATEGORY_THEME[card?.imageCategory ?? 'offshore'];
+    },
+
+    cardHubY(card: TurbineCard | null): number {
+      if (!card) return 54;
+      return 76 - Math.min(44, Math.max(18, (card.stats.hubHeightM / 190) * 42));
+    },
+
+    cardBladeLen(card: TurbineCard | null): number {
+      if (!card) return 18;
+      return Math.min(26, Math.max(10, (card.stats.rotorDiameterM / 310) * 25));
+    },
+
+    statDef(key: StatKey): StatDefinition {
+      return STAT_DEFINITIONS.find((s) => s.key === key) ?? STAT_DEFINITIONS[0];
+    },
+
+    statStrengthPercent(key: StatKey, value: number): number {
+      switch (key) {
+        case 'ratedPowerMw':
+          return Math.min(100, Math.max(12, Math.round((value / 26) * 100)));
+        case 'rotorDiameterM':
+          return Math.min(100, Math.max(20, Math.round((value / 310) * 100)));
+        case 'hubHeightM':
+          return Math.min(100, Math.max(20, Math.round((value / 190) * 100)));
+        case 'cutInWindMs':
+          return Math.min(100, Math.max(18, Math.round(((4.5 - value) / 2.5) * 100)));
+        case 'plantCapacityMw':
+          return Math.min(100, Math.max(14, Math.round((Math.log10(Math.max(10, value)) / 4.05) * 100)));
+      }
+    },
+
+    statRowClass(
+      statKey: StatKey,
+      selectable: boolean,
+      selectedStat: StatKey | null,
+      outcome: 'win' | 'loss' | 'tie' | null
+    ): string {
+      if (selectedStat === statKey) {
+        if (outcome === 'win') return 'bg-[#E6F4EE] border-[#1B6B52] text-[#0F4232] ring-1 ring-[#1B6B52]/30';
+        if (outcome === 'loss') return 'bg-[#FEECEB] border-[#DC2626] text-[#7F1D1D]';
+        if (outcome === 'tie') return 'bg-[#FEF3C7] border-[#D97706] text-[#78350F]';
+        return 'bg-[#E6F4F6] border-[#0E7490] text-[#0A4E61] ring-1 ring-[#0E7490]/30';
+      }
+      if (selectable) {
+        return 'bg-[#FAF6EC] border-[#DDD3BC] hover:border-[#0E7490] hover:bg-[#ECF7F9] hover:translate-x-0.5 text-[#1F2933] shadow-[0_2px_0_rgba(31,41,51,0.06)] active:translate-y-0.5';
+      }
+      return 'bg-[#FAF6EC] border-[#E4DBC7] text-[#1F2933]';
+    },
+
+    formatStatValue(key: StatKey, val: number): string {
+      if (key === 'plantCapacityMw' || key === 'rotorDiameterM' || key === 'hubHeightM') {
+        return val.toLocaleString(this.lang === 'de' ? 'de-DE' : 'en-US', { maximumFractionDigits: 0 });
+      }
+      if (key === 'ratedPowerMw') {
+        return val % 1 === 0 ? val.toFixed(1) : val.toFixed(2).replace(/0$/, '');
+      }
+      return val.toFixed(1);
+    },
+
+    formatNumber(val: number): string {
+      return val.toLocaleString(this.lang === 'de' ? 'de-DE' : 'en-US');
+    },
+
+    formatRelativeTime(ts: number): string {
+      const mins = Math.floor((Date.now() - ts) / 60000);
+      if (mins < 1) return this.lang === 'de' ? 'Gerade eben' : 'Just now';
+      if (mins < 60) return this.lang === 'de' ? `vor ${mins} Min.` : `${mins}m`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return this.lang === 'de' ? `vor ${hrs} Std.` : `${hrs}h`;
+      const days = Math.floor(hrs / 24);
+      return this.lang === 'de' ? `vor ${days} T.` : `${days}d`;
+    },
+  };
+}
