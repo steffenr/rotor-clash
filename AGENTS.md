@@ -31,6 +31,8 @@ This file defines the architectural rules, conventions, and verification steps f
 
 2. **Tailwind CSS 4.x**:
    - Configured via `@tailwindcss/vite` in `vite.config.ts` and `@import "tailwindcss";` + `@theme` in `src/index.css`.
+   - **Colours are theme tokens** (`bg-c-paper`, `text-c-ink`, `border-c-ink`, …) defined as CSS variables in `src/index.css` with a `.dark` override on `<html>`. Never hardcode hex colours in templates (use `var(--c-*)` in inline styles); otherwise dark mode breaks. Theme logic lives in `src/lib/theme.ts` (key `rotor_clash_theme`).
+   - PWA/home-screen assets live in `public/` (`manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`); the app name there must stay "Rotor Clash".
    - Avoid inline `style="..."` except for dynamic computed bindings (e.g., category hex colors or progress bar widths).
 
 3. **Data & Translations Separation**:

@@ -7,11 +7,11 @@ export function renderQuartetMatrix(
   titleExpr: string
 ): string {
   return `
-    <div class="rounded-xl bg-[#FFFDF7] border-2 border-[#173240] p-4">
+    <div class="rounded-xl bg-c-paper-hi border-2 border-c-ink p-4">
       <div class="flex items-center justify-between gap-3 mb-3">
-        <h3 class="font-display text-sm font-bold text-[#173240]" x-text="${titleExpr}"></h3>
+        <h3 class="font-display text-sm font-bold text-c-ink" x-text="${titleExpr}"></h3>
         <span
-          class="font-mono tabular-nums text-xs font-bold text-[#2F6F4E]"
+          class="font-mono tabular-nums text-xs font-bold text-c-green"
           x-text="(${completedExpr}).length + '/8 ' + (lang === 'de' ? 'Quartette' : 'Quartets')"
         ></span>
       </div>
@@ -19,15 +19,15 @@ export function renderQuartetMatrix(
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <template x-for="group in quartetGroups" :key="group.id">
           <div
-            :class="'rounded-lg p-2 border-2 transition-colors ' + ((${completedExpr}).includes(group.id) ? 'bg-[#E7F4EC] border-[#2F6F4E]' : 'bg-[#FAF4E4] border-[#173240]/20')"
+            :class="'rounded-lg p-2 border-2 transition-colors ' + ((${completedExpr}).includes(group.id) ? 'bg-c-mint border-c-green' : 'bg-c-paper border-c-ink/20')"
           >
             <div class="flex items-center justify-between gap-1 mb-1.5">
               <span
-                class="text-[11px] font-bold text-[#173240] truncate"
+                class="text-[11px] font-bold text-c-ink truncate"
                 :title="groupName(group.id)"
                 x-text="group.code + '. ' + groupName(group.id)"
               ></span>
-              <span x-show="(${completedExpr}).includes(group.id)" class="text-[#2F6F4E] shrink-0">
+              <span x-show="(${completedExpr}).includes(group.id)" class="text-c-green shrink-0">
                 ${iconSvg('check', 'w-3.5 h-3.5')}
               </span>
             </div>
@@ -35,7 +35,7 @@ export function renderQuartetMatrix(
               <template x-for="slot in ['A', 'B', 'C', 'D']" :key="slot">
                 <div
                   :title="cardTitleById(group.id + slot)"
-                  :class="'h-6 rounded flex items-center justify-center font-mono text-[11px] font-bold border ' + ((${ownedIdsExpr}).includes(group.id + slot) ? ((${completedExpr}).includes(group.id) ? 'bg-[#2F6F4E] border-[#173240] text-white' : 'bg-[#1E7898] border-[#173240] text-white') : 'bg-[#EFE7D1] border-[#173240]/20 text-[#667D8A]')"
+                  :class="'h-6 rounded flex items-center justify-center font-mono text-[11px] font-bold border ' + ((${ownedIdsExpr}).includes(group.id + slot) ? ((${completedExpr}).includes(group.id) ? 'bg-c-green border-c-ink text-white' : 'bg-c-teal border-c-ink text-white') : 'bg-c-sand-soft border-c-ink/20 text-c-ink-4')"
                   x-text="slot"
                 ></div>
               </template>
@@ -49,15 +49,15 @@ export function renderQuartetMatrix(
 
 export function renderHeader(): string {
   return `
-    <header class="sticky top-0 z-30 border-b-2 border-[#173240] bg-[#FAF4E4]/95 backdrop-blur-md">
+    <header class="sticky top-0 z-30 border-b-2 border-c-ink bg-c-paper/95 backdrop-blur-md pt-[env(safe-area-inset-top)]">
       <!-- Subtle Coastal Dual Accent Line -->
       <div class="h-1 w-full flex" aria-hidden="true">
-        <div class="flex-1 bg-[#1E7898]"></div>
-        <div class="w-16 bg-[#173240]"></div>
-        <div class="flex-1 bg-[#F15A24]"></div>
+        <div class="flex-1 bg-c-teal"></div>
+        <div class="w-16 bg-c-ink"></div>
+        <div class="flex-1 bg-c-orange"></div>
       </div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 sm:h-24 flex items-center justify-between gap-6 sm:gap-8">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-24 flex items-center justify-between gap-3 sm:gap-8">
         <!-- Zone 1: Brand Emblem -->
         <a
           href="#arena"
@@ -68,7 +68,7 @@ export function renderHeader(): string {
           <img
             src="/assets/aistudio/logo_rotor_clash_3a6e5dcc.png"
             alt="Rotor Clash"
-            class="h-16 sm:h-20 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.03]"
+            class="h-11 sm:h-20 w-auto object-contain transition-transform duration-150 group-hover:scale-[1.03]"
           />
           <span class="sr-only">Rotor Clash</span>
         </a>
@@ -79,73 +79,90 @@ export function renderHeader(): string {
             <button
               type="button"
               @click="setTab(item.id)"
-              :class="'py-1 border-b-[3px] transition-colors whitespace-nowrap shrink-0 ' + (activeTab === item.id ? 'border-[#F15A24] text-[#173240]' : 'border-transparent text-[#4B6675] hover:text-[#173240]')"
+              :class="'py-1 border-b-[3px] transition-colors whitespace-nowrap shrink-0 ' + (activeTab === item.id ? 'border-c-orange text-c-ink' : 'border-transparent text-c-ink-3 hover:text-c-ink')"
               x-text="item.label"
             ></button>
           </template>
         </nav>
 
         <!-- Zone 3: 1 Primary Action -->
-        <div class="shrink-0">
+        <div class="shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            @click="toggleTheme()"
+            :aria-label="lang === 'de' ? 'Hell/Dunkel-Modus wechseln' : 'Switch light/dark mode'"
+            :aria-pressed="theme === 'dark'"
+            class="w-10 h-10 sm:w-11 sm:h-11 inline-flex items-center justify-center rounded-xl bg-c-paper-hi hover:bg-c-sand border-2 border-c-ink text-c-ink transition-colors"
+          >
+            <span class="theme-icon-moon">${iconSvg('moon', 'w-5 h-5')}</span>
+            <span class="theme-icon-sun">${iconSvg('sun', 'w-5 h-5')}</span>
+          </button>
           <button
             type="button"
             @click="handleHeaderQuickMatch()"
-            class="px-4 py-2 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-xs sm:text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
+            class="px-3 sm:px-4 h-10 sm:h-auto sm:py-2 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
             x-text="activeMatch ? t.nav.resumeMatch : (inQueue ? t.nav.searching : t.nav.quickMatch)"
           ></button>
         </div>
       </div>
 
-      <!-- Mobile Secondary Tab Bar -->
-      <div class="md:hidden border-t border-[#173240]/20 px-4 py-2 flex items-center justify-between gap-2 overflow-x-auto bg-[#F5EFE0]">
+    </header>
+
+    <!-- Mobile bottom tab bar (thumb reachable, safe-area aware) -->
+    <nav
+      class="md:hidden fixed bottom-0 inset-x-0 z-30 border-t-2 border-c-ink bg-c-paper/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+      aria-label="Main navigation"
+    >
+      <div class="grid grid-cols-4">
         <template x-for="item in navItems()" :key="item.id">
           <button
             type="button"
             @click="setTab(item.id)"
-            :class="'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shrink-0 border ' + (activeTab === item.id ? 'bg-[#1E7898] border-[#173240] text-white' : 'border-transparent text-[#4B6675] hover:text-[#173240]')"
+            :aria-current="activeTab === item.id ? 'page' : null"
+            :class="'min-h-14 px-1 py-2 text-[11px] leading-tight font-bold flex items-center justify-center text-center border-t-[3px] -mt-0.5 transition-colors ' + (activeTab === item.id ? 'border-c-orange text-c-ink bg-c-sand/60' : 'border-transparent text-c-ink-3')"
             x-text="item.label"
           ></button>
         </template>
       </div>
-    </header>
+    </nav>
 
     <!-- Workspace Utility Strip: Language Switcher & Audio Toggle -->
-    <div class="border-b-2 border-[#173240]/15 bg-[#EAE1CA]/90">
+    <div :class="'border-b-2 border-c-ink/15 bg-c-sand/90 ' + (activeMatch ? 'hidden md:block' : '')">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-4 text-xs">
-        <div class="text-[#3C5866] font-medium truncate">
-          <span class="font-bold text-[#173240]" x-text="profile.callsign"></span>
+        <div class="text-c-ink-2 font-medium truncate">
+          <span class="font-bold text-c-ink" x-text="profile.callsign"></span>
           <span aria-hidden="true"> · </span>
-          <span class="font-mono tabular-nums font-bold text-[#2F6F4E]" x-text="profile.elo + ' pts'"></span>
+          <span class="font-mono tabular-nums font-bold text-c-green" x-text="profile.elo + ' pts'"></span>
         </div>
 
         <div class="flex items-center gap-3 shrink-0">
           <button
             type="button"
             @click="toggleMute()"
-            class="px-2.5 py-1 rounded-lg bg-[#FFFDF7] hover:bg-[#FAF4E4] border border-[#173240]/35 text-[#173240] font-semibold inline-flex items-center gap-1.5 whitespace-nowrap"
+            class="px-2.5 py-1 rounded-lg bg-c-paper-hi hover:bg-c-paper border border-c-ink/35 text-c-ink font-semibold inline-flex items-center gap-1.5 whitespace-nowrap"
           >
-            <span x-show="muted" class="text-[#667D8A]">${iconSvg('volume-x', 'w-3.5 h-3.5')}</span>
-            <span x-show="!muted" class="text-[#1E7898]">${iconSvg('volume-2', 'w-3.5 h-3.5')}</span>
+            <span x-show="muted" class="text-c-ink-4">${iconSvg('volume-x', 'w-3.5 h-3.5')}</span>
+            <span x-show="!muted" class="text-c-teal">${iconSvg('volume-2', 'w-3.5 h-3.5')}</span>
             <span x-text="muted ? t.lobby.audioMuted : t.lobby.audioOn"></span>
           </button>
 
           <div
-            class="inline-flex items-center gap-1 p-0.5 rounded-lg bg-[#FFFDF7] border border-[#173240]/35"
+            class="inline-flex items-center gap-1 p-0.5 rounded-lg bg-c-paper-hi border border-c-ink/35"
             role="group"
             aria-label="Language switcher"
           >
-            <span class="text-[#3C5866] ml-1.5 mr-0.5">${iconSvg('globe', 'w-3.5 h-3.5')}</span>
+            <span class="text-c-ink-2 ml-1.5 mr-0.5">${iconSvg('globe', 'w-3.5 h-3.5')}</span>
             <button
               type="button"
               @click="setLang('en')"
-              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'en' ? 'bg-[#1E7898] text-white' : 'text-[#4B6675] hover:text-[#173240]')"
+              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'en' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
             >
               EN
             </button>
             <button
               type="button"
               @click="setLang('de')"
-              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'de' ? 'bg-[#1E7898] text-white' : 'text-[#4B6675] hover:text-[#173240]')"
+              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'de' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
             >
               DE
             </button>
@@ -156,13 +173,13 @@ export function renderHeader(): string {
 
     <!-- Error Toast -->
     <div x-show="toastError" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 w-full">
-      <div class="rounded-xl bg-[#FEECEB] border-2 border-[#DC2626] px-4 py-2.5 flex items-center justify-between gap-3 text-xs font-semibold text-[#7F1D1D]">
+      <div class="rounded-xl bg-c-rose border-2 border-c-red px-4 py-2.5 flex items-center justify-between gap-3 text-xs font-semibold text-c-red-deep">
         <span x-text="toastError"></span>
         <button
           type="button"
           @click="toastError = null"
           aria-label="Dismiss message"
-          class="text-[#991B1B] hover:text-[#7F1D1D]"
+          class="text-c-red-ink hover:text-c-red-deep"
         >
           ${iconSvg('x', 'w-4 h-4')}
         </button>
@@ -176,13 +193,13 @@ export function renderLobby(): string {
     <div x-show="activeTab === 'arena' && !activeMatch" class="space-y-8">
       <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         <!-- Left: Collector Emblem Showcase & 3 Big Tactile Play Choices -->
-        <div class="lg:col-span-7 rounded-2xl bg-[#FFFDF7] ink-panel p-6 sm:p-8 flex flex-col justify-between space-y-6">
+        <div class="lg:col-span-7 rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 flex flex-col justify-between space-y-6">
           <div class="space-y-4">
             <!-- Signature Coastal Speed-Stripe Emblem Plaque -->
-            <div class="flex items-center gap-3 sm:gap-4 rounded-xl bg-[#FAF4E4] border-2 border-[#173240] px-4 py-2.5 shadow-[0_3px_0_#173240]">
+            <div class="flex items-center gap-3 sm:gap-4 rounded-xl bg-c-paper border-2 border-c-ink px-4 py-2.5 shadow-[0_3px_0_var(--c-line)]">
               <div class="hidden sm:flex flex-col gap-1.5 flex-1 min-w-[28px]" aria-hidden="true">
-                <div class="h-1.5 rounded-sm bg-[#1E7898]"></div>
-                <div class="h-1.5 rounded-sm bg-[#F15A24]"></div>
+                <div class="h-1.5 rounded-sm bg-c-teal"></div>
+                <div class="h-1.5 rounded-sm bg-c-orange"></div>
               </div>
               <img
                 src="/assets/aistudio/logo_rotor_clash_3a6e5dcc.png"
@@ -190,47 +207,47 @@ export function renderLobby(): string {
                 class="h-14 sm:h-16 w-auto object-contain shrink-0"
               />
               <div class="flex flex-col gap-1.5 flex-1 min-w-[28px]" aria-hidden="true">
-                <div class="h-1.5 rounded-sm bg-[#1E7898]"></div>
-                <div class="h-1.5 rounded-sm bg-[#F15A24]"></div>
+                <div class="h-1.5 rounded-sm bg-c-teal"></div>
+                <div class="h-1.5 rounded-sm bg-c-orange"></div>
               </div>
             </div>
 
             <div class="space-y-2.5 pt-1">
-              <div class="text-xs font-extrabold tracking-wide uppercase text-[#F15A24]" x-text="t.lobby.kicker"></div>
+              <div class="text-xs font-extrabold tracking-wide uppercase text-c-orange" x-text="t.lobby.kicker"></div>
               <h1
-                class="font-display text-3xl sm:text-4xl font-extrabold text-[#173240] leading-tight max-w-2xl"
+                class="font-display text-3xl sm:text-4xl font-extrabold text-c-ink leading-tight max-w-2xl"
                 style="text-wrap: balance;"
                 x-text="t.lobby.heroTitle"
               ></h1>
-              <p class="text-sm sm:text-base text-[#3C5866] max-w-2xl leading-relaxed" x-text="t.lobby.heroSubtitle"></p>
+              <p class="text-sm sm:text-base text-c-ink-2 max-w-2xl leading-relaxed" x-text="t.lobby.heroSubtitle"></p>
             </div>
           </div>
 
-          <div x-show="inQueue" class="rounded-xl bg-[#DCEEF5] border-2 border-[#173240] p-4 flex flex-wrap items-center justify-between gap-4">
+          <div x-show="inQueue" class="rounded-xl bg-c-sky border-2 border-c-ink p-4 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div class="font-display font-bold text-sm text-[#173240]" x-text="t.lobby.searchingTitle"></div>
+              <div class="font-display font-bold text-sm text-c-ink" x-text="t.lobby.searchingTitle"></div>
               <div
-                class="text-xs text-[#155B75] mt-0.5 font-mono tabular-nums font-bold"
+                class="text-xs text-c-teal-deep mt-0.5 font-mono tabular-nums font-bold"
                 x-text="lobby.queueCount + ' ' + t.lobby.inQueue + ' · ' + lobby.onlineCount + ' ' + t.lobby.online"
               ></div>
             </div>
             <button
               type="button"
               @click="leaveQueue()"
-              class="px-3.5 py-2 rounded-xl bg-[#FFFDF7] hover:bg-[#FAF4E4] border-2 border-[#173240] text-xs font-bold text-[#173240] whitespace-nowrap"
+              class="px-3.5 py-2 rounded-xl bg-c-paper-hi hover:bg-c-paper border-2 border-c-ink text-xs font-bold text-c-ink whitespace-nowrap"
               x-text="t.lobby.cancelQueue"
             ></button>
           </div>
 
-          <div x-show="hostedRoom" class="rounded-xl bg-[#E7F4EC] border-2 border-[#173240] p-4 flex flex-wrap items-center justify-between gap-4">
+          <div x-show="hostedRoom" class="rounded-xl bg-c-mint border-2 border-c-ink p-4 flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div class="text-xs text-[#2F6F4E] font-bold" x-text="t.lobby.roomReady"></div>
+              <div class="text-xs text-c-green font-bold" x-text="t.lobby.roomReady"></div>
               <div class="mt-1 flex items-center gap-3">
-                <span class="font-mono text-2xl font-bold tracking-widest text-[#173240]" x-text="hostedRoom?.roomCode || ''"></span>
+                <span class="font-mono text-2xl font-bold tracking-widest text-c-ink" x-text="hostedRoom?.roomCode || ''"></span>
                 <button
                   type="button"
                   @click="copyInvite(hostedRoom?.roomCode || '')"
-                  class="px-2.5 py-1 rounded-lg bg-[#FFFDF7] hover:bg-[#FAF4E4] border-2 border-[#173240] text-xs font-bold text-[#2F6F4E] inline-flex items-center gap-1.5 whitespace-nowrap"
+                  class="px-2.5 py-1 rounded-lg bg-c-paper-hi hover:bg-c-paper border-2 border-c-ink text-xs font-bold text-c-green inline-flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <span x-show="copiedCode">${iconSvg('check', 'w-3.5 h-3.5')}</span>
                   <span x-show="!copiedCode">${iconSvg('copy', 'w-3.5 h-3.5')}</span>
@@ -241,7 +258,7 @@ export function renderLobby(): string {
             <button
               type="button"
               @click="cancelRoom()"
-              class="px-3.5 py-2 rounded-xl bg-[#FFFDF7] hover:bg-[#FAF4E4] border-2 border-[#173240] text-xs font-bold text-[#173240] whitespace-nowrap"
+              class="px-3.5 py-2 rounded-xl bg-c-paper-hi hover:bg-c-paper border-2 border-c-ink text-xs font-bold text-c-ink whitespace-nowrap"
               x-text="t.lobby.closeRoom"
             ></button>
           </div>
@@ -251,7 +268,7 @@ export function renderLobby(): string {
               <button
                 type="button"
                 @click="startBotMatch(botDifficulty)"
-                class="px-3 sm:px-4 py-4 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_4px_0_#173240] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
+                class="px-3 sm:px-4 py-4 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_4px_0_var(--c-line)] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
               >
                 ${iconSvg('bot', 'w-6 h-6')}
                 <span class="leading-snug" x-text="t.lobby.practiceBot"></span>
@@ -260,7 +277,7 @@ export function renderLobby(): string {
               <button
                 type="button"
                 @click="createRoom()"
-                class="px-3 sm:px-4 py-4 rounded-xl bg-[#F15A24] hover:bg-[#C94213] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_4px_0_#173240] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
+                class="px-3 sm:px-4 py-4 rounded-xl bg-c-orange hover:bg-c-orange-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_4px_0_var(--c-line)] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
               >
                 ${iconSvg('key-round', 'w-6 h-6')}
                 <span class="leading-snug" x-text="t.lobby.createPrivateRoom"></span>
@@ -269,7 +286,7 @@ export function renderLobby(): string {
               <button
                 type="button"
                 @click="inQueue ? leaveQueue() : joinQueue()"
-                class="px-3 sm:px-4 py-4 rounded-xl bg-[#1E7898] hover:bg-[#155B75] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_4px_0_#173240] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
+                class="px-3 sm:px-4 py-4 rounded-xl bg-c-teal hover:bg-c-teal-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_4px_0_var(--c-line)] active:translate-y-0.5 transition-all flex flex-col items-center justify-center gap-1.5 text-center"
               >
                 ${iconSvg('swords', 'w-6 h-6')}
                 <span class="leading-snug" x-text="inQueue ? t.lobby.searchingBtn : t.lobby.findOnlineMatch"></span>
@@ -284,21 +301,21 @@ export function renderLobby(): string {
                   x-model="joinCodeInput"
                   @input="joinCodeInput = joinCodeInput.toUpperCase()"
                   :placeholder="t.lobby.roomPlaceholder"
-                  class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/35 font-mono text-xs sm:text-sm text-[#173240] placeholder:text-[#667D8A] focus:border-[#1E7898] focus:outline-none uppercase"
+                  class="flex-1 min-w-0 px-3 py-2.5 rounded-xl bg-c-paper border-2 border-c-ink/35 font-mono text-xs sm:text-sm text-c-ink placeholder:text-c-ink-4 focus:border-c-teal focus:outline-none uppercase"
                 />
                 <button
                   type="submit"
-                  class="px-3.5 sm:px-4 py-2.5 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs sm:text-sm font-bold text-[#173240] shadow-[0_2px_0_#173240] active:translate-y-0.5 whitespace-nowrap shrink-0"
+                  class="px-3.5 sm:px-4 py-2.5 rounded-xl bg-c-paper hover:bg-c-sand border-2 border-c-ink text-xs sm:text-sm font-bold text-c-ink shadow-[0_2px_0_var(--c-line)] active:translate-y-0.5 whitespace-nowrap shrink-0"
                   x-text="t.lobby.joinRoom"
                 ></button>
               </form>
 
-              <div class="flex items-center justify-between gap-2 rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 px-3 py-1.5">
-                <span class="text-xs font-bold text-[#3C5866] whitespace-nowrap" x-text="t.lobby.botDifficultyLabel + ':'"></span>
+              <div class="flex items-center justify-between gap-2 rounded-xl bg-c-paper border-2 border-c-ink/25 px-3 py-1.5">
+                <span class="text-xs font-bold text-c-ink-2 whitespace-nowrap" x-text="t.lobby.botDifficultyLabel + ':'"></span>
                 <select
                   aria-label="Bot difficulty"
                   x-model="botDifficulty"
-                  class="min-w-0 px-2.5 py-1.5 rounded-lg bg-[#FFFDF7] border border-[#173240]/35 text-xs font-bold text-[#173240] focus:border-[#1E7898] focus:outline-none"
+                  class="min-w-0 px-2.5 py-1.5 rounded-lg bg-c-paper-hi border border-c-ink/35 text-xs font-bold text-c-ink focus:border-c-teal focus:outline-none"
                 >
                   <option value="standard" x-text="t.lobby.botCadet"></option>
                   <option value="tactical" x-text="t.lobby.botTactical"></option>
@@ -306,29 +323,29 @@ export function renderLobby(): string {
               </div>
             </div>
 
-            <div x-show="lobby.openRooms.length > 0" class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-3.5 space-y-2">
-              <div class="text-xs font-bold text-[#173240] flex items-center justify-between">
+            <div x-show="lobby.openRooms.length > 0" class="rounded-xl bg-c-paper border-2 border-c-ink/25 p-3.5 space-y-2">
+              <div class="text-xs font-bold text-c-ink flex items-center justify-between">
                 <span x-text="t.lobby.openRoomsTitle"></span>
-                <span class="font-mono tabular-nums text-[#1E7898]" x-text="lobby.openRooms.length"></span>
+                <span class="font-mono tabular-nums text-c-teal" x-text="lobby.openRooms.length"></span>
               </div>
               <div class="space-y-1.5 max-h-32 overflow-y-auto">
                 <template x-for="room in lobby.openRooms" :key="room.roomCode">
-                  <div class="flex items-center justify-between gap-3 rounded-lg bg-[#FFFDF7] border border-[#173240]/25 px-3 py-2 text-xs">
+                  <div class="flex items-center justify-between gap-3 rounded-lg bg-c-paper-hi border border-c-ink/25 px-3 py-2 text-xs">
                     <div class="min-w-0 truncate">
-                      <span class="font-mono font-bold text-[#F15A24] mr-2" x-text="room.roomCode"></span>
-                      <span class="text-[#173240] font-bold" x-text="room.hostCallsign"></span>
-                      <span class="text-[#4B6675] ml-1.5 font-mono tabular-nums" x-text="'(' + room.hostElo + ' pts)'"></span>
+                      <span class="font-mono font-bold text-c-orange mr-2" x-text="room.roomCode"></span>
+                      <span class="text-c-ink font-bold" x-text="room.hostCallsign"></span>
+                      <span class="text-c-ink-3 ml-1.5 font-mono tabular-nums" x-text="'(' + room.hostElo + ' pts)'"></span>
                     </div>
                     <span
                       x-show="hostedRoom && hostedRoom.roomCode === room.roomCode"
-                      class="text-[#2F6F4E] font-bold shrink-0"
+                      class="text-c-green font-bold shrink-0"
                       x-text="t.lobby.yourRoom"
                     ></span>
                     <button
                       x-show="!hostedRoom || hostedRoom.roomCode !== room.roomCode"
                       type="button"
                       @click="joinRoom(room.roomCode)"
-                      class="px-3 py-1 rounded-lg bg-[#1E7898] hover:bg-[#155B75] text-white font-bold shrink-0 whitespace-nowrap"
+                      class="px-3 py-1 rounded-lg bg-c-teal hover:bg-c-teal-deep text-white font-bold shrink-0 whitespace-nowrap"
                       x-text="t.lobby.joinDuel"
                     ></button>
                   </div>
@@ -337,12 +354,12 @@ export function renderLobby(): string {
             </div>
           </div>
 
-          <div class="pt-4 border-t-2 border-[#173240]/15 flex flex-wrap items-center justify-between gap-3 text-xs text-[#3C5866]">
+          <div class="pt-4 border-t-2 border-c-ink/15 flex flex-wrap items-center justify-between gap-3 text-xs text-c-ink-2">
             <span x-text="t.lobby.tutorialPrompt"></span>
             <button
               type="button"
               @click="setTab('tutorial')"
-              class="text-[#1E7898] hover:text-[#173240] hover:underline font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
+              class="text-c-teal hover:text-c-ink hover:underline font-bold inline-flex items-center gap-1.5 whitespace-nowrap"
             >
               ${iconSvg('book-open', 'w-3.5 h-3.5')}
               <span x-text="t.lobby.launchTutorial"></span>
@@ -351,15 +368,15 @@ export function renderLobby(): string {
         </div>
 
         <!-- Right: Coastal Sky Showcase Preview -->
-        <div class="lg:col-span-5 rounded-2xl bg-gradient-to-b from-[#DCEEF5] to-[#FAF4E4] ink-panel p-6 flex flex-col items-center justify-between space-y-4">
+        <div class="lg:col-span-5 rounded-2xl bg-gradient-to-b from-c-sky to-c-paper ink-panel p-6 flex flex-col items-center justify-between space-y-4">
           <div class="w-full flex flex-wrap items-center justify-between gap-2">
-            <span class="text-xs font-extrabold text-[#173240]" x-text="t.lobby.previewLabel"></span>
-            <div class="flex items-center gap-1 bg-[#FFFDF7] p-1 rounded-xl border-2 border-[#173240]">
+            <span class="text-xs font-extrabold text-c-ink" x-text="t.lobby.previewLabel"></span>
+            <div class="flex items-center gap-1 bg-c-paper-hi p-1 rounded-xl border-2 border-c-ink">
               <template x-for="opt in previewOptions()" :key="opt.id">
                 <button
                   type="button"
                   @click="selectPreviewCard(opt.id)"
-                  :class="'px-2 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ' + (previewCardId === opt.id ? 'bg-[#1E7898] text-white' : 'text-[#4B6675] hover:text-[#173240]')"
+                  :class="'px-2 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ' + (previewCardId === opt.id ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
                   x-text="opt.label"
                 ></button>
               </template>
@@ -372,76 +389,76 @@ export function renderLobby(): string {
 
       <!-- 4-Column Explorer Strip -->
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <form @submit.prevent="saveCallsign()" class="rounded-2xl bg-[#FFFDF7] ink-panel p-4 flex flex-col justify-between gap-2">
-          <label for="callsign-input" class="text-xs font-bold text-[#3C5866]" x-text="t.lobby.pilotCallsign"></label>
+        <form @submit.prevent="saveCallsign()" class="rounded-2xl bg-c-paper-hi ink-panel p-4 flex flex-col justify-between gap-2">
+          <label for="callsign-input" class="text-xs font-bold text-c-ink-2" x-text="t.lobby.pilotCallsign"></label>
           <div class="flex items-center gap-2">
             <input
               id="callsign-input"
               type="text"
               maxlength="20"
               x-model="callsignDraft"
-              class="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-[#FAF4E4] border border-[#173240]/35 text-sm font-bold text-[#173240] focus:border-[#1E7898] focus:outline-none"
+              class="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg bg-c-paper border border-c-ink/35 text-sm font-bold text-c-ink focus:border-c-teal focus:outline-none"
             />
             <button
               type="submit"
-              class="px-2.5 py-1.5 rounded-lg bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] whitespace-nowrap shrink-0"
+              class="px-2.5 py-1.5 rounded-lg bg-c-paper hover:bg-c-sand border-2 border-c-ink text-xs font-bold text-c-ink whitespace-nowrap shrink-0"
               x-text="callsignSaved ? t.lobby.saved : t.lobby.save"
             ></button>
           </div>
         </form>
 
-        <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-4 flex flex-col justify-between">
-          <div class="text-xs font-bold text-[#3C5866]" x-text="t.lobby.competitiveRank"></div>
+        <div class="rounded-2xl bg-c-paper-hi ink-panel p-4 flex flex-col justify-between">
+          <div class="text-xs font-bold text-c-ink-2" x-text="t.lobby.competitiveRank"></div>
           <div class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 mt-1">
             <span class="font-display text-lg font-extrabold leading-tight" :style="'color:' + playerTier().accentHex" x-text="playerTier().name"></span>
-            <span class="font-mono tabular-nums text-base font-bold text-[#173240] whitespace-nowrap" x-text="profile.elo + ' pts'"></span>
+            <span class="font-mono tabular-nums text-base font-bold text-c-ink whitespace-nowrap" x-text="profile.elo + ' pts'"></span>
           </div>
           <div
-            class="text-xs text-[#4B6675] font-mono tabular-nums mt-1"
+            class="text-xs text-c-ink-3 font-mono tabular-nums mt-1"
             x-text="profile.wins + (lang === 'de' ? 'S · ' : 'W · ') + profile.losses + (lang === 'de' ? 'N · ' : 'L · ') + profile.quartetsCompleted + ' ' + t.lobby.quartets"
           ></div>
         </div>
 
-        <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-4 flex flex-col justify-between">
-          <div class="text-xs font-bold text-[#3C5866]" x-text="t.lobby.multiplayerServer"></div>
+        <div class="rounded-2xl bg-c-paper-hi ink-panel p-4 flex flex-col justify-between">
+          <div class="text-xs font-bold text-c-ink-2" x-text="t.lobby.multiplayerServer"></div>
           <div class="flex flex-wrap items-center justify-between gap-2 mt-1">
             <div class="flex items-center gap-2">
               <span
-                :class="'w-2.5 h-2.5 rounded-full border border-[#173240] shrink-0 ' + (wsConnected ? 'bg-[#2F6F4E]' : 'bg-[#F15A24]')"
+                :class="'w-2.5 h-2.5 rounded-full border border-c-ink shrink-0 ' + (wsConnected ? 'bg-c-green' : 'bg-c-orange')"
                 aria-hidden="true"
               ></span>
-              <span class="font-display text-base font-bold text-[#173240]" x-text="wsConnected ? t.lobby.connected : t.lobby.reconnecting"></span>
+              <span class="font-display text-base font-bold text-c-ink" x-text="wsConnected ? t.lobby.connected : t.lobby.reconnecting"></span>
             </div>
-            <span class="font-mono tabular-nums text-sm font-bold text-[#1E7898] flex items-center gap-1 whitespace-nowrap">
+            <span class="font-mono tabular-nums text-sm font-bold text-c-teal flex items-center gap-1 whitespace-nowrap">
               ${iconSvg('users', 'w-3.5 h-3.5')}
               <span x-text="lobby.onlineCount + ' ' + t.lobby.online"></span>
             </span>
           </div>
           <div
-            class="text-xs text-[#4B6675] mt-1"
+            class="text-xs text-c-ink-3 mt-1"
             x-text="lobby.openRooms.length + ' ' + t.lobby.openRoomsCount + ' · ' + lobby.queueCount + ' ' + t.lobby.inQueue"
           ></div>
         </div>
 
-        <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-4 flex flex-col justify-between">
-          <div class="text-xs font-bold text-[#3C5866]" x-text="t.lobby.tableAudioQuickStart"></div>
+        <div class="rounded-2xl bg-c-paper-hi ink-panel p-4 flex flex-col justify-between">
+          <div class="text-xs font-bold text-c-ink-2" x-text="t.lobby.tableAudioQuickStart"></div>
           <div class="flex flex-wrap items-center gap-2 mt-2">
             <button
               type="button"
               @click="toggleMute()"
-              class="px-2.5 py-2 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0"
+              class="px-2.5 py-2 rounded-xl bg-c-paper hover:bg-c-sand border-2 border-c-ink text-xs font-bold text-c-ink inline-flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0"
             >
-              <span x-show="muted" class="text-[#667D8A]">${iconSvg('volume-x', 'w-4 h-4')}</span>
-              <span x-show="!muted" class="text-[#1E7898]">${iconSvg('volume-2', 'w-4 h-4')}</span>
+              <span x-show="muted" class="text-c-ink-4">${iconSvg('volume-x', 'w-4 h-4')}</span>
+              <span x-show="!muted" class="text-c-teal">${iconSvg('volume-2', 'w-4 h-4')}</span>
               <span x-text="muted ? t.lobby.audioMuted : t.lobby.audioOn"></span>
             </button>
 
             <button
               type="button"
               @click="startBotMatch(botDifficulty)"
-              class="flex-1 min-w-fit px-2.5 py-2 rounded-xl bg-[#E7F4EC] hover:bg-[#D1EBE0] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+              class="flex-1 min-w-fit px-2.5 py-2 rounded-xl bg-c-mint hover:bg-c-mint-hover border-2 border-c-ink text-xs font-bold text-c-ink inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
             >
-              <span class="text-[#2F6F4E] shrink-0">${iconSvg('play', 'w-3.5 h-3.5')}</span>
+              <span class="text-c-green shrink-0">${iconSvg('play', 'w-3.5 h-3.5')}</span>
               <span x-text="t.lobby.soloWarmup"></span>
             </button>
           </div>
@@ -455,58 +472,58 @@ export function renderArena(): string {
   return `
     <template x-if="activeTab === 'arena' && activeMatch">
       <div
-        :class="'relative overflow-hidden border-2 border-[#173240] bg-[#EFE8D6] shadow-[0_6px_0_#173240] transition-all ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
+        :class="'relative overflow-hidden border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
       >
         <div
           class="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none"
           :style="'background-image: url(' + fieldDeskImg + ')'"
           aria-hidden="true"
         ></div>
-        <div class="absolute inset-0 bg-[#F5EFE0]/60 pointer-events-none" aria-hidden="true"></div>
+        <div class="absolute inset-0 bg-c-canvas/60 pointer-events-none" aria-hidden="true"></div>
 
         <div class="relative z-10 max-w-6xl mx-auto p-4 sm:p-6 space-y-5">
           <!-- Field Guide Match Scoreboard -->
-          <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#FFFDF7]/95 border-2 border-[#173240] shadow-[0_3px_0_#173240] px-4 py-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-4 py-2.5">
             <div class="flex items-center gap-3 min-w-0">
               <div
-                class="w-10 h-10 rounded-xl bg-[#1E7898] text-white border-2 border-[#173240] flex items-center justify-center font-mono text-base font-bold shrink-0"
+                class="w-10 h-10 rounded-xl bg-c-teal text-white border-2 border-c-ink flex items-center justify-center font-mono text-base font-bold shrink-0"
                 x-text="activeMatch.you.cardCount"
               ></div>
               <div class="min-w-0">
-                <div class="font-display font-bold text-sm text-[#173240] truncate">
+                <div class="font-display font-bold text-sm text-c-ink truncate">
                   <span x-text="activeMatch.you.callsign"></span>
-                  <span class="text-xs font-sans font-bold text-[#1E7898]" x-text="' (' + t.arena.you + ')'"></span>
+                  <span class="text-xs font-sans font-bold text-c-teal" x-text="' (' + t.arena.you + ')'"></span>
                 </div>
                 <div
-                  class="text-[11px] text-[#3C5866] font-mono tabular-nums"
+                  class="text-[11px] text-c-ink-2 font-mono tabular-nums"
                   x-text="tierForElo(activeMatch.you.elo).name + ' · ' + activeMatch.you.elo + ' pts'"
                 ></div>
               </div>
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5">
-              <div class="px-3 py-1.5 rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 text-center whitespace-nowrap">
-                <span class="text-[11px] font-bold text-[#3C5866] mr-1.5" x-text="t.arena.round"></span>
+              <div class="px-3 py-1.5 rounded-xl bg-c-paper border-2 border-c-ink/25 text-center whitespace-nowrap">
+                <span class="text-[11px] font-bold text-c-ink-2 mr-1.5" x-text="t.arena.round"></span>
                 <span
-                  class="font-mono tabular-nums text-sm font-bold text-[#173240]"
+                  class="font-mono tabular-nums text-sm font-bold text-c-ink"
                   x-text="activeMatch.roundNumber + '/' + activeMatch.maxRounds"
                 ></span>
               </div>
 
               <div
                 x-show="activeMatch.tiePotCount > 0"
-                class="px-3 py-1.5 rounded-xl bg-[#FEF3C7] border-2 border-[#D97706] flex items-center gap-1.5 whitespace-nowrap"
+                class="px-3 py-1.5 rounded-xl bg-c-cream-amber border-2 border-c-amber flex items-center gap-1.5 whitespace-nowrap"
               >
-                <span class="text-[#B45309]">${iconSvg('layers', 'w-3.5 h-3.5')}</span>
+                <span class="text-c-amber-deep">${iconSvg('layers', 'w-3.5 h-3.5')}</span>
                 <span
-                  class="text-xs font-bold text-[#78350F] font-mono tabular-nums"
+                  class="text-xs font-bold text-c-amber-ink font-mono tabular-nums"
                   x-text="t.arena.tiePot + ': ' + activeMatch.tiePotCount"
                 ></span>
               </div>
 
               <div
                 x-show="secondsLeft !== null && activeMatch.status === 'PLAYING'"
-                :class="'px-2.5 py-1.5 rounded-xl border-2 flex items-center gap-1 font-mono tabular-nums text-xs font-bold whitespace-nowrap ' + (secondsLeft <= 10 ? 'bg-[#FEECEB] border-[#DC2626] text-[#991B1B]' : 'bg-[#FAF4E4] border-[#173240]/25 text-[#173240]')"
+                :class="'px-2.5 py-1.5 rounded-xl border-2 flex items-center gap-1 font-mono tabular-nums text-xs font-bold whitespace-nowrap ' + (secondsLeft <= 10 ? 'bg-c-rose border-c-red text-c-red-ink' : 'bg-c-paper border-c-ink/25 text-c-ink')"
               >
                 ${iconSvg('clock', 'w-3.5 h-3.5')}
                 <span x-text="secondsLeft + 's'"></span>
@@ -521,16 +538,16 @@ export function renderArena(): string {
                     :title="activeMatch.opponent.connected ? t.lobby.connected : t.lobby.reconnecting"
                     class="inline-flex shrink-0"
                   >
-                    <span x-show="activeMatch.opponent.connected" class="text-[#2F6F4E]">${iconSvg('wifi', 'w-3.5 h-3.5')}</span>
-                    <span x-show="!activeMatch.opponent.connected" class="text-[#D97706]">${iconSvg('wifi-off', 'w-3.5 h-3.5')}</span>
+                    <span x-show="activeMatch.opponent.connected" class="text-c-green">${iconSvg('wifi', 'w-3.5 h-3.5')}</span>
+                    <span x-show="!activeMatch.opponent.connected" class="text-c-amber">${iconSvg('wifi-off', 'w-3.5 h-3.5')}</span>
                   </span>
-                  <span class="font-display font-bold text-sm text-[#173240] truncate" x-text="activeMatch.opponent.callsign"></span>
+                  <span class="font-display font-bold text-sm text-c-ink truncate" x-text="activeMatch.opponent.callsign"></span>
                 </div>
-                <div class="text-[11px] text-[#3C5866] font-mono tabular-nums" x-text="activeMatch.opponent.elo + ' pts'"></div>
+                <div class="text-[11px] text-c-ink-2 font-mono tabular-nums" x-text="activeMatch.opponent.elo + ' pts'"></div>
               </div>
 
               <div
-                class="w-10 h-10 rounded-xl bg-[#F15A24] text-white border-2 border-[#173240] flex items-center justify-center font-mono text-base font-bold shrink-0"
+                class="w-10 h-10 rounded-xl bg-c-orange text-white border-2 border-c-ink flex items-center justify-center font-mono text-base font-bold shrink-0"
                 x-text="activeMatch.opponent.cardCount"
               ></div>
 
@@ -538,7 +555,7 @@ export function renderArena(): string {
                 type="button"
                 @click="toggleTheaterFull()"
                 :title="isTheaterFull ? t.arena.exitFullscreen : t.arena.fullscreen"
-                class="px-2.5 py-2 rounded-xl text-xs font-bold text-[#173240] bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240]/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                class="px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
               >
                 <span x-show="isTheaterFull">${iconSvg('minimize', 'w-3.5 h-3.5')}</span>
                 <span x-show="!isTheaterFull">${iconSvg('maximize', 'w-3.5 h-3.5')}</span>
@@ -550,7 +567,7 @@ export function renderArena(): string {
                   x-show="!confirmForfeit"
                   type="button"
                   @click="confirmForfeit = true"
-                  class="px-2.5 py-2 rounded-xl text-xs font-bold text-[#3C5866] hover:text-[#173240] bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240]/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                  class="px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink-2 hover:text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                 >
                   ${iconSvg('flag', 'w-3.5 h-3.5')}
                   <span class="hidden sm:inline" x-text="t.arena.leave"></span>
@@ -559,13 +576,13 @@ export function renderArena(): string {
                   <button
                     type="button"
                     @click="confirmForfeit = false; forfeitMatch()"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#DC2626] hover:bg-[#B91C1C] text-white border border-[#173240] whitespace-nowrap"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-c-red hover:bg-c-red-hover text-white border border-c-ink whitespace-nowrap"
                     x-text="t.arena.confirmForfeit"
                   ></button>
                   <button
                     type="button"
                     @click="confirmForfeit = false"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#EAE1CA] text-[#173240] hover:bg-[#DCD1B4] border border-[#173240]/35 whitespace-nowrap"
+                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-c-sand text-c-ink hover:bg-c-sand-hover border border-c-ink/35 whitespace-nowrap"
                     x-text="t.arena.cancel"
                   ></button>
                 </div>
@@ -576,48 +593,48 @@ export function renderArena(): string {
           <!-- Disconnected Banner -->
           <div
             x-show="activeMatch.mode !== 'bot' && !activeMatch.opponent.connected && activeMatch.status !== 'FINISHED'"
-            class="rounded-xl bg-[#FEF3C7] border-2 border-[#D97706] px-4 py-2.5 flex items-center gap-2 text-xs font-medium text-[#78350F]"
+            class="rounded-xl bg-c-cream-amber border-2 border-c-amber px-4 py-2.5 flex items-center gap-2 text-xs font-medium text-c-amber-ink"
           >
-            <span class="text-[#B45309] shrink-0">${iconSvg('shield-alert', 'w-4 h-4')}</span>
+            <span class="text-c-amber-deep shrink-0">${iconSvg('shield-alert', 'w-4 h-4')}</span>
             <span x-text="activeMatch.opponent.callsign + ' ' + t.arena.disconnectedMsg"></span>
           </div>
 
           <!-- Finished Screen -->
           <div
             x-show="activeMatch.status === 'FINISHED'"
-            class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6"
+            class="rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6"
           >
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#FEF3C7] border-2 border-[#173240] text-[#F15A24] mx-auto shadow-[0_3px_0_#173240]">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-c-cream-amber border-2 border-c-ink text-c-orange mx-auto shadow-[0_3px_0_var(--c-line)]">
               ${iconSvg('trophy', 'w-8 h-8')}
             </div>
 
             <div>
-              <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#173240]" x-text="finishedHeadline()"></h2>
-              <p class="mt-1.5 text-sm text-[#3C5866]" x-text="finishedReason()"></p>
+              <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-c-ink" x-text="finishedHeadline()"></h2>
+              <p class="mt-1.5 text-sm text-c-ink-2" x-text="finishedReason()"></p>
             </div>
 
             <div class="grid grid-cols-3 gap-3 text-left">
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3.5">
-                <div class="text-xs font-bold text-[#3C5866]" x-text="t.arena.finalCards"></div>
-                <div class="mt-1 font-mono tabular-nums text-xl font-bold text-[#173240]">
+              <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-3.5">
+                <div class="text-xs font-bold text-c-ink-2" x-text="t.arena.finalCards"></div>
+                <div class="mt-1 font-mono tabular-nums text-xl font-bold text-c-ink">
                   <span x-text="activeMatch.you.cardCount"></span>
-                  <span class="text-sm text-[#4B6675]" x-text="' vs ' + activeMatch.opponent.cardCount"></span>
+                  <span class="text-sm text-c-ink-3" x-text="' vs ' + activeMatch.opponent.cardCount"></span>
                 </div>
               </div>
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3.5">
-                <div class="text-xs font-bold text-[#3C5866]" x-text="t.arena.quartetsBuilt"></div>
+              <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-3.5">
+                <div class="text-xs font-bold text-c-ink-2" x-text="t.arena.quartetsBuilt"></div>
                 <div
-                  class="mt-1 font-mono tabular-nums text-xl font-bold text-[#2F6F4E]"
+                  class="mt-1 font-mono tabular-nums text-xl font-bold text-c-green"
                   x-text="activeMatch.you.completedQuartets.length + ' / 8'"
                 ></div>
               </div>
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3.5">
+              <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-3.5">
                 <div
-                  class="text-xs font-bold text-[#3C5866]"
+                  class="text-xs font-bold text-c-ink-2"
                   x-text="activeMatch.mode === 'bot' ? t.arena.practiceMode : t.arena.eloDelta"
                 ></div>
                 <div
-                  :class="'mt-1 font-mono tabular-nums text-xl font-bold ' + (activeMatch.eloChange === null ? 'text-[#4B6675]' : (activeMatch.eloChange >= 0 ? 'text-[#2F6F4E]' : 'text-[#DC2626]'))"
+                  :class="'mt-1 font-mono tabular-nums text-xl font-bold ' + (activeMatch.eloChange === null ? 'text-c-ink-3' : (activeMatch.eloChange >= 0 ? 'text-c-green' : 'text-c-red'))"
                   x-text="activeMatch.eloChange === null ? t.arena.unranked : ((activeMatch.eloChange >= 0 ? '+' : '') + activeMatch.eloChange)"
                 ></div>
               </div>
@@ -627,7 +644,7 @@ export function renderArena(): string {
               <button
                 type="button"
                 @click="playAgain()"
-                class="px-5 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
+                class="px-5 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
               >
                 ${iconSvg('rotate-ccw', 'w-4 h-4')}
                 <span x-text="t.arena.playAgain"></span>
@@ -635,7 +652,7 @@ export function renderArena(): string {
               <button
                 type="button"
                 @click="if (isTheaterFull) toggleTheaterFull(); returnToLobby()"
-                class="px-5 py-2.5 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] text-[#173240] border-2 border-[#173240] font-bold text-sm transition-colors whitespace-nowrap"
+                class="px-5 py-2.5 rounded-xl bg-c-paper hover:bg-c-sand text-c-ink border-2 border-c-ink font-bold text-sm transition-colors whitespace-nowrap"
                 x-text="t.arena.returnLobby"
               ></button>
             </div>
@@ -647,7 +664,7 @@ export function renderArena(): string {
               <!-- Your Card -->
               <div class="lg:col-span-4 w-full flex flex-col items-center">
                 <div
-                  class="mb-2 text-xs font-extrabold text-[#1E7898] bg-[#FAF4E4] px-3 py-1 rounded-lg border-2 border-[#173240] shadow-[0_2px_0_#173240]"
+                  class="mb-2 text-xs font-extrabold text-c-teal bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                   x-text="t.arena.yourTopCard"
                 ></div>
                 <div class="w-full flex justify-center">
@@ -665,28 +682,28 @@ export function renderArena(): string {
               <div class="lg:col-span-3 w-full max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
                 <div
                   x-show="isReveal() && activeMatch.lastRound"
-                  class="w-full rounded-2xl bg-[#FFFDF7] ink-panel p-4 space-y-3"
+                  class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3"
                 >
-                  <div class="text-[11px] font-bold text-[#3C5866]" x-text="t.arena.statCompared"></div>
+                  <div class="text-[11px] font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
                   <div
-                    class="font-display text-lg font-extrabold text-[#173240]"
+                    class="font-display text-lg font-extrabold text-c-ink"
                     x-text="activeMatch.lastRound ? t.stats[activeMatch.lastRound.chosenStat].label : ''"
                   ></div>
 
-                  <div class="py-2.5 px-3 rounded-xl bg-[#FAF4E4] border border-[#173240]/20 flex flex-wrap items-center justify-center sm:justify-between gap-x-2 gap-y-0.5 font-mono tabular-nums text-sm">
+                  <div class="py-2.5 px-3 rounded-xl bg-c-paper border border-c-ink/20 flex flex-wrap items-center justify-center sm:justify-between gap-x-2 gap-y-0.5 font-mono tabular-nums text-sm">
                     <span
-                      :class="'font-bold whitespace-nowrap ' + (arenaYourOutcome() === 'win' ? 'text-[#2F6F4E]' : (arenaYourOutcome() === 'loss' ? 'text-[#DC2626]' : 'text-[#B45309]'))"
+                      :class="'font-bold whitespace-nowrap ' + (arenaYourOutcome() === 'win' ? 'text-c-green' : (arenaYourOutcome() === 'loss' ? 'text-c-red' : 'text-c-amber-deep'))"
                       x-text="arenaRevealValues().yourValText"
                     ></span>
-                    <span class="text-[#667D8A] text-xs font-sans font-bold">vs</span>
+                    <span class="text-c-ink-4 text-xs font-sans font-bold">vs</span>
                     <span
-                      :class="'font-bold whitespace-nowrap ' + (arenaOppOutcome() === 'win' ? 'text-[#2F6F4E]' : (arenaOppOutcome() === 'loss' ? 'text-[#DC2626]' : 'text-[#B45309]'))"
+                      :class="'font-bold whitespace-nowrap ' + (arenaOppOutcome() === 'win' ? 'text-c-green' : (arenaOppOutcome() === 'loss' ? 'text-c-red' : 'text-c-amber-deep'))"
                       x-text="arenaRevealValues().oppValText"
                     ></span>
                   </div>
 
                   <div
-                    :class="'rounded-xl px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-2 ' + (arenaYourOutcome() === 'win' ? 'bg-[#E7F4EC] text-[#173240] border-[#2F6F4E]' : (arenaYourOutcome() === 'loss' ? 'bg-[#FEECEB] text-[#7F1D1D] border-[#DC2626]' : 'bg-[#FEF3C7] text-[#78350F] border-[#D97706]'))"
+                    :class="'rounded-xl px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-2 ' + (arenaYourOutcome() === 'win' ? 'bg-c-mint text-c-ink border-c-green' : (arenaYourOutcome() === 'loss' ? 'bg-c-rose text-c-red-deep border-c-red' : 'bg-c-cream-amber text-c-amber-ink border-c-amber'))"
                   >
                     <span x-show="arenaYourOutcome() === 'win'" class="shrink-0">${iconSvg('check-circle', 'w-4 h-4')}</span>
                     <span class="leading-snug" x-text="arenaOutcomeText()"></span>
@@ -694,16 +711,16 @@ export function renderArena(): string {
 
                   <div
                     x-show="arenaNewlyCompletedQuartetName()"
-                    class="rounded-xl bg-[#E7F4EC] border-2 border-[#2F6F4E] px-3 py-2 text-xs font-bold text-[#173240] flex items-center justify-center gap-1.5"
+                    class="rounded-xl bg-c-mint border-2 border-c-green px-3 py-2 text-xs font-bold text-c-ink flex items-center justify-center gap-1.5"
                   >
-                    <span class="text-[#2F6F4E] shrink-0">${iconSvg('award', 'w-4 h-4')}</span>
+                    <span class="text-c-green shrink-0">${iconSvg('award', 'w-4 h-4')}</span>
                     <span class="leading-snug" x-text="t.arena.quartetCompleted + ' ' + arenaNewlyCompletedQuartetName()"></span>
                   </div>
 
                   <button
                     type="button"
                     @click="nextRound()"
-                    class="w-full py-2.5 px-3 rounded-xl bg-[#1E7898] hover:bg-[#155B75] text-white border-2 border-[#173240] font-bold text-xs sm:text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                    class="w-full py-2.5 px-3 rounded-xl bg-c-teal hover:bg-c-teal-deep text-white border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap"
                   >
                     <span x-text="t.arena.nextRound"></span>
                     ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -712,20 +729,20 @@ export function renderArena(): string {
 
                 <div
                   x-show="!(isReveal() && activeMatch.lastRound)"
-                  :class="'w-full rounded-2xl bg-[#FFFDF7] ink-panel p-5 space-y-2.5 ' + (isYourTurn() ? 'animate-gentle-bob' : '')"
+                  :class="'w-full rounded-2xl bg-c-paper-hi ink-panel p-5 space-y-2.5 ' + (isYourTurn() ? 'animate-gentle-bob' : '')"
                 >
                   <div
-                    :class="'inline-flex items-center justify-center w-12 h-12 rounded-xl border-2 border-[#173240] mx-auto ' + (isYourTurn() ? 'bg-[#DCEEF5] text-[#1E7898]' : 'bg-[#FAF4E4] text-[#4B6675]')"
+                    :class="'inline-flex items-center justify-center w-12 h-12 rounded-xl border-2 border-c-ink mx-auto ' + (isYourTurn() ? 'bg-c-sky text-c-teal' : 'bg-c-paper text-c-ink-3')"
                   >
                     <span x-show="isYourTurn()">${iconSvg('swords', 'w-5 h-5')}</span>
                     <span x-show="!isYourTurn()">${iconSvg('sparkles', 'w-5 h-5')}</span>
                   </div>
                   <div
-                    class="font-display text-lg font-extrabold text-[#173240]"
+                    class="font-display text-lg font-extrabold text-c-ink"
                     x-text="isYourTurn() ? t.arena.yourTurnTitle : t.arena.oppTurnTitle"
                   ></div>
                   <p
-                    class="text-xs text-[#3C5866] leading-relaxed"
+                    class="text-xs text-c-ink-2 leading-relaxed"
                     x-text="isYourTurn() ? t.arena.yourTurnDesc : t.arena.oppTurnDesc"
                   ></p>
                 </div>
@@ -734,7 +751,7 @@ export function renderArena(): string {
               <!-- Opponent Card -->
               <div class="lg:col-span-4 w-full flex flex-col items-center">
                 <div
-                  class="mb-2 text-xs font-extrabold text-[#F15A24] bg-[#FAF4E4] px-3 py-1 rounded-lg border-2 border-[#173240] shadow-[0_2px_0_#173240]"
+                  class="mb-2 text-xs font-extrabold text-c-orange bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                   x-text="isReveal() ? t.arena.revealedCard : t.arena.hiddenStack"
                 ></div>
                 <div x-show="isReveal() && arenaOppCard()" class="w-full flex justify-center">
@@ -750,15 +767,15 @@ export function renderArena(): string {
             </div>
 
             <!-- Compact Quartet Collector Strip -->
-            <div class="rounded-2xl bg-[#FFFDF7]/95 border-2 border-[#173240] px-4 py-2.5 space-y-3 shadow-[0_3px_0_#173240]">
+            <div class="rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink px-4 py-2.5 space-y-3 shadow-[0_3px_0_var(--c-line)]">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3 flex-wrap">
-                  <span class="text-xs font-bold text-[#173240]" x-text="t.arena.quartetStripLabel + ':'"></span>
+                  <span class="text-xs font-bold text-c-ink" x-text="t.arena.quartetStripLabel + ':'"></span>
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <template x-for="g in quartetGroups" :key="g.id">
                       <div
                         :title="g.code + '. ' + groupName(g.id) + ' (' + ownedGroupCount(g.id) + '/4)'"
-                        :class="'px-2 py-1 rounded-lg border font-mono text-[11px] font-bold flex items-center gap-1 ' + (activeMatch.you.completedQuartets.includes(g.id) ? 'bg-[#2F6F4E] border-[#173240] text-white' : (ownedGroupCount(g.id) > 0 ? 'bg-[#DCEEF5] border-[#1E7898] text-[#173240]' : 'bg-[#FAF4E4] border-[#173240]/20 text-[#667D8A]'))"
+                        :class="'px-2 py-1 rounded-lg border font-mono text-[11px] font-bold flex items-center gap-1 ' + (activeMatch.you.completedQuartets.includes(g.id) ? 'bg-c-green border-c-ink text-white' : (ownedGroupCount(g.id) > 0 ? 'bg-c-sky border-c-teal text-c-ink' : 'bg-c-paper border-c-ink/20 text-c-ink-4'))"
                       >
                         <span x-text="g.code"></span>
                         <span class="text-[10px] opacity-85" x-text="ownedGroupCount(g.id) + '/4'"></span>
@@ -770,7 +787,7 @@ export function renderArena(): string {
                 <button
                   type="button"
                   @click="toggleMatrixDrawer()"
-                  class="text-xs font-bold text-[#1E7898] hover:text-[#173240] hover:underline inline-flex items-center gap-1 whitespace-nowrap"
+                  class="text-xs font-bold text-c-teal hover:text-c-ink hover:underline inline-flex items-center gap-1 whitespace-nowrap"
                 >
                   <span x-text="showMatrixDrawer ? t.arena.hideMatrix : t.arena.showMatrix"></span>
                   <span x-show="showMatrixDrawer">${iconSvg('chevron-up', 'w-3.5 h-3.5')}</span>
@@ -792,22 +809,22 @@ export function renderArena(): string {
 export function renderCompendium(): string {
   return `
     <section x-show="activeTab === 'compendium'" class="max-w-7xl mx-auto space-y-6">
-      <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 space-y-4">
+      <div class="rounded-2xl bg-c-paper-hi ink-panel p-6 space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#173240]" x-text="t.compendium.title"></h2>
-            <p class="mt-1 text-sm text-[#3C5866] max-w-2xl" x-text="t.compendium.subtitle"></p>
+            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-c-ink" x-text="t.compendium.title"></h2>
+            <p class="mt-1 text-sm text-c-ink-2 max-w-2xl" x-text="t.compendium.subtitle"></p>
           </div>
 
           <div class="relative w-full md:w-72">
-            <span class="text-[#4B6675] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <span class="text-c-ink-3 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
               ${iconSvg('search', 'w-4 h-4')}
             </span>
             <input
               type="text"
               x-model="compendiumSearch"
               :placeholder="t.compendium.searchPlaceholder"
-              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/30 text-sm text-[#173240] placeholder:text-[#667D8A] focus:border-[#1E7898] focus:outline-none"
+              class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-c-paper border-2 border-c-ink/30 text-sm text-c-ink placeholder:text-c-ink-4 focus:border-c-teal focus:outline-none"
             />
           </div>
         </div>
@@ -816,14 +833,14 @@ export function renderCompendium(): string {
           <button
             type="button"
             @click="compendiumGroup = 'all'"
-            :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumGroup === 'all' ? 'bg-[#2F6F4E] border-[#173240] text-white' : 'bg-[#FAF4E4] text-[#173240] hover:bg-[#EAE1CA] border-[#173240]/25')"
+            :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumGroup === 'all' ? 'bg-c-green border-c-ink text-white' : 'bg-c-paper text-c-ink hover:bg-c-sand border-c-ink/25')"
             x-text="t.compendium.allQuartets"
           ></button>
           <template x-for="g in quartetGroups" :key="g.id">
             <button
               type="button"
               @click="compendiumGroup = g.id"
-              :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumGroup === g.id ? 'bg-[#1E7898] border-[#173240] text-white' : 'bg-[#FAF4E4] text-[#173240] hover:bg-[#EAE1CA] border-[#173240]/25')"
+              :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap border-2 ' + (compendiumGroup === g.id ? 'bg-c-teal border-c-ink text-white' : 'bg-c-paper text-c-ink hover:bg-c-sand border-c-ink/25')"
               x-text="g.code + '. ' + groupName(g.id)"
             ></button>
           </template>
@@ -832,7 +849,7 @@ export function renderCompendium(): string {
 
       <div
         x-show="filteredDeck().length === 0"
-        class="rounded-2xl bg-[#FFFDF7] ink-panel p-10 text-center text-sm text-[#3C5866]"
+        class="rounded-2xl bg-c-paper-hi ink-panel p-10 text-center text-sm text-c-ink-2"
         x-text="t.compendium.noMatches"
       ></div>
 
@@ -844,11 +861,11 @@ export function renderCompendium(): string {
           <div class="w-full flex flex-col items-center space-y-2.5">
             ${renderTurbineCard('card', { compact: true, playfulHover: true })}
             <div class="w-full max-w-[308px] flex items-start justify-between gap-2 px-1">
-              <p class="text-xs text-[#3C5866] leading-relaxed line-clamp-2" x-text="cardLocale(card).engineeringNote"></p>
+              <p class="text-xs text-c-ink-2 leading-relaxed line-clamp-2" x-text="cardLocale(card).engineeringNote"></p>
               <button
                 type="button"
                 @click="inspectCard(card)"
-                class="text-[11px] font-bold text-[#1E7898] hover:text-[#173240] hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
+                class="text-[11px] font-bold text-c-teal hover:text-c-ink hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
               >
                 ${iconSvg('maximize', 'w-3 h-3')}
                 <span x-text="t.compendium.inspectFull"></span>
@@ -864,52 +881,52 @@ export function renderCompendium(): string {
 export function renderLeaderboard(): string {
   return `
     <section x-show="activeTab === 'leaderboard'" class="max-w-6xl mx-auto space-y-6">
-      <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-6">
+      <div class="rounded-2xl bg-c-paper-hi ink-panel p-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#173240]" x-text="t.leaderboard.title"></h2>
-            <p class="mt-1 text-sm text-[#3C5866]" x-text="t.leaderboard.subtitle"></p>
+            <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-c-ink" x-text="t.leaderboard.title"></h2>
+            <p class="mt-1 text-sm text-c-ink-2" x-text="t.leaderboard.subtitle"></p>
           </div>
           <button
             type="button"
             @click="setTab('arena')"
-            class="px-4 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 self-start whitespace-nowrap"
+            class="px-4 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 self-start whitespace-nowrap"
           >
             ${iconSvg('swords', 'w-4 h-4')}
             <span x-text="t.leaderboard.playRanked"></span>
           </button>
         </div>
 
-        <div class="mt-5 pt-4 border-t-2 border-[#173240]/15 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-[#3C5866]">
+        <div class="mt-5 pt-4 border-t-2 border-c-ink/15 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-c-ink-2">
           <template x-for="tier in allRankTiers()" :key="tier.name">
             <div class="flex items-center gap-2">
               <span class="font-bold" :style="'color:' + tier.accentHex" x-text="tier.displayName"></span>
-              <span class="font-mono tabular-nums text-[#667D8A]" x-text="tier.minElo === 0 ? '<1150' : (tier.minElo + '+')"></span>
+              <span class="font-mono tabular-nums text-c-ink-4" x-text="tier.minElo === 0 ? '<1150' : (tier.minElo + '+')"></span>
             </div>
           </template>
         </div>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div class="lg:col-span-8 rounded-2xl bg-[#FFFDF7] ink-panel overflow-hidden">
-          <div class="px-5 py-4 border-b-2 border-[#173240]/15 flex items-center justify-between bg-[#FAF4E4]">
-            <h3 class="font-display text-base font-bold text-[#173240] flex items-center gap-2">
-              <span class="text-[#F15A24]">${iconSvg('trophy', 'w-4 h-4')}</span>
+        <div class="lg:col-span-8 rounded-2xl bg-c-paper-hi ink-panel overflow-hidden">
+          <div class="px-5 py-4 border-b-2 border-c-ink/15 flex items-center justify-between bg-c-paper">
+            <h3 class="font-display text-base font-bold text-c-ink flex items-center gap-2">
+              <span class="text-c-orange">${iconSvg('trophy', 'w-4 h-4')}</span>
               <span x-text="t.leaderboard.standings"></span>
             </h3>
-            <span class="font-mono tabular-nums text-xs font-bold text-[#3C5866]" x-text="leaderboard.length + ' ' + t.leaderboard.rankedPlayers"></span>
+            <span class="font-mono tabular-nums text-xs font-bold text-c-ink-2" x-text="leaderboard.length + ' ' + t.leaderboard.rankedPlayers"></span>
           </div>
 
           <div x-show="leaderboard.length === 0" class="p-10 text-center space-y-3">
-            <div class="text-[#8CA0AB] flex justify-center">${iconSvg('award', 'w-10 h-10')}</div>
-            <div class="font-display text-lg font-bold text-[#173240]" x-text="t.leaderboard.emptyTitle"></div>
-            <p class="text-sm text-[#3C5866] max-w-md mx-auto" x-text="t.leaderboard.emptyDesc"></p>
+            <div class="text-c-ink-5 flex justify-center">${iconSvg('award', 'w-10 h-10')}</div>
+            <div class="font-display text-lg font-bold text-c-ink" x-text="t.leaderboard.emptyTitle"></div>
+            <p class="text-sm text-c-ink-2 max-w-md mx-auto" x-text="t.leaderboard.emptyDesc"></p>
           </div>
 
           <div x-show="leaderboard.length > 0" class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
               <thead>
-                <tr class="border-b-2 border-[#173240]/15 text-xs text-[#3C5866] bg-[#FAF4E4]/70 whitespace-nowrap">
+                <tr class="border-b-2 border-c-ink/15 text-xs text-c-ink-2 bg-c-paper/70 whitespace-nowrap">
                   <th class="py-3 px-4 font-bold" x-text="t.leaderboard.colRank"></th>
                   <th class="py-3 px-4 font-bold" x-text="t.leaderboard.colPlayer"></th>
                   <th class="py-3 px-4 font-bold" x-text="t.leaderboard.colTier"></th>
@@ -919,19 +936,19 @@ export function renderLeaderboard(): string {
                   <th class="py-3 px-4 font-bold text-right" x-text="t.leaderboard.colQuartets"></th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-[#173240]/10">
+              <tbody class="divide-y divide-c-ink/10">
                 <template x-for="(p, idx) in leaderboard" :key="p.id">
-                  <tr :class="p.id === playerId ? 'bg-[#DCEEF5] text-[#173240]' : 'hover:bg-[#FAF4E4] text-[#173240]'">
-                    <td class="py-3 px-4 font-mono tabular-nums font-bold text-[#3C5866]" x-text="'#' + (idx + 1)"></td>
-                    <td class="py-3 px-4 font-bold text-[#173240]">
+                  <tr :class="p.id === playerId ? 'bg-c-sky text-c-ink' : 'hover:bg-c-paper text-c-ink'">
+                    <td class="py-3 px-4 font-mono tabular-nums font-bold text-c-ink-2" x-text="'#' + (idx + 1)"></td>
+                    <td class="py-3 px-4 font-bold text-c-ink">
                       <span x-text="p.callsign"></span>
-                      <span x-show="p.id === playerId" class="ml-2 text-xs font-bold text-[#1E7898]" x-text="'(' + t.arena.you + ')'"></span>
+                      <span x-show="p.id === playerId" class="ml-2 text-xs font-bold text-c-teal" x-text="'(' + t.arena.you + ')'"></span>
                     </td>
                     <td class="py-3 px-4 text-xs font-bold" :style="'color:' + tierForElo(p.elo).accentHex" x-text="tierForElo(p.elo).name"></td>
-                    <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-[#173240]" x-text="p.elo"></td>
-                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs text-[#3C5866]" x-text="p.wins + '-' + p.losses + '-' + p.draws"></td>
-                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs text-[#3C5866]" x-text="(p.gamesPlayed > 0 ? Math.round((p.wins / p.gamesPlayed) * 100) : 0) + '%'"></td>
-                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs font-bold text-[#2F6F4E]" x-text="p.quartetsCompleted"></td>
+                    <td class="py-3 px-4 text-right font-mono tabular-nums font-bold text-c-ink" x-text="p.elo"></td>
+                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs text-c-ink-2" x-text="p.wins + '-' + p.losses + '-' + p.draws"></td>
+                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs text-c-ink-2" x-text="(p.gamesPlayed > 0 ? Math.round((p.wins / p.gamesPlayed) * 100) : 0) + '%'"></td>
+                    <td class="py-3 px-4 text-right font-mono tabular-nums text-xs font-bold text-c-green" x-text="p.quartetsCompleted"></td>
                   </tr>
                 </template>
               </tbody>
@@ -939,29 +956,29 @@ export function renderLeaderboard(): string {
           </div>
         </div>
 
-        <div class="lg:col-span-4 rounded-2xl bg-[#FFFDF7] ink-panel overflow-hidden">
-          <div class="px-5 py-4 border-b-2 border-[#173240]/15 bg-[#FAF4E4]">
-            <h3 class="font-display text-base font-bold text-[#173240]" x-text="t.leaderboard.recentMatches"></h3>
+        <div class="lg:col-span-4 rounded-2xl bg-c-paper-hi ink-panel overflow-hidden">
+          <div class="px-5 py-4 border-b-2 border-c-ink/15 bg-c-paper">
+            <h3 class="font-display text-base font-bold text-c-ink" x-text="t.leaderboard.recentMatches"></h3>
           </div>
 
-          <div x-show="recentMatches.length === 0" class="p-6 text-center text-xs text-[#3C5866]" x-text="t.leaderboard.noMatchesYet"></div>
+          <div x-show="recentMatches.length === 0" class="p-6 text-center text-xs text-c-ink-2" x-text="t.leaderboard.noMatchesYet"></div>
 
-          <ul x-show="recentMatches.length > 0" class="divide-y divide-[#173240]/10">
+          <ul x-show="recentMatches.length > 0" class="divide-y divide-c-ink/10">
             <template x-for="m in recentMatches" :key="m.id">
               <li class="px-5 py-3.5 text-xs space-y-1">
                 <div class="flex items-center justify-between gap-2">
                   <span
-                    class="font-bold text-[#173240] truncate"
+                    class="font-bold text-c-ink truncate"
                     x-text="m.isDraw ? (m.player1Callsign + ' vs ' + m.player2Callsign) : (m.winnerCallsign + (lang === 'de' ? ' besiegt ' : ' def. ') + m.loserCallsign)"
                   ></span>
-                  <span class="font-mono tabular-nums text-[#667D8A] shrink-0" x-text="formatRelativeTime(m.finishedAt)"></span>
+                  <span class="font-mono tabular-nums text-c-ink-4 shrink-0" x-text="formatRelativeTime(m.finishedAt)"></span>
                 </div>
-                <div class="flex items-center justify-between text-[#3C5866]">
+                <div class="flex items-center justify-between text-c-ink-2">
                   <span
                     class="font-mono tabular-nums"
                     x-text="m.player1Cards + '–' + m.player2Cards + ' ' + t.leaderboard.cards + ' · ' + m.roundsPlayed + ' ' + t.leaderboard.rounds"
                   ></span>
-                  <span x-show="!m.isDraw" class="font-mono tabular-nums font-bold text-[#2F6F4E]" x-text="'+' + m.eloDelta + ' pts'"></span>
+                  <span x-show="!m.isDraw" class="font-mono tabular-nums font-bold text-c-green" x-text="'+' + m.eloDelta + ' pts'"></span>
                 </div>
               </li>
             </template>
@@ -975,18 +992,18 @@ export function renderLeaderboard(): string {
 export function renderTutorial(): string {
   return `
     <section x-show="activeTab === 'tutorial'" class="max-w-6xl mx-auto space-y-6">
-      <div class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="rounded-2xl bg-c-paper-hi ink-panel p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[#173240]" x-text="t.tutorial.title"></h2>
-          <p class="mt-1 text-sm text-[#3C5866]" x-text="t.tutorial.subtitle"></p>
+          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-c-ink" x-text="t.tutorial.title"></h2>
+          <p class="mt-1 text-sm text-c-ink-2" x-text="t.tutorial.subtitle"></p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-1.5 bg-[#FAF4E4] p-1.5 rounded-xl border-2 border-[#173240]">
+        <div class="flex flex-wrap items-center gap-1.5 bg-c-paper p-1.5 rounded-xl border-2 border-c-ink">
           <template x-for="(label, idx) in t.tutorial.steps" :key="idx">
             <button
               type="button"
               @click="setTutorialStep(idx)"
-              :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialStep === idx ? 'bg-[#1E7898] text-white' : 'text-[#4B6675] hover:text-[#173240] hover:bg-[#EAE1CA]')"
+              :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialStep === idx ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink hover:bg-c-sand')"
               x-text="(idx + 1) + '. ' + label"
             ></button>
           </template>
@@ -994,7 +1011,7 @@ export function renderTutorial(): string {
       </div>
 
       <!-- Step 1 -->
-      <div x-show="tutorialStep === 0" class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div x-show="tutorialStep === 0" class="rounded-2xl bg-c-paper-hi ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <div class="lg:col-span-5 flex justify-center">
           ${renderTurbineCard("cardById('2A')", {
             selectableExpr: 'true',
@@ -1005,25 +1022,25 @@ export function renderTutorial(): string {
 
         <div class="lg:col-span-7 space-y-5">
           <div>
-            <div class="text-xs font-extrabold uppercase tracking-wide text-[#1E7898]" x-text="t.tutorial.step1Tag"></div>
-            <h3 class="mt-1 font-display text-2xl font-extrabold text-[#173240]" x-text="t.tutorial.step1Title"></h3>
-            <p class="mt-2 text-sm text-[#3C5866] leading-relaxed" x-text="t.tutorial.step1Desc"></p>
+            <div class="text-xs font-extrabold uppercase tracking-wide text-c-teal" x-text="t.tutorial.step1Tag"></div>
+            <h3 class="mt-1 font-display text-2xl font-extrabold text-c-ink" x-text="t.tutorial.step1Title"></h3>
+            <p class="mt-2 text-sm text-c-ink-2 leading-relaxed" x-text="t.tutorial.step1Desc"></p>
           </div>
 
-          <div class="rounded-2xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-5 space-y-3">
+          <div class="rounded-2xl bg-c-paper border-2 border-c-ink/25 p-5 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <span
-                class="font-display text-lg font-bold text-[#173240]"
+                class="font-display text-lg font-bold text-c-ink"
                 x-text="t.stats[tutorialInspectedStat].label + ' (' + statDef(tutorialInspectedStat).unit + ')'"
               ></span>
               <span
-                :class="'text-xs font-bold px-2.5 py-1 rounded-lg border-2 whitespace-nowrap ' + (statDef(tutorialInspectedStat).higherWins ? 'bg-[#E7F4EC] text-[#173240] border-[#2F6F4E]' : 'bg-[#FFE8DC] text-[#C94213] border-[#F15A24]')"
+                :class="'text-xs font-bold px-2.5 py-1 rounded-lg border-2 whitespace-nowrap ' + (statDef(tutorialInspectedStat).higherWins ? 'bg-c-mint text-c-ink border-c-green' : 'bg-c-peach text-c-orange-deep border-c-orange')"
                 x-text="statDef(tutorialInspectedStat).higherWins ? t.card.higherWins : t.card.lowerWins"
               ></span>
             </div>
-            <p class="text-sm text-[#173240]" x-text="t.stats[tutorialInspectedStat].description"></p>
+            <p class="text-sm text-c-ink" x-text="t.stats[tutorialInspectedStat].description"></p>
             <div
-              class="text-xs font-medium text-[#3C5866] pt-1"
+              class="text-xs font-medium text-c-ink-2 pt-1"
               x-text="tutorialInspectedStat === 'cutInWindMs' ? t.tutorial.step1TipCutIn : (tutorialInspectedStat === 'hubHeightM' ? t.tutorial.step1TipHub : t.tutorial.step1TipDefault)"
             ></div>
           </div>
@@ -1032,7 +1049,7 @@ export function renderTutorial(): string {
             <button
               type="button"
               @click="setTutorialStep(1)"
-              class="px-5 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
+              class="px-5 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
             >
               <span x-text="t.tutorial.nextStep2"></span>
               ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -1042,19 +1059,19 @@ export function renderTutorial(): string {
       </div>
 
       <!-- Step 2 -->
-      <div x-show="tutorialStep === 1" class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 space-y-6">
+      <div x-show="tutorialStep === 1" class="rounded-2xl bg-c-paper-hi ink-panel p-6 space-y-6">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div class="text-xs font-extrabold uppercase tracking-wide text-[#1E7898]" x-text="t.tutorial.step2Tag"></div>
-            <h3 class="mt-1 font-display text-2xl font-extrabold text-[#173240]" x-text="t.tutorial.step2Title"></h3>
-            <p class="mt-1 text-sm text-[#3C5866]" x-text="t.tutorial.step2Desc"></p>
+            <div class="text-xs font-extrabold uppercase tracking-wide text-c-teal" x-text="t.tutorial.step2Tag"></div>
+            <h3 class="mt-1 font-display text-2xl font-extrabold text-c-ink" x-text="t.tutorial.step2Title"></h3>
+            <p class="mt-1 text-sm text-c-ink-2" x-text="t.tutorial.step2Desc"></p>
           </div>
 
           <button
             x-show="tutorialPracticeStat"
             type="button"
             @click="resetTutorialPractice()"
-            class="px-3.5 py-2 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] text-xs font-bold text-[#173240] border-2 border-[#173240] self-start whitespace-nowrap"
+            class="px-3.5 py-2 rounded-xl bg-c-paper hover:bg-c-sand text-xs font-bold text-c-ink border-2 border-c-ink self-start whitespace-nowrap"
             x-text="t.tutorial.resetPractice"
           ></button>
         </div>
@@ -1070,18 +1087,18 @@ export function renderTutorial(): string {
           </div>
 
           <div class="lg:col-span-3 w-full max-w-[356px] lg:max-w-none text-center space-y-3 px-1 sm:px-2">
-            <div x-show="!tutorialPracticeStat" class="rounded-2xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-4">
-              <div class="font-display font-bold text-[#173240] text-base" x-text="t.tutorial.pickYourStat"></div>
-              <p class="mt-1.5 text-xs text-[#3C5866]" x-text="t.tutorial.pickHint"></p>
+            <div x-show="!tutorialPracticeStat" class="rounded-2xl bg-c-paper border-2 border-c-ink/25 p-4">
+              <div class="font-display font-bold text-c-ink text-base" x-text="t.tutorial.pickYourStat"></div>
+              <p class="mt-1.5 text-xs text-c-ink-2" x-text="t.tutorial.pickHint"></p>
             </div>
-            <div x-show="tutorialPracticeStat" class="rounded-2xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-4 space-y-2.5">
+            <div x-show="tutorialPracticeStat" class="rounded-2xl bg-c-paper border-2 border-c-ink/25 p-4 space-y-2.5">
               <div
-                :class="'text-sm font-bold flex items-center justify-center gap-1.5 ' + (tutorialPracticeResult() === 1 ? 'text-[#2F6F4E]' : (tutorialPracticeResult() === 2 ? 'text-[#DC2626]' : 'text-[#B45309]'))"
+                :class="'text-sm font-bold flex items-center justify-center gap-1.5 ' + (tutorialPracticeResult() === 1 ? 'text-c-green' : (tutorialPracticeResult() === 2 ? 'text-c-red' : 'text-c-amber-deep'))"
               >
                 <span x-show="tutorialPracticeResult() === 1" class="shrink-0">${iconSvg('check-circle', 'w-4 h-4')}</span>
                 <span x-text="tutorialPracticeResult() === 1 ? t.tutorial.youWinBoth : (tutorialPracticeResult() === 2 ? t.tutorial.oppWinsHint : t.tutorial.exactTie)"></span>
               </div>
-              <p class="text-xs text-[#173240]" x-text="tutorialPracticeResult() === 1 ? t.tutorial.winDesc : t.tutorial.lossDesc"></p>
+              <p class="text-xs text-c-ink" x-text="tutorialPracticeResult() === 1 ? t.tutorial.winDesc : t.tutorial.lossDesc"></p>
             </div>
           </div>
 
@@ -1102,7 +1119,7 @@ export function renderTutorial(): string {
           <button
             type="button"
             @click="setTutorialStep(0)"
-            class="px-4 py-2 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-[#173240] text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
+            class="px-4 py-2 rounded-xl bg-c-paper hover:bg-c-sand border-2 border-c-ink text-c-ink text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
           >
             ${iconSvg('arrow-left', 'w-4 h-4')}
             <span x-text="t.tutorial.prev"></span>
@@ -1110,7 +1127,7 @@ export function renderTutorial(): string {
           <button
             type="button"
             @click="setTutorialStep(2)"
-            class="px-4 sm:px-5 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-xs sm:text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
+            class="px-4 sm:px-5 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
           >
             <span x-text="t.tutorial.nextStep3"></span>
             ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -1119,31 +1136,31 @@ export function renderTutorial(): string {
       </div>
 
       <!-- Step 3 -->
-      <div x-show="tutorialStep === 2" class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div x-show="tutorialStep === 2" class="rounded-2xl bg-c-paper-hi ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <div class="lg:col-span-6 space-y-5">
           <div>
-            <div class="text-xs font-extrabold uppercase tracking-wide text-[#1E7898]" x-text="t.tutorial.step3Tag"></div>
-            <h3 class="mt-1 font-display text-2xl font-extrabold text-[#173240]" x-text="t.tutorial.step3Title"></h3>
+            <div class="text-xs font-extrabold uppercase tracking-wide text-c-teal" x-text="t.tutorial.step3Tag"></div>
+            <h3 class="mt-1 font-display text-2xl font-extrabold text-c-ink" x-text="t.tutorial.step3Title"></h3>
           </div>
 
           <div class="space-y-4">
-            <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-4 flex items-start gap-3.5">
-              <div class="w-9 h-9 rounded-lg bg-[#FEF3C7] border-2 border-[#D97706] flex items-center justify-center text-[#B45309] shrink-0">
+            <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-4 flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg bg-c-cream-amber border-2 border-c-amber flex items-center justify-center text-c-amber-deep shrink-0">
                 ${iconSvg('layers', 'w-5 h-5')}
               </div>
               <div>
-                <h4 class="font-display font-bold text-sm text-[#173240]" x-text="t.tutorial.tiePotTitle"></h4>
-                <p class="mt-1 text-xs text-[#3C5866] leading-relaxed" x-text="t.tutorial.tiePotDesc"></p>
+                <h4 class="font-display font-bold text-sm text-c-ink" x-text="t.tutorial.tiePotTitle"></h4>
+                <p class="mt-1 text-xs text-c-ink-2 leading-relaxed" x-text="t.tutorial.tiePotDesc"></p>
               </div>
             </div>
 
-            <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-4 flex items-start gap-3.5">
-              <div class="w-9 h-9 rounded-lg bg-[#E7F4EC] border-2 border-[#2F6F4E] flex items-center justify-center text-[#2F6F4E] shrink-0">
+            <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-4 flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg bg-c-mint border-2 border-c-green flex items-center justify-center text-c-green shrink-0">
                 ${iconSvg('award', 'w-5 h-5')}
               </div>
               <div>
-                <h4 class="font-display font-bold text-sm text-[#173240]" x-text="t.tutorial.quartetTitle"></h4>
-                <p class="mt-1 text-xs text-[#3C5866] leading-relaxed" x-text="t.tutorial.quartetDesc"></p>
+                <h4 class="font-display font-bold text-sm text-c-ink" x-text="t.tutorial.quartetTitle"></h4>
+                <p class="mt-1 text-xs text-c-ink-2 leading-relaxed" x-text="t.tutorial.quartetDesc"></p>
               </div>
             </div>
           </div>
@@ -1152,7 +1169,7 @@ export function renderTutorial(): string {
             <button
               type="button"
               @click="setTutorialStep(1)"
-              class="px-4 py-2 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-[#173240] text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
+              class="px-4 py-2 rounded-xl bg-c-paper hover:bg-c-sand border-2 border-c-ink text-c-ink text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
             >
               ${iconSvg('arrow-left', 'w-4 h-4')}
               <span x-text="t.tutorial.prev"></span>
@@ -1160,7 +1177,7 @@ export function renderTutorial(): string {
             <button
               type="button"
               @click="setTutorialStep(3)"
-              class="px-4 sm:px-5 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-xs sm:text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
+              class="px-4 sm:px-5 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
             >
               <span x-text="t.tutorial.nextStep4"></span>
               ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -1178,30 +1195,30 @@ export function renderTutorial(): string {
       </div>
 
       <!-- Step 4 -->
-      <div x-show="tutorialStep === 3" class="rounded-2xl bg-[#FFFDF7] ink-panel p-6 space-y-6">
+      <div x-show="tutorialStep === 3" class="rounded-2xl bg-c-paper-hi ink-panel p-6 space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-5 space-y-3">
-            <div class="w-10 h-10 rounded-lg bg-[#DCEEF5] border-2 border-[#1E7898] flex items-center justify-center text-[#1E7898]">
+          <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-5 space-y-3">
+            <div class="w-10 h-10 rounded-lg bg-c-sky border-2 border-c-teal flex items-center justify-center text-c-teal">
               ${iconSvg('users', 'w-5 h-5')}
             </div>
-            <h3 class="font-display text-lg font-bold text-[#173240]" x-text="t.tutorial.mpTitle"></h3>
-            <p class="text-sm text-[#3C5866] leading-relaxed" x-text="t.tutorial.mpDesc"></p>
+            <h3 class="font-display text-lg font-bold text-c-ink" x-text="t.tutorial.mpTitle"></h3>
+            <p class="text-sm text-c-ink-2 leading-relaxed" x-text="t.tutorial.mpDesc"></p>
           </div>
 
-          <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-5 space-y-3">
-            <div class="w-10 h-10 rounded-lg bg-[#FFE8DC] border-2 border-[#F15A24] flex items-center justify-center text-[#C94213]">
+          <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-5 space-y-3">
+            <div class="w-10 h-10 rounded-lg bg-c-peach border-2 border-c-orange flex items-center justify-center text-c-orange-deep">
               ${iconSvg('trophy', 'w-5 h-5')}
             </div>
-            <h3 class="font-display text-lg font-bold text-[#173240]" x-text="t.tutorial.eloTitle"></h3>
-            <p class="text-sm text-[#3C5866] leading-relaxed" x-text="t.tutorial.eloDesc"></p>
+            <h3 class="font-display text-lg font-bold text-c-ink" x-text="t.tutorial.eloTitle"></h3>
+            <p class="text-sm text-c-ink-2 leading-relaxed" x-text="t.tutorial.eloDesc"></p>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t-2 border-[#173240]/15">
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t-2 border-c-ink/15">
           <button
             type="button"
             @click="setTutorialStep(2)"
-            class="px-4 py-2 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] border-2 border-[#173240] text-[#173240] text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
+            class="px-4 py-2 rounded-xl bg-c-paper hover:bg-c-sand border-2 border-c-ink text-c-ink text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap"
           >
             ${iconSvg('arrow-left', 'w-4 h-4')}
             <span x-text="t.tutorial.prev"></span>
@@ -1211,15 +1228,15 @@ export function renderTutorial(): string {
             <button
               type="button"
               @click="startBotMatch('standard')"
-              class="px-5 py-2.5 rounded-xl bg-[#FAF4E4] hover:bg-[#EAE1CA] text-[#173240] border-2 border-[#173240] font-bold text-sm inline-flex items-center gap-2 whitespace-nowrap"
+              class="px-5 py-2.5 rounded-xl bg-c-paper hover:bg-c-sand text-c-ink border-2 border-c-ink font-bold text-sm inline-flex items-center gap-2 whitespace-nowrap"
             >
-              <span class="text-[#2F6F4E]">${iconSvg('play', 'w-4 h-4')}</span>
+              <span class="text-c-green">${iconSvg('play', 'w-4 h-4')}</span>
               <span x-text="t.tutorial.startBotBtn"></span>
             </button>
             <button
               type="button"
               @click="setTab('arena')"
-              class="px-5 py-2.5 rounded-xl bg-[#2F6F4E] hover:bg-[#23553C] text-[#FFFDF7] border-2 border-[#173240] font-bold text-sm shadow-[0_3px_0_#173240] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
+              class="px-5 py-2.5 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center gap-2 whitespace-nowrap"
             >
               <span x-text="t.tutorial.enterArenaBtn"></span>
               ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -1236,56 +1253,56 @@ export function renderCardDetailModal(): string {
     <template x-if="inspectedCard">
       <div
         @click="closeModal()"
-        class="fixed inset-0 z-50 bg-[#173240]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        class="fixed inset-0 z-50 bg-[#0B1A22]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
         role="dialog"
         aria-modal="true"
         :aria-label="inspectedCard.modelName"
       >
         <div
           @click.stop
-          class="w-full max-w-5xl rounded-2xl bg-[#FFFDF7] text-[#173240] border-[3px] border-[#173240] shadow-[0_8px_0_#173240] overflow-hidden my-auto max-h-[92vh] flex flex-col"
+          class="w-full max-w-5xl rounded-2xl bg-c-paper-hi text-c-ink border-[3px] border-c-ink shadow-[0_8px_0_var(--c-line)] overflow-hidden my-auto max-h-[92vh] flex flex-col"
         >
           <!-- Category Color Crest Band -->
           <div class="h-1.5 w-full shrink-0" :style="'background-color:' + cardTheme(inspectedCard).border"></div>
 
           <!-- Option 1: Two-Column Split Field-Guide Dossier -->
-          <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 items-stretch divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#173240]/15">
+          <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 items-stretch divide-y-2 md:divide-y-0 md:divide-x-2 divide-c-ink/15">
             <!-- Left Column: Uncropped Full-Length Specimen Gallery Frame -->
-            <div class="md:col-span-5 p-4 sm:p-5 bg-[#FAF4E4] flex flex-col justify-between space-y-3.5">
+            <div class="md:col-span-5 p-4 sm:p-5 bg-c-paper flex flex-col justify-between space-y-3.5">
               <!-- Mobile-Only Header Bar with Card ID & Instant Close -->
               <div class="flex md:hidden items-center justify-between gap-2 pb-0.5">
                 <div class="flex items-center gap-2 min-w-0">
                   <div
                     :style="'background-color:' + cardTheme(inspectedCard).stampBg + '; color:' + cardTheme(inspectedCard).stampText"
-                    class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-xs border-2 border-[#173240]"
+                    class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-xs border-2 border-c-ink"
                     x-text="inspectedCard.id"
                   ></div>
-                  <span class="text-xs font-bold text-[#173240] truncate" x-text="inspectedCard.modelName"></span>
+                  <span class="text-xs font-bold text-c-ink truncate" x-text="inspectedCard.modelName"></span>
                 </div>
                 <button
                   type="button"
                   @click="closeModal()"
                   :aria-label="t.card.close"
-                  class="w-8 h-8 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-[#173240] flex items-center justify-center shrink-0 shadow-[0_1.5px_0_#173240] active:translate-y-0.5 transition-all"
+                  class="w-8 h-8 rounded-lg bg-c-paper-hi hover:bg-c-sand border-2 border-c-ink text-c-ink flex items-center justify-center shrink-0 shadow-[0_1.5px_0_var(--c-line)] active:translate-y-0.5 transition-all"
                 >
                   ${iconSvg('x', 'w-4 h-4')}
                 </button>
               </div>
 
               <div
-                class="relative w-full rounded-xl bg-[#FFFDF7] border-2 border-[#173240]/30 p-2 sm:p-3 shadow-inner flex flex-col items-center justify-center min-h-[300px] sm:min-h-[380px] md:min-h-[440px] flex-1"
+                class="relative w-full rounded-xl bg-c-paper-hi border-2 border-c-ink/30 p-2 sm:p-3 shadow-inner flex flex-col items-center justify-center min-h-[300px] sm:min-h-[380px] md:min-h-[440px] flex-1"
                 x-data="{ imgFailed: false }"
                 x-effect="void (inspectedCard?.id); imgFailed = false"
               >
                 <!-- Subtle Field-Guide Measurement Ticks -->
                 <div class="absolute left-1.5 inset-y-4 flex flex-col justify-between pointer-events-none opacity-35" aria-hidden="true">
-                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1 h-0.5 bg-[#173240]"></div>
-                  <div class="w-1.5 h-0.5 bg-[#173240]"></div>
+                  <div class="w-1.5 h-0.5 bg-c-ink"></div>
+                  <div class="w-1 h-0.5 bg-c-ink"></div>
+                  <div class="w-1.5 h-0.5 bg-c-ink"></div>
+                  <div class="w-1 h-0.5 bg-c-ink"></div>
+                  <div class="w-1.5 h-0.5 bg-c-ink"></div>
+                  <div class="w-1 h-0.5 bg-c-ink"></div>
+                  <div class="w-1.5 h-0.5 bg-c-ink"></div>
                 </div>
 
                 <!-- Complete Uncropped Wind Turbine Photo (Zero Cut-Off) -->
@@ -1300,25 +1317,25 @@ export function renderCardDetailModal(): string {
 
                 <div
                   x-show="imgFailed"
-                  class="h-64 w-full bg-gradient-to-br from-[#DCEEF5] to-[#FAF4E4] flex flex-col items-center justify-center text-[#1E7898] p-4 text-center rounded-lg"
+                  class="h-64 w-full bg-gradient-to-br from-c-sky to-c-paper flex flex-col items-center justify-center text-c-teal p-4 text-center rounded-lg"
                 >
                   ${iconSvg('wind', 'w-10 h-10 mb-2')}
-                  <span class="text-sm font-bold text-[#173240]" x-text="inspectedCard.modelName"></span>
-                  <span class="text-xs text-[#3C5866] mt-1" x-text="inspectedCard.manufacturer"></span>
+                  <span class="text-sm font-bold text-c-ink" x-text="inspectedCard.modelName"></span>
+                  <span class="text-xs text-c-ink-2 mt-1" x-text="inspectedCard.manufacturer"></span>
                 </div>
               </div>
 
               <!-- Uncropped Specimen Info & Provenance Tag -->
-              <div class="rounded-xl bg-[#FFFDF7] border-2 border-[#173240]/20 p-3 space-y-1 text-xs">
+              <div class="rounded-xl bg-c-paper-hi border-2 border-c-ink/20 p-3 space-y-1 text-xs">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="font-bold text-[#173240] truncate" x-text="inspectedCard.flagshipPlant"></span>
+                  <span class="font-bold text-c-ink truncate" x-text="inspectedCard.flagshipPlant"></span>
                   <span
-                    class="px-2 py-0.5 rounded text-[10px] font-bold border border-[#173240]/25 whitespace-nowrap"
-                    :class="inspectedCard.isRealPhoto ? 'bg-[#E7F4EC] text-[#2F6F4E]' : 'bg-[#FAF4E4] text-[#78350F]'"
+                    class="px-2 py-0.5 rounded text-[10px] font-bold border border-c-ink/25 whitespace-nowrap"
+                    :class="inspectedCard.isRealPhoto ? 'bg-c-mint text-c-green' : 'bg-c-paper text-c-amber-ink'"
                     x-text="inspectedCard.isRealPhoto ? t.card.photoReal : t.card.photoConcept"
                   ></span>
                 </div>
-                <div class="text-[#3C5866] text-[11px] flex items-center justify-between gap-2">
+                <div class="text-c-ink-2 text-[11px] flex items-center justify-between gap-2">
                   <span class="truncate" x-text="inspectedCard.flagshipLocation"></span>
                   <span class="font-mono tabular-nums font-semibold shrink-0" x-text="formatNumber(inspectedCard.turbineCountInPlant) + ' ' + (lang === 'de' ? 'Anlagen' : 'turbines')"></span>
                 </div>
@@ -1329,16 +1346,16 @@ export function renderCardDetailModal(): string {
                 <button
                   type="button"
                   @click="inspectPrevCard()"
-                  class="px-3 py-1.5 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center gap-1.5 shadow-[0_2px_0_#173240] active:translate-y-0.5 transition-all whitespace-nowrap"
+                  class="px-3 py-1.5 rounded-lg bg-c-paper-hi hover:bg-c-sand border-2 border-c-ink text-xs font-bold text-c-ink inline-flex items-center gap-1.5 shadow-[0_2px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap"
                 >
                   ${iconSvg('arrow-left', 'w-3.5 h-3.5')}
                   <span x-text="t.card.prevCard"></span>
                 </button>
-                <span class="font-mono tabular-nums text-xs font-bold text-[#3C5866]" x-text="inspectedCard.id + ' / 8D'"></span>
+                <span class="font-mono tabular-nums text-xs font-bold text-c-ink-2" x-text="inspectedCard.id + ' / 8D'"></span>
                 <button
                   type="button"
                   @click="inspectNextCard()"
-                  class="px-3 py-1.5 rounded-lg bg-[#FFFDF7] hover:bg-[#EAE1CA] border-2 border-[#173240] text-xs font-bold text-[#173240] inline-flex items-center gap-1.5 shadow-[0_2px_0_#173240] active:translate-y-0.5 transition-all whitespace-nowrap"
+                  class="px-3 py-1.5 rounded-lg bg-c-paper-hi hover:bg-c-sand border-2 border-c-ink text-xs font-bold text-c-ink inline-flex items-center gap-1.5 shadow-[0_2px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap"
                 >
                   <span x-text="t.card.nextCard"></span>
                   ${iconSvg('arrow-right', 'w-3.5 h-3.5')}
@@ -1347,14 +1364,14 @@ export function renderCardDetailModal(): string {
             </div>
 
             <!-- Right Column: Specs, Stats & Engineering Dossier -->
-            <div class="md:col-span-7 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-[#FFFDF7]">
+            <div class="md:col-span-7 p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-c-paper-hi">
               <!-- Header -->
               <div>
                 <div class="flex items-start justify-between gap-3">
                   <div class="flex items-center gap-2.5 min-w-0">
                     <div
                       :style="'background-color:' + cardTheme(inspectedCard).stampBg + '; color:' + cardTheme(inspectedCard).stampText"
-                      class="w-11 h-11 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-base border-2 border-[#173240] shadow-[0_2px_0_#173240]"
+                      class="w-11 h-11 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-base border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                       :title="groupName(inspectedCard.groupId)"
                       x-text="inspectedCard.id"
                     ></div>
@@ -1364,7 +1381,7 @@ export function renderCardDetailModal(): string {
                         :style="'color:' + cardTheme(inspectedCard).border"
                         x-text="groupName(inspectedCard.groupId)"
                       ></span>
-                      <span class="text-xs font-semibold text-[#4B6675]" x-text="deploymentLabel(inspectedCard.deploymentType)"></span>
+                      <span class="text-xs font-semibold text-c-ink-3" x-text="deploymentLabel(inspectedCard.deploymentType)"></span>
                     </div>
                   </div>
 
@@ -1372,15 +1389,15 @@ export function renderCardDetailModal(): string {
                     type="button"
                     @click="closeModal()"
                     :aria-label="t.card.close"
-                    class="w-9 h-9 rounded-xl bg-[#FAF4E4] hover:bg-white border-2 border-[#173240] text-[#173240] flex items-center justify-center shadow-[0_2px_0_#173240] transition-colors shrink-0"
+                    class="w-9 h-9 rounded-xl bg-c-paper hover:bg-white border-2 border-c-ink text-c-ink flex items-center justify-center shadow-[0_2px_0_var(--c-line)] transition-colors shrink-0"
                   >
                     ${iconSvg('x', 'w-4 h-4')}
                   </button>
                 </div>
 
-                <h2 class="mt-2.5 font-display text-2xl sm:text-3xl font-extrabold text-[#173240] leading-tight" x-text="inspectedCard.modelName"></h2>
-                <div class="text-xs sm:text-sm text-[#3C5866] mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span class="font-bold text-[#173240]" x-text="inspectedCard.manufacturer"></span>
+                <h2 class="mt-2.5 font-display text-2xl sm:text-3xl font-extrabold text-c-ink leading-tight" x-text="inspectedCard.modelName"></h2>
+                <div class="text-xs sm:text-sm text-c-ink-2 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                  <span class="font-bold text-c-ink" x-text="inspectedCard.manufacturer"></span>
                   <span aria-hidden="true">·</span>
                   <span x-text="cardLocale(inspectedCard).country"></span>
                   <span aria-hidden="true">·</span>
@@ -1390,18 +1407,18 @@ export function renderCardDetailModal(): string {
 
               <!-- 5 Stat Tiles Grid -->
               <div class="space-y-1.5">
-                <div class="text-xs font-bold text-[#3C5866]" x-text="lang === 'de' ? 'Vergleichswerte im Quartett' : 'Quartet Battle Stats'"></div>
+                <div class="text-xs font-bold text-c-ink-2" x-text="lang === 'de' ? 'Vergleichswerte im Quartett' : 'Quartet Battle Stats'"></div>
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   <template x-for="stat in statDefinitions" :key="stat.key">
-                    <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-2 sm:p-2.5 flex flex-col justify-between">
-                      <div class="text-[10px] font-bold text-[#3C5866] truncate" x-text="t.stats[stat.key].shortLabel"></div>
-                      <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-[#173240] leading-tight">
+                    <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-2 sm:p-2.5 flex flex-col justify-between">
+                      <div class="text-[10px] font-bold text-c-ink-2 truncate" x-text="t.stats[stat.key].shortLabel"></div>
+                      <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-c-ink leading-tight">
                         <span x-text="formatStatValue(stat.key, inspectedCard.stats[stat.key])"></span>
-                        <span class="text-[10px] font-medium text-[#3C5866]" x-text="stat.unit"></span>
+                        <span class="text-[10px] font-medium text-c-ink-2" x-text="stat.unit"></span>
                       </div>
                       <div
                         class="text-[9px] font-bold truncate flex items-center gap-0.5"
-                        :style="'color:' + (stat.higherWins ? '#2F6F4E' : '#C94213')"
+                        :style="'color:' + (stat.higherWins ? 'var(--c-green)' : 'var(--c-orange-deep)')"
                       >
                         <span x-show="stat.higherWins">${iconSvg('arrow-up', 'w-2 h-2')}</span>
                         <span x-show="!stat.higherWins">${iconSvg('arrow-down', 'w-2 h-2')}</span>
@@ -1413,44 +1430,44 @@ export function renderCardDetailModal(): string {
               </div>
 
               <!-- Technical Specifications Box -->
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/20 p-3 sm:p-3.5 space-y-2 text-xs">
+              <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-3 sm:p-3.5 space-y-2 text-xs">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                   <div class="flex justify-between gap-2">
-                    <span class="text-[#3C5866]" x-text="t.card.drivetrain"></span>
-                    <span class="font-bold text-[#173240] text-right truncate" x-text="cardLocale(inspectedCard).drivetrain"></span>
+                    <span class="text-c-ink-2" x-text="t.card.drivetrain"></span>
+                    <span class="font-bold text-c-ink text-right truncate" x-text="cardLocale(inspectedCard).drivetrain"></span>
                   </div>
                   <div class="flex justify-between gap-2">
-                    <span class="text-[#3C5866]" x-text="t.card.sweptArea"></span>
-                    <span class="font-mono tabular-nums font-bold text-[#173240] text-right" x-text="formatNumber(inspectedCard.sweptAreaM2) + ' m²'"></span>
+                    <span class="text-c-ink-2" x-text="t.card.sweptArea"></span>
+                    <span class="font-mono tabular-nums font-bold text-c-ink text-right" x-text="formatNumber(inspectedCard.sweptAreaM2) + ' m²'"></span>
                   </div>
                   <div class="flex justify-between gap-2">
-                    <span class="text-[#3C5866]" x-text="t.card.flagshipPlant"></span>
-                    <span class="font-bold text-[#173240] text-right truncate" x-text="inspectedCard.flagshipPlant"></span>
+                    <span class="text-c-ink-2" x-text="t.card.flagshipPlant"></span>
+                    <span class="font-bold text-c-ink text-right truncate" x-text="inspectedCard.flagshipPlant"></span>
                   </div>
                   <div class="flex justify-between gap-2">
-                    <span class="text-[#3C5866]" x-text="t.card.deployedYear"></span>
-                    <span class="font-mono tabular-nums font-bold text-[#173240] text-right" x-text="inspectedCard.year"></span>
+                    <span class="text-c-ink-2" x-text="t.card.deployedYear"></span>
+                    <span class="font-mono tabular-nums font-bold text-c-ink text-right" x-text="inspectedCard.year"></span>
                   </div>
                 </div>
               </div>
 
               <!-- Field Guide Fact & Source Link Button -->
-              <div class="rounded-xl bg-[#FAF4E4] border-2 border-[#173240]/25 p-3.5 space-y-2.5">
+              <div class="rounded-xl bg-c-paper border-2 border-c-ink/25 p-3.5 space-y-2.5">
                 <div class="space-y-1">
-                  <div class="text-xs font-bold text-[#2F6F4E] flex items-center gap-1.5">
+                  <div class="text-xs font-bold text-c-green flex items-center gap-1.5">
                     ${iconSvg('wind', 'w-3.5 h-3.5')}
                     <span x-text="t.card.engineeringSummary"></span>
                   </div>
-                  <p class="text-xs sm:text-sm text-[#173240] leading-relaxed" x-text="cardLocale(inspectedCard).engineeringNote"></p>
+                  <p class="text-xs sm:text-sm text-c-ink leading-relaxed" x-text="cardLocale(inspectedCard).engineeringNote"></p>
                 </div>
 
-                <div class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-[#173240]/15">
-                  <span class="text-[11px] text-[#4B6675] truncate max-w-[240px]" :title="inspectedCard.sourceLabel" x-text="inspectedCard.sourceLabel"></span>
+                <div class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-c-ink/15">
+                  <span class="text-[11px] text-c-ink-3 truncate max-w-[240px]" :title="inspectedCard.sourceLabel" x-text="inspectedCard.sourceLabel"></span>
                   <a
                     :href="inspectedCard.sourceUrl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="px-3.5 py-1.5 rounded-lg bg-[#1E7898] hover:bg-[#155B75] text-white border-2 border-[#173240] font-bold text-xs inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 shadow-[0_2px_0_#173240]"
+                    class="px-3.5 py-1.5 rounded-lg bg-c-teal hover:bg-c-teal-deep text-white border-2 border-c-ink font-bold text-xs inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 shadow-[0_2px_0_var(--c-line)]"
                   >
                     <span x-text="t.card.technicalSource"></span>
                     ${iconSvg('external-link', 'w-3.5 h-3.5')}
@@ -1471,10 +1488,10 @@ export function renderAppShell(): string {
       @keydown.escape.window="if (inspectedCard) closeModal()"
       @keydown.arrow-left.window="if (inspectedCard) inspectPrevCard()"
       @keydown.arrow-right.window="if (inspectedCard) inspectNextCard()"
-      class="min-h-screen flex flex-col bg-[#F5EFE0] text-[#173240] paper-grain"
+      class="min-h-screen flex flex-col bg-c-canvas text-c-ink paper-grain"
     >
       ${renderHeader()}
-      <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main class="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 pb-24 md:pb-8">
         ${renderLobby()}
         ${renderArena()}
         ${renderCompendium()}
