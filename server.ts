@@ -243,7 +243,8 @@ async function bootstrap() {
   } else {
     const distDir = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distDir));
-    app.get('*', (_req, res) => {
+    app.use((req, res, next) => {
+      if (req.method !== 'GET') return next();
       res.sendFile(path.join(distDir, 'index.html'));
     });
   }
