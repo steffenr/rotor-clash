@@ -19,4 +19,5 @@ hubHeightM: 45
 plantCapacityMw: 3.68
 sourceUrl: https://www.vikingenergy.co.uk/timeline
 sourceLabel: Viking Energy · Shetland timeline
+approximateStats: hubHeightM
 ---

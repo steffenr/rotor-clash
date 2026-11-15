@@ -19,4 +19,5 @@ hubHeightM: 82
 plantCapacityMw: 399.6
 sourceUrl: https://tethys.pnnl.gov/wind-project-sites/anholt-offshore-wind-farm
 sourceLabel: TETHYS · Anholt
+approximateStats: hubHeightM
 ---

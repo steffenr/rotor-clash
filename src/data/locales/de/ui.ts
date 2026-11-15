@@ -58,8 +58,9 @@ export const DE_UI: Translations = {
     source: 'Quelle',
     higherWins: 'Höher gewinnt!',
     lowerWins: 'Niedriger gewinnt!',
+    approximate: 'Ungefähr: abgeleitet, typisch für das Modell oder aus nur einer Quelle.',
     photoReal: 'Echtes Foto',
-    photoConcept: 'Illustration',
+    photoConcept: 'KI-Konzeptbild',
     drivetrain: 'Antrieb',
     sweptArea: 'Rotorfläche',
     deployedYear: 'Baujahr',
@@ -83,7 +84,7 @@ export const DE_UI: Translations = {
     photoBy: 'Foto von',
     photoLicense: 'Lizenz',
     photoViewSource: 'Quelle auf Wikimedia Commons ansehen',
-    photoConcept: 'Für Rotor Clash gestaltete Illustration',
+    photoConcept: 'KI-generiertes Konzeptbild (kein freies Foto verfügbar)',
   },
   stats: {
     ratedPowerMw: {

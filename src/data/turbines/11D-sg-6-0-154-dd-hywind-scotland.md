@@ -15,8 +15,8 @@ flagshipLocation: off Peterhead, Scotland, UK
 turbineCountInPlant: 5
 ratedPowerMw: 6
 rotorDiameterM: 154
-hubHeightM: 98
+hubHeightM: 103
 plantCapacityMw: 30
-sourceUrl: https://www.equinor.com/energy/hywind-scotland
-sourceLabel: Equinor · Hywind Scotland (hub height derived)
+sourceUrl: https://news.siemens.co.uk/news/siemens-to-supply-offshore-wind-turbines-to-world-s-largest-floating-wind-farm
+sourceLabel: Siemens · Hywind Scotland turbines
 ---

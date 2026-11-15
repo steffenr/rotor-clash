@@ -4,8 +4,20 @@ Every real photograph in Rotor Clash comes from [Wikimedia Commons](https://comm
 licence (public domain, CC0, CC BY or CC BY-SA). The images were resized for the game; no other changes were made.
 Adaptations of CC BY-SA images (such as resizing) are shared under the same licence as the original.
 
-The author, licence and original file are also shown in the card detail view. The "concept" illustrations
-(`fallback_*`) were created for Rotor Clash and contain no third-party material.
+The author, licence and original file are also shown in the card detail view.
+
+## AI-generated images
+
+Cards without a free photograph show an **AI-generated concept image** (`fallback_*`), and the arena uses an
+AI-generated table background. Every image the project made for itself (the files in `src/assets/images/`,
+outside `real/`) embeds C2PA Content Credentials signed by "Google C2PA Media Services" that mark it as
+AI-generated ("trainedAlgorithmicMedia"). They were produced with a Google generative AI service while the project
+was built in Google AI Studio. They are listed with their hashes in `src/data/projectImages.ts`; a test checks that
+evidence and fails for an undocumented or modified file. Nine of the fourteen files (design mockups and UI
+explorations) are not used by the app and are not shipped in the bundle.
+
+Rights in generated images follow the terms of the service that produced them. The repository owner should confirm
+that those terms allow this use; this repository does not claim copyright in them beyond what those terms grant.
 
 | Photo key | Image | Author | Licence |
 | --- | --- | --- | --- |

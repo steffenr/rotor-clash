@@ -142,24 +142,37 @@ differs in a few places, and every open gap was resolved as follows.
   unconfirmed customer order. Year 2023 is approximate (certified November 2023).
 - **Quartet 7 and 16 are renamed** "Giants Under Test" and "North Sea Builders" in the game.
 
-**Hub heights and other gaps, by card**
+**Hub heights and other gaps, by card (final)**
 
-| Card | Value used | Basis | Tier |
+Values marked **≈** are shown with "≈" in the game (card and detail) and carry a tooltip, because they are
+derived, typical for the model, or from a single source. They are flagged in each card's `approximateStats`.
+
+| Card | Value | Basis | Shown as |
 | --- | --- | --- | --- |
-| Alpha Ventus (16B) | 92 m (REpower 5M); 90 m for the M5000 | Offshore-Stiftung page: "total height 92 m from hub to water surface" | A |
-| Roscoe (13B) | 60 m, rotor 61.4 m | MWT-1000A offers 55 / 60 / 69 m; the Roscoe-specific height is not published | C |
-| El Hierro (14B) | 64 m, rotor 71 m | Enercon E-70 hub-height list (57–113 m) and 71 m rotor; the as-built height is not published | C |
-| Thornton Bank (16C) | 95 m, rotor 126 m | Single database entry for the 6.2M126; Nordsee One's 152 m total height suggests it can be lower | C |
-| Anholt (16D) | 82 m | Derived: 141.6 m total height − 60 m rotor radius | C |
-| SG DD-276 (15A) | 165 m | Reported 160–170 m; no official figure | C |
-| Dongfang 17 MW (15D) | 152 m | One source (Fujian government / press) | C |
-| Haliade-X 12 MW (15B) | 150 m | Derived from the 260 m tip height minus the 110 m blade radius | C |
-| Hywind Scotland (11D) | 98 m | Derived: 253 m base-to-tip, 78 m submerged, 77 m blade radius | C |
-| Hornsdale (12B) | 92 m | Power Technology: towers 92 m for all three stages | B |
+| Hywind Scotland (11D) | hub 103 m | Siemens announcement: "hub height of 103 meter" (Equinor's fact sheet says 98 m, Wikipedia 101 m) | exact |
+| Alpha Ventus (16B) | hub 92 m | Offshore-Stiftung page: 92 m from hub to water surface | exact |
+| Roscoe (13B) | hub 69 m | Plant listings (infrasure.ai, gridinfo.com) give 69 m for the Roscoe turbines | exact |
+| Hornsdale (12B) | hub 92 m | Power Technology: towers 92 m for all three stages | exact |
+| Dongfang 17 MW (15D) | hub 152 m | Xinhua: "轮毂中心高度约152米" (about 152 m) | ≈ |
+| SG DD-276 (15A) | hub 170 m | Danish press (DR): a 170 m tower; no official hub height | ≈ |
+| Haliade-X 12 MW (15B) | hub 150 m | TNO: "approximately 150-metre high tower"; GE gives a 260 m tip height | ≈ |
+| Block Island (11C) | hub 100 m | Database value for the Haliade 150-6MW | ≈ |
+| Horse Hollow (13A) | hub 80 m | GE 1.5sle offers 80 or 85 m; one listing says 85 m | ≈ |
+| Shepherds Flat (13C) | hub 85 m | GE 2.5-100 offers 75 or 85 m | ≈ |
+| Thornton Bank (16C) | hub 95 m | Single database entry; Nordsee One's 152 m total height suggests it can be lower | ≈ |
+| Anholt (16D) | hub 82 m | Derived: 141.6 m total height − 60 m rotor radius | ≈ |
+| El Hierro (14B) | hub 64 m, rotor 71 m | Enercon E-70 option list; the as-built values are not published | ≈ |
+| Ross Island (14A) | hub 37 m, rotor 33 m | "37 m-high" turbines (hub or tip not stated); E33 rotor from the model | ≈ |
+| Burradale (14D) | hub 45 m | One listing's average across V47 and V52 | ≈ |
+| Gedser (9C) | hub 25 m | Database | ≈ |
+| Vindeby (11A) | hub 35 m | Database (a mirror says 37.5 m) | ≈ |
+| Growian (9D) | hub 100 m | Reference tables 100 m, a German article 96 m | ≈ |
+| Smith-Putnam (9B) | rated 1.25 MW | Sources give 1.0, 1.25 and 1.5 MW | ≈ |
+| Suzlon S144 (12D) | year 2023 | Prototype reported installed by November 2023; no exact commissioning date | ≈ |
 
-Cards with a derived or single-source hub height name that in `sourceLabel` or in this table. Rated power,
-rotor diameter, plant capacity and year are documented for every card. First-power year replaces cut-in
-speed in this deck, so the previously missing cut-in values no longer matter.
+Rated power, rotor diameter, plant capacity and year are documented for every other card. First-power year
+replaces cut-in speed in this deck, so the previously missing cut-in values no longer matter. The operators
+of El Hierro, Thornton Bank and Anholt do not publish hub heights, so those stay approximate by necessity.
 
 ## Photos and licences
 
@@ -179,7 +192,10 @@ file are in `src/data/photoCredits.ts`; a readable list is in [`../PHOTO_CREDITS
   and Hornsea 2 (6A; the only free photo was almost empty sea).
 - Where a farm photo shows a similar machine rather than the exact model (for example the Skabersjö V90 for
   the Thanet card), the card still names the right plant and model; the photo is illustrative.
-- The concept illustrations (`fallback_*`) were already part of the project and are assumed to be project-owned.
+- The concept images (`fallback_*`) and every other image in `src/assets/images/` are **AI-generated**: each file embeds
+  C2PA Content Credentials signed by "Google C2PA Media Services" with source type `trainedAlgorithmicMedia`. They are
+  documented in `src/data/projectImages.ts`, labelled "AI concept image" in the game, and the rights follow the terms of
+  the service that generated them, which the repository owner must confirm.
 
 ## Original options (for the record)
 

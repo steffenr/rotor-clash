@@ -15,8 +15,8 @@ flagshipLocation: Nolan County, Texas, USA
 turbineCountInPlant: 627
 ratedPowerMw: 1
 rotorDiameterM: 61.4
-hubHeightM: 60
+hubHeightM: 69
 plantCapacityMw: 781.5
 sourceUrl: https://power-technology.com/projects/roscoe-wind-farm/
-sourceLabel: Power Technology · Roscoe
+sourceLabel: Power Technology · Roscoe (hub height from plant listing)
 ---

@@ -19,4 +19,5 @@ hubHeightM: 95
 plantCapacityMw: 325.2
 sourceUrl: https://tethys.pnnl.gov/sites/default/files/publications/C-Power-2012.pdf
 sourceLabel: C-Power · Thorntonbank (TETHYS)
+approximateStats: hubHeightM
 ---

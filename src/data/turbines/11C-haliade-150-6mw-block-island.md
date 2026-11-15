@@ -19,4 +19,5 @@ hubHeightM: 100
 plantCapacityMw: 30
 sourceUrl: https://www.ge.com/news/reports/winds-change-offshore-wind-powers-first-american-homes-block-island/
 sourceLabel: GE Reports · Block Island
+approximateStats: hubHeightM
 ---

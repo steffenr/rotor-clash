@@ -58,8 +58,9 @@ export const EN_UI: Translations = {
     source: 'Source',
     higherWins: 'Bigger wins!',
     lowerWins: 'Smaller wins!',
+    approximate: 'Approximate: derived, typical for the model, or from a single source.',
     photoReal: 'Real Photo',
-    photoConcept: 'Explorer Photo',
+    photoConcept: 'AI Concept Image',
     drivetrain: 'Generator Type',
     sweptArea: 'Blade Circle Area',
     deployedYear: 'Year Built',
@@ -83,7 +84,7 @@ export const EN_UI: Translations = {
     photoBy: 'Photo by',
     photoLicense: 'License',
     photoViewSource: 'View source on Wikimedia Commons',
-    photoConcept: 'Concept illustration made for Rotor Clash',
+    photoConcept: 'AI-generated concept image (no free photo available)',
   },
   stats: {
     ratedPowerMw: {
