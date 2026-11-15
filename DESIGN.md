@@ -80,7 +80,7 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 - The face colour is the `--c-back` token, which stays Harbor Navy in dark mode like a real card back. Motion is limited to `transform`/`opacity` and is neutralised by the global `prefers-reduced-motion` rule. Tiles keep `role="radio"` inside a `radiogroup`.
 
 ### Arena Table & Collector Strip (`renderArena`)
-- Plays over the illustrated desk backdrop (`src/assets/images/field_guide_desk_1794678472040.jpg`) softened with a warm parchment scrim (`bg-[#F5EFE0]/60`).
+- Plays on the plain `--c-canvas-2` desk colour: no background illustration, so nothing competes with the two cards.
 - 3-column battle table: **Your Card** | **Center Duel Feedback / Turn Cue** (`animate-gentle-bob` on active turn) | **Opponent Card / Card Back**.
 - Compact bottom Quartet collector bar (`1..8` with `0/4`–`4/4` progress) expandable into the full 32-slot Quartet Matrix (`renderQuartetMatrix`).
 

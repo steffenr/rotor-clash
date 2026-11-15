@@ -52,8 +52,8 @@ export const PROJECT_IMAGES: ProjectImage[] = [
   {
     file: 'field_guide_desk_1794678472040.jpg',
     sha256: 'bbe7c5380e524904ca77c99a89b0cdaa81cf965d2949308cafa65326d1721827',
-    shipped: true,
-    use: 'arena table background',
+    shipped: false,
+    use: 'removed from the arena (decorative, no meaning); kept as a design exploration, not part of the app bundle',
   },
   {
     file: 'field_guide_ui_1794677507452.jpg',
