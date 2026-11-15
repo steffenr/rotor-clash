@@ -19,5 +19,4 @@ hubHeightM: 25
 plantCapacityMw: 0.2
 sourceUrl: https://wind-works.org/the-rest-of-the-story-part-2-of-history-of-conventional-wind-turbines-the-1970s-onward/
 sourceLabel: Wind-Works · History of conventional wind turbines
-approximateStats: hubHeightM
 ---

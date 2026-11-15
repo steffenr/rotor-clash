@@ -19,5 +19,4 @@ hubHeightM: 100
 plantCapacityMw: 3
 sourceUrl: https://ntrs.nasa.gov/citations/19810012014
 sourceLabel: NASA NTRS · GROWIAN report
-approximateStats: hubHeightM
 ---
