@@ -60,7 +60,8 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         <div class="flex items-baseline gap-1 shrink-0">
           <span
             class="font-mono tabular-nums text-sm font-bold text-c-ink"
-            x-text="formatStatValue(stat.key, ${cardExpr}.stats[stat.key])"
+            :title="isApproxStat(${cardExpr}, stat.key) ? t.card.approximate : null"
+            x-text="(isApproxStat(${cardExpr}, stat.key) ? '≈ ' : '') + formatStatValue(stat.key, ${cardExpr}.stats[stat.key])"
           ></span>
           <span
             class="text-[11px] font-semibold text-c-ink-2 min-w-[1.5rem] text-right"

@@ -19,4 +19,5 @@ hubHeightM: 160
 plantCapacityMw: 3
 sourceUrl: https://energetica-india.net/news/suzlon-announces-its-s144--3-mw-series-gets-rlmm-listing-by-mnre
 sourceLabel: Energetica India · Suzlon S144
+approximateStats: firstPowerYear
 ---

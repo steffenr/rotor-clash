@@ -56,6 +56,8 @@ export interface TurbineCard {
   sourceUrl: string;
   sourceLabel: string;
   stats: Record<StatKey, number>;
+  /** Stats whose value is derived, typical for the model, or from a single source; shown with "≈". */
+  approximateStats: StatKey[];
   translations: Record<LocaleCode, TurbineLocaleText>;
 }
 

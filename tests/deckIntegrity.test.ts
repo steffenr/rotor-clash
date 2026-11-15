@@ -116,3 +116,15 @@ test('the deck is ordered by group then slot, so 9A comes before 10A (not alphab
   assert.equal(ids[32], '9A');
   assert.equal(ids[63], '16D');
 });
+
+test('approximate stats are only flagged on stats the card’s deck actually compares', () => {
+  let flagged = 0;
+  for (const card of SERVER_TURBINE_DECK) {
+    const compared = statKeysForDeck(deckIdOfCard(card));
+    for (const key of card.approximateStats) {
+      flagged++;
+      assert.ok(compared.includes(key), `${card.id} flags ${key}, which its deck does not compare`);
+    }
+  }
+  assert.ok(flagged > 0, 'derived and single-source values must be flagged, not presented as exact');
+});

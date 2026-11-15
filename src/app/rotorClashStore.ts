@@ -954,6 +954,10 @@ export function createRotorClashApp() {
       return sharedStatStrengthPercent(key, value);
     },
 
+    isApproxStat(card: TurbineCard | null, key: StatKey): boolean {
+      return !!card && card.approximateStats.includes(key);
+    },
+
     photoCredit(card: TurbineCard | null): PhotoCredit | null {
       return card && card.isRealPhoto ? getPhotoCredit(card.photoKey) : null;
     },

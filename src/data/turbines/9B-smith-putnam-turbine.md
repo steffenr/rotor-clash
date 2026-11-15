@@ -19,4 +19,5 @@ hubHeightM: 36
 plantCapacityMw: 1.25
 sourceUrl: https://ethw.org/Palmer_Putnam's_1.5_MW_Wind_Turbine
 sourceLabel: ETHW · Palmer Putnam’s wind turbine
+approximateStats: ratedPowerMw
 ---

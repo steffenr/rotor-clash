@@ -60,6 +60,7 @@ export interface Translations {
     source: string;
     higherWins: string;
     lowerWins: string;
+    approximate: string;
     photoReal: string;
     photoConcept: string;
     drivetrain: string;

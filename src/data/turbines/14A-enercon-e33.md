@@ -19,4 +19,5 @@ hubHeightM: 37
 plantCapacityMw: 0.99
 sourceUrl: https://windenergy.org.nz/ross-island-wind-farm
 sourceLabel: Wind Energy NZ · Ross Island
+approximateStats: hubHeightM, rotorDiameterM
 ---

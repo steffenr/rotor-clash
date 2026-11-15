@@ -19,4 +19,5 @@ hubHeightM: 150
 plantCapacityMw: 12
 sourceUrl: https://www.ge.com/news/press-releases/ges-haliade-x-12-mw-worlds-most-powerful-offshore-wind-turbine-produces-first-kwh
 sourceLabel: GE · Haliade-X 12 MW first kWh (hub height derived)
+approximateStats: hubHeightM
 ---

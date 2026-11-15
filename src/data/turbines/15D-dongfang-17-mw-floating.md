@@ -17,6 +17,7 @@ ratedPowerMw: 17
 rotorDiameterM: 262
 hubHeightM: 152
 plantCapacityMw: 17
-sourceUrl: https://offshorewind.biz/2025/07/17/chinas-dongfang-unveils-17-mw-floating-offshore-wind-turbine-prototype
-sourceLabel: offshoreWIND.biz · Dongfang 17 MW floating
+sourceUrl: https://www.news.cn/fortune/20250710/b65267eb0cb247a3b6594cfaf9a9875f/c.html
+sourceLabel: Xinhua · 17 MW floating turbine
+approximateStats: hubHeightM
 ---

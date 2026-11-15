@@ -19,4 +19,5 @@ hubHeightM: 64
 plantCapacityMw: 11.5
 sourceUrl: https://www.enercon.de/en/references/el-hierro
 sourceLabel: Enercon · El Hierro reference
+approximateStats: hubHeightM, rotorDiameterM
 ---

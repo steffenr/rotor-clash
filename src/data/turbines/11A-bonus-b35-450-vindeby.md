@@ -19,4 +19,5 @@ hubHeightM: 35
 plantCapacityMw: 4.95
 sourceUrl: https://orsted.com/en/our-business/offshore-wind/offshore-wind-pioneers
 sourceLabel: Ørsted · Offshore wind pioneers
+approximateStats: hubHeightM
 ---
