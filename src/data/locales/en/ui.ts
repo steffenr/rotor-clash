@@ -174,7 +174,6 @@ export const EN_UI: Translations = {
     searchPlaceholder: 'Search turbine, maker, or place...',
     allQuartets: 'All 8 Groups (32)',
     noMatches: 'No cards match your search yet. Clear the search box to see all cards in this deck.',
-    inspectFull: 'Full View',
   },
   leaderboard: {
     title: 'Explorer Hall of Fame',
