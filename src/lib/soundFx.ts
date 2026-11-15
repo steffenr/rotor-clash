@@ -100,11 +100,37 @@ class SoundFxManager {
     this.tone(1174.66, 0.3, 'sine', 0.08, 0.24);
   }
 
+  /** Whole game won: rising fanfare ending on a held major chord. */
   public playVictory() {
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    notes.forEach((n, idx) => {
-      this.tone(n, 0.22, 'triangle', 0.08, idx * 0.09);
-    });
+    const run = [523.25, 659.25, 783.99, 1046.5, 1318.51];
+    run.forEach((n, idx) => this.tone(n, 0.2, 'triangle', 0.08, idx * 0.1));
+    const t = run.length * 0.1;
+    [523.25, 659.25, 783.99, 1046.5].forEach((n) => this.tone(n, 0.9, 'sine', 0.05, t));
+    this.tone(1567.98, 0.7, 'triangle', 0.05, t + 0.12);
+  }
+
+  /** Whole game lost: slow descending minor line with a low final note. */
+  public playDefeat() {
+    [392.0, 349.23, 311.13, 261.63].forEach((n, idx) => this.tone(n, 0.34, 'sine', 0.07, idx * 0.22));
+    this.tone(130.81, 0.9, 'triangle', 0.06, 0.88);
+  }
+
+  /** Game ended level: two neutral notes that resolve flat. */
+  public playDraw() {
+    this.tone(440, 0.22, 'triangle', 0.06, 0);
+    this.tone(440, 0.22, 'triangle', 0.06, 0.2);
+    this.tone(392, 0.4, 'sine', 0.06, 0.4);
+  }
+
+  /** Picking a stat: short rising blip, distinct from a plain click. */
+  public playSelect() {
+    this.tone(480, 0.05, 'square', 0.03, 0);
+    this.tone(720, 0.08, 'triangle', 0.05, 0.04);
+  }
+
+  /** Turn-timer warning tick. */
+  public playTick() {
+    this.tone(880, 0.04, 'square', 0.025, 0);
   }
 }
 
