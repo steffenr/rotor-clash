@@ -57,7 +57,7 @@ export function renderHeader(): string {
         <div class="flex-1 bg-c-orange"></div>
       </div>
 
-      <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-24 flex items-center justify-between gap-3 sm:gap-8">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-24 flex items-center justify-between gap-2 sm:gap-8">
         <!-- Zone 1: Brand Emblem -->
         <a
           href="#arena"
@@ -72,6 +72,14 @@ export function renderHeader(): string {
           />
           <span class="sr-only">Rotor Clash</span>
         </a>
+
+        <!-- Phone-only: current round next to the brand while a match is running -->
+        <template x-if="activeMatch && activeTab === 'arena'">
+          <div class="md:hidden flex flex-col items-center justify-center leading-none px-2.5 h-10 rounded-xl bg-c-paper border-2 border-c-ink/25">
+            <span class="text-[9px] font-bold uppercase tracking-wide text-c-ink-3" x-text="t.arena.round"></span>
+            <span class="mt-0.5 font-mono tabular-nums text-sm font-bold text-c-ink" x-text="activeMatch.roundNumber + '/' + activeMatch.maxRounds"></span>
+          </div>
+        </template>
 
         <!-- Zone 2: 4 Single-Line Navigation Links -->
         <nav class="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-bold">
@@ -110,6 +118,7 @@ export function renderHeader(): string {
 
     <!-- Mobile bottom tab bar (thumb reachable, safe-area aware) -->
     <nav
+      x-show="!(activeMatch && isReveal() && activeMatch.lastRound)"
       class="md:hidden fixed bottom-0 inset-x-0 z-30 border-t-2 border-c-ink bg-c-paper/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
       aria-label="Main navigation"
     >
@@ -139,7 +148,7 @@ export function renderHeader(): string {
           <button
             type="button"
             @click="toggleMute()"
-            class="px-2.5 py-1 rounded-lg bg-c-paper-hi hover:bg-c-paper border border-c-ink/35 text-c-ink font-semibold inline-flex items-center gap-1.5 whitespace-nowrap"
+            class="px-3 py-2 max-sm:min-h-10 rounded-lg bg-c-paper-hi hover:bg-c-paper border border-c-ink/35 text-c-ink font-semibold inline-flex items-center gap-1.5 whitespace-nowrap"
           >
             <span x-show="muted" class="text-c-ink-4">${iconSvg('volume-x', 'w-3.5 h-3.5')}</span>
             <span x-show="!muted" class="text-c-teal">${iconSvg('volume-2', 'w-3.5 h-3.5')}</span>
@@ -155,14 +164,14 @@ export function renderHeader(): string {
             <button
               type="button"
               @click="setLang('en')"
-              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'en' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
+              :class="'px-3 py-1.5 max-sm:min-h-9 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'en' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
             >
               EN
             </button>
             <button
               type="button"
               @click="setLang('de')"
-              :class="'px-2.5 py-1 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'de' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
+              :class="'px-3 py-1.5 max-sm:min-h-9 rounded-md text-xs font-bold transition-colors whitespace-nowrap ' + (lang === 'de' ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
             >
               DE
             </button>
@@ -193,10 +202,10 @@ export function renderLobby(): string {
     <div x-show="activeTab === 'arena' && !activeMatch" class="space-y-8">
       <section class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         <!-- Left: Collector Emblem Showcase & 3 Big Tactile Play Choices -->
-        <div class="lg:col-span-7 rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 flex flex-col justify-between space-y-6">
+        <div class="lg:col-span-7 rounded-2xl bg-c-paper-hi ink-panel p-4 sm:p-8 flex flex-col justify-between space-y-4 sm:space-y-6">
           <div class="space-y-4">
             <!-- Signature Coastal Speed-Stripe Emblem Plaque -->
-            <div class="flex items-center gap-3 sm:gap-4 rounded-xl bg-c-paper border-2 border-c-ink px-4 py-2.5 shadow-[0_3px_0_var(--c-line)]">
+            <div class="max-sm:hidden flex items-center gap-3 sm:gap-4 rounded-xl bg-c-paper border-2 border-c-ink px-4 py-2.5 shadow-[0_3px_0_var(--c-line)]">
               <div class="hidden sm:flex flex-col gap-1.5 flex-1 min-w-[28px]" aria-hidden="true">
                 <div class="h-1.5 rounded-sm bg-c-teal"></div>
                 <div class="h-1.5 rounded-sm bg-c-orange"></div>
@@ -213,13 +222,13 @@ export function renderLobby(): string {
             </div>
 
             <div class="space-y-2.5 pt-1">
-              <div class="text-xs font-extrabold tracking-wide uppercase text-c-orange" x-text="t.lobby.kicker"></div>
+              <div class="max-sm:hidden text-xs font-extrabold tracking-wide uppercase text-c-orange" x-text="t.lobby.kicker"></div>
               <h1
-                class="font-display text-3xl sm:text-4xl font-extrabold text-c-ink leading-tight max-w-2xl"
+                class="font-display text-2xl sm:text-4xl font-extrabold text-c-ink leading-tight max-w-2xl"
                 style="text-wrap: balance;"
                 x-text="t.lobby.heroTitle"
               ></h1>
-              <p class="text-sm sm:text-base text-c-ink-2 max-w-2xl leading-relaxed" x-text="t.lobby.heroSubtitle"></p>
+              <p class="max-sm:hidden text-sm sm:text-base text-c-ink-2 max-w-2xl leading-relaxed" x-text="t.lobby.heroSubtitle"></p>
             </div>
           </div>
 
@@ -472,7 +481,8 @@ export function renderArena(): string {
   return `
     <template x-if="activeTab === 'arena' && activeMatch">
       <div
-        :class="'relative overflow-hidden border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
+        id="arena-root"
+        :class="'relative overflow-hidden border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16 ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
       >
         <div
           class="absolute inset-0 bg-cover bg-center opacity-50 pointer-events-none"
@@ -481,10 +491,10 @@ export function renderArena(): string {
         ></div>
         <div class="absolute inset-0 bg-c-canvas/60 pointer-events-none" aria-hidden="true"></div>
 
-        <div class="relative z-10 max-w-6xl mx-auto p-4 sm:p-6 space-y-5">
+        <div :class="'relative z-10 max-w-6xl mx-auto p-3 sm:p-6 space-y-3 sm:space-y-5 ' + (isReveal() && activeMatch.lastRound ? 'max-lg:pb-56' : '')">
           <!-- Field Guide Match Scoreboard -->
-          <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-4 py-2.5">
-            <div class="flex items-center gap-3 min-w-0">
+          <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-3 sm:px-4 py-2 sm:py-2.5">
+            <div class="order-1 flex flex-1 items-center gap-3 min-w-0">
               <div
                 class="w-10 h-10 rounded-xl bg-c-teal text-white border-2 border-c-ink flex items-center justify-center font-mono text-base font-bold shrink-0"
                 x-text="activeMatch.you.cardCount"
@@ -495,14 +505,16 @@ export function renderArena(): string {
                   <span class="text-xs font-sans font-bold text-c-teal" x-text="' (' + t.arena.you + ')'"></span>
                 </div>
                 <div
-                  class="text-[11px] text-c-ink-2 font-mono tabular-nums"
+                  class="hidden sm:block text-[11px] text-c-ink-2 font-mono tabular-nums"
                   x-text="tierForElo(activeMatch.you.elo).name + ' · ' + activeMatch.you.elo + ' pts'"
                 ></div>
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2.5">
-              <div class="px-3 py-1.5 rounded-xl bg-c-paper border-2 border-c-ink/25 text-center whitespace-nowrap">
+            <div
+              :class="'order-3 w-full justify-center sm:w-auto sm:order-2 flex flex-wrap items-center gap-2 sm:gap-2.5 ' + ((activeMatch.tiePotCount > 0 || (secondsLeft !== null && activeMatch.status === 'PLAYING')) ? '' : 'max-sm:hidden')"
+            >
+              <div class="max-sm:hidden px-3 py-1.5 rounded-xl bg-c-paper border-2 border-c-ink/25 text-center whitespace-nowrap">
                 <span class="text-[11px] font-bold text-c-ink-2 mr-1.5" x-text="t.arena.round"></span>
                 <span
                   class="font-mono tabular-nums text-sm font-bold text-c-ink"
@@ -530,7 +542,7 @@ export function renderArena(): string {
               </div>
             </div>
 
-            <div class="flex flex-wrap items-center justify-end gap-2">
+            <div class="order-2 sm:order-3 flex flex-nowrap shrink-0 items-center justify-end gap-2">
               <div class="text-right min-w-0 hidden sm:block">
                 <div class="flex items-center justify-end gap-1.5">
                   <span
@@ -555,7 +567,7 @@ export function renderArena(): string {
                 type="button"
                 @click="toggleTheaterFull()"
                 :title="isTheaterFull ? t.arena.exitFullscreen : t.arena.fullscreen"
-                class="px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                class="max-md:hidden px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
               >
                 <span x-show="isTheaterFull">${iconSvg('minimize', 'w-3.5 h-3.5')}</span>
                 <span x-show="!isTheaterFull">${iconSvg('maximize', 'w-3.5 h-3.5')}</span>
@@ -567,9 +579,10 @@ export function renderArena(): string {
                   x-show="!confirmForfeit"
                   type="button"
                   @click="confirmForfeit = true"
-                  class="px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink-2 hover:text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
+                  :aria-label="t.arena.leave"
+                  class="min-w-10 min-h-10 justify-center px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink-2 hover:text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  ${iconSvg('flag', 'w-3.5 h-3.5')}
+                  ${iconSvg('log-out', 'w-4 h-4')}
                   <span class="hidden sm:inline" x-text="t.arena.leave"></span>
                 </button>
                 <div x-show="confirmForfeit" class="flex flex-wrap items-center gap-1.5">
@@ -667,11 +680,11 @@ export function renderArena(): string {
 
           <!-- Active 2-Card Duel Table -->
           <div x-show="activeMatch.status !== 'FINISHED'" class="space-y-5">
-            <div class="grid grid-cols-1 lg:grid-cols-11 gap-5 items-center justify-items-center py-2">
+            <div class="grid grid-cols-1 lg:grid-cols-11 gap-3 sm:gap-5 items-center justify-items-center py-0 sm:py-2">
               <!-- Your Card -->
               <div class="lg:col-span-4 w-full flex flex-col items-center">
                 <div
-                  class="mb-2 text-xs font-extrabold text-c-teal bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
+                  class="max-lg:hidden mb-2 text-xs font-extrabold text-c-teal bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                   x-text="t.arena.yourTopCard"
                 ></div>
                 <div class="w-full flex justify-center">
@@ -681,19 +694,20 @@ export function renderArena(): string {
                     selectedStatExpr: 'isReveal() && activeMatch.lastRound ? activeMatch.lastRound.chosenStat : null',
                     highlightOutcomeExpr: 'arenaYourOutcome()',
                     onSelectStatHandler: 'selectStat(stat.key)',
+                    hideMediaOnMobile: true,
                   })}
                 </div>
               </div>
 
               <!-- Center Duel Feedback -->
-              <div class="lg:col-span-3 w-full max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
+              <div class="max-lg:order-first lg:col-span-3 w-full max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
                 <div
                   x-show="isReveal() && activeMatch.lastRound"
-                  class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3 anim-pop-in"
+                  class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3 anim-pop-in max-lg:fixed max-lg:inset-x-3 max-lg:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] max-lg:z-40 max-lg:w-auto max-lg:max-w-md max-lg:mx-auto max-lg:p-3 max-lg:space-y-2 max-lg:shadow-[0_-6px_24px_rgba(0,0,0,0.25)]"
                 >
-                  <div class="text-[11px] font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
+                  <div class="max-lg:hidden text-[11px] font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
                   <div
-                    class="font-display text-lg font-extrabold text-c-ink"
+                    class="font-display text-lg font-extrabold text-c-ink max-lg:text-base max-lg:leading-tight"
                     x-text="activeMatch.lastRound ? t.stats[activeMatch.lastRound.chosenStat].label : ''"
                   ></div>
 
@@ -727,7 +741,7 @@ export function renderArena(): string {
                   <button
                     type="button"
                     @click="nextRound()"
-                    class="w-full py-2.5 px-3 rounded-xl bg-c-teal hover:bg-c-teal-deep text-white border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap"
+                    class="w-full min-h-11 py-2.5 px-3 rounded-xl bg-c-teal hover:bg-c-teal-deep text-white border-2 border-c-ink font-bold text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap"
                   >
                     <span x-text="t.arena.nextRound"></span>
                     ${iconSvg('arrow-right', 'w-4 h-4')}
@@ -736,27 +750,27 @@ export function renderArena(): string {
 
                 <div
                   x-show="!(isReveal() && activeMatch.lastRound)"
-                  :class="'w-full rounded-2xl bg-c-paper-hi ink-panel p-5 space-y-2.5 ' + (isYourTurn() ? 'animate-gentle-bob' : '')"
+                  :class="'w-full rounded-2xl bg-c-paper-hi ink-panel p-5 max-lg:p-2.5 space-y-2.5 max-lg:space-y-0 ' + (isYourTurn() ? 'animate-gentle-bob' : '')"
                 >
                   <div
-                    :class="'inline-flex items-center justify-center w-12 h-12 rounded-xl border-2 border-c-ink mx-auto ' + (isYourTurn() ? 'bg-c-sky text-c-teal' : 'bg-c-paper text-c-ink-3')"
+                    :class="'max-lg:hidden inline-flex items-center justify-center w-12 h-12 rounded-xl border-2 border-c-ink mx-auto ' + (isYourTurn() ? 'bg-c-sky text-c-teal' : 'bg-c-paper text-c-ink-3')"
                   >
                     <span x-show="isYourTurn()">${iconSvg('swords', 'w-5 h-5')}</span>
                     <span x-show="!isYourTurn()">${iconSvg('sparkles', 'w-5 h-5')}</span>
                   </div>
                   <div
-                    class="font-display text-lg font-extrabold text-c-ink"
+                    class="font-display text-lg max-lg:text-base font-extrabold text-c-ink"
                     x-text="isYourTurn() ? t.arena.yourTurnTitle : t.arena.oppTurnTitle"
                   ></div>
                   <p
-                    class="text-xs text-c-ink-2 leading-relaxed"
+                    class="max-lg:hidden text-xs text-c-ink-2 leading-relaxed"
                     x-text="isYourTurn() ? t.arena.yourTurnDesc : t.arena.oppTurnDesc"
                   ></p>
                 </div>
               </div>
 
               <!-- Opponent Card -->
-              <div class="lg:col-span-4 w-full flex flex-col items-center">
+              <div :class="'lg:col-span-4 w-full flex-col items-center ' + (isReveal() ? 'flex' : 'max-lg:hidden flex')">
                 <div
                   class="mb-2 text-xs font-extrabold text-c-orange bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                   x-text="isReveal() ? t.arena.revealedCard : t.arena.hiddenStack"
@@ -765,6 +779,7 @@ export function renderArena(): string {
                   ${renderTurbineCard('arenaOppCard()', {
                     selectedStatExpr: 'activeMatch.lastRound ? activeMatch.lastRound.chosenStat : null',
                     highlightOutcomeExpr: 'arenaOppOutcome()',
+                    hideMediaOnMobile: true,
                   })}
                 </div>
                 <div x-show="!(isReveal() && arenaOppCard())" class="w-full flex justify-center">
@@ -1010,7 +1025,7 @@ export function renderTutorial(): string {
             <button
               type="button"
               @click="setTutorialStep(idx)"
-              :class="'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialStep === idx ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink hover:bg-c-sand')"
+              :class="'px-3 py-2.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (tutorialStep === idx ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink hover:bg-c-sand')"
               x-text="(idx + 1) + '. ' + label"
             ></button>
           </template>
