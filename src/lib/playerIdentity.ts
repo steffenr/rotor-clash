@@ -1,10 +1,28 @@
 import { PlayerProfile } from '../shared/gameTypes.ts';
 import { Language } from './i18n.ts';
 
-const PLAYER_ID_KEY = 'aeolian_player_id_v1';
-const CALLSIGN_KEY = 'aeolian_callsign_v1';
-const PROFILE_KEY = 'aeolian_profile_v1';
-const LANGUAGE_KEY = 'aeolian_language_v1';
+const PLAYER_ID_KEY = 'rotor_clash_player_id_v1';
+const CALLSIGN_KEY = 'rotor_clash_callsign_v1';
+const PROFILE_KEY = 'rotor_clash_profile_v1';
+const LANGUAGE_KEY = 'rotor_clash_language_v1';
+
+const LEGACY_KEYS = {
+  playerId: 'aeolian_player_id_v1',
+  callsign: 'aeolian_callsign_v1',
+  profile: 'aeolian_profile_v1',
+  language: 'aeolian_language_v1',
+};
+
+function readWithMigration(newKey: string, legacyKey: string): string | null {
+  const current = localStorage.getItem(newKey);
+  if (current !== null) return current;
+  const legacy = localStorage.getItem(legacyKey);
+  if (legacy !== null) {
+    localStorage.setItem(newKey, legacy);
+    localStorage.removeItem(legacyKey);
+  }
+  return legacy;
+}
 
 function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -14,13 +32,13 @@ function generateId(): string {
 }
 
 export function getOrCreateIdentity(): { playerId: string; callsign: string } {
-  let playerId = localStorage.getItem(PLAYER_ID_KEY);
+  let playerId = readWithMigration(PLAYER_ID_KEY, LEGACY_KEYS.playerId);
   if (!playerId) {
     playerId = generateId();
     localStorage.setItem(PLAYER_ID_KEY, playerId);
   }
 
-  let callsign = localStorage.getItem(CALLSIGN_KEY);
+  let callsign = readWithMigration(CALLSIGN_KEY, LEGACY_KEYS.callsign);
   if (!callsign) {
     callsign = `Engineer-${playerId.slice(0, 4).toUpperCase()}`;
     localStorage.setItem(CALLSIGN_KEY, callsign);
@@ -29,13 +47,17 @@ export function getOrCreateIdentity(): { playerId: string; callsign: string } {
   return { playerId, callsign };
 }
 
+export function getSavedCallsign(fallback: string): string {
+  return readWithMigration(CALLSIGN_KEY, LEGACY_KEYS.callsign) || fallback;
+}
+
 export function saveCallsignLocally(callsign: string) {
   localStorage.setItem(CALLSIGN_KEY, callsign);
 }
 
 export function loadCachedProfile(playerId: string, callsign: string): PlayerProfile {
   try {
-    const raw = localStorage.getItem(PROFILE_KEY);
+    const raw = readWithMigration(PROFILE_KEY, LEGACY_KEYS.profile);
     if (raw) {
       const parsed = JSON.parse(raw) as PlayerProfile;
       if (parsed && parsed.id === playerId) {
@@ -70,7 +92,7 @@ export function saveCachedProfile(profile: PlayerProfile) {
 }
 
 export function loadSavedLanguage(): Language {
-  const saved = localStorage.getItem(LANGUAGE_KEY);
+  const saved = readWithMigration(LANGUAGE_KEY, LEGACY_KEYS.language);
   if (saved === 'de' || saved === 'en') return saved;
   return 'en';
 }

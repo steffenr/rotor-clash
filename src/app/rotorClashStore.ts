@@ -16,6 +16,7 @@ import { CARD_BY_ID, GROUP_BY_ID, QUARTET_GROUPS, TURBINE_DECK } from '../lib/tu
 import { resolveCardPhoto } from '../lib/cardImages';
 import {
   getOrCreateIdentity,
+  getSavedCallsign,
   loadCachedProfile,
   loadSavedLanguage,
   saveCachedProfile,
@@ -171,7 +172,7 @@ export function createRotorClashApp() {
             event: 'auth:hello',
             payload: {
               playerId: identity.playerId,
-              callsign: localStorage.getItem('aeolian_callsign_v1') || identity.callsign,
+              callsign: getSavedCallsign(identity.callsign),
             },
           })
         );
@@ -753,7 +754,7 @@ export function createRotorClashApp() {
     localizeTierName(name: string): string {
       if (this.lang !== 'de') return name;
       switch (name) {
-        case 'Aeolian Grandmaster':
+        case 'Rotor Clash Grandmaster':
           return 'Sturm-Großmeister';
         case 'Offshore Ace':
           return 'Offshore-Ass';

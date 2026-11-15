@@ -218,7 +218,7 @@ export const EN_UI: Translations = {
       'Warm up anytime against our Robot players, or click "Play a Friend" to get a 6-letter room code anyone can join.',
     eloTitle: 'Earn Explorer Ranks',
     eloDesc:
-      'Online duels award Explorer Points starting at 1200, unlocking fun badges all the way up to Aeolian Grandmaster!',
+      'Online duels award Explorer Points starting at 1200, unlocking fun badges all the way up to Rotor Clash Grandmaster!',
     startBotBtn: 'Play vs Robot',
     enterArenaBtn: 'Go to Play Screen',
   },
