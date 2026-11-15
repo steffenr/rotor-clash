@@ -335,7 +335,21 @@ export function createRotorClashApp() {
         }, 450);
       }
 
+      // Phones: start every round (and the match) with the scoreboard + stats in view,
+      // so the player never has to hunt for their card after the result sheet.
+      if (this.activeMatch.status === 'PLAYING' && prevStatus !== 'PLAYING') {
+        this.scrollArenaIntoView();
+      }
+
       this.scheduleBotTurnIfNeeded();
+    },
+
+    scrollArenaIntoView() {
+      if (!window.matchMedia?.('(max-width: 1023px)').matches) return;
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setTimeout(() => {
+        document.getElementById('arena-root')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }, 60);
     },
 
     scheduleBotTurnIfNeeded() {
