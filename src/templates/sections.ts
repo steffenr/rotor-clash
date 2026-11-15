@@ -523,7 +523,7 @@ export function renderArena(): string {
 
               <div
                 x-show="secondsLeft !== null && activeMatch.status === 'PLAYING'"
-                :class="'px-2.5 py-1.5 rounded-xl border-2 flex items-center gap-1 font-mono tabular-nums text-xs font-bold whitespace-nowrap ' + (secondsLeft <= 10 ? 'bg-c-rose border-c-red text-c-red-ink' : 'bg-c-paper border-c-ink/25 text-c-ink')"
+                :class="'px-2.5 py-1.5 rounded-xl border-2 flex items-center gap-1 font-mono tabular-nums text-xs font-bold whitespace-nowrap ' + (secondsLeft <= 10 ? 'bg-c-rose border-c-red text-c-red-ink anim-urgent' : 'bg-c-paper border-c-ink/25 text-c-ink')"
               >
                 ${iconSvg('clock', 'w-3.5 h-3.5')}
                 <span x-text="secondsLeft + 's'"></span>
@@ -602,9 +602,16 @@ export function renderArena(): string {
           <!-- Finished Screen -->
           <div
             x-show="activeMatch.status === 'FINISHED'"
-            class="rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6"
+            class="rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6 anim-pop-in"
           >
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-c-cream-amber border-2 border-c-ink text-c-orange mx-auto shadow-[0_3px_0_var(--c-line)]">
+            <!-- Confetti only when you won the whole game -->
+            <div x-show="activeMatch.winnerId && activeMatch.winnerId === activeMatch.you.id" class="confetti" aria-hidden="true">
+              ${Array.from({ length: 24 }, (_, i) => `<span class="confetti-piece" style="--i:${i}"></span>`).join('')}
+            </div>
+
+            <div
+              :class="'inline-flex items-center justify-center w-16 h-16 rounded-2xl border-2 border-c-ink mx-auto shadow-[0_3px_0_var(--c-line)] ' + (activeMatch.winnerId === activeMatch.you.id ? 'bg-c-cream-amber text-c-orange anim-trophy' : 'bg-c-paper text-c-ink-3 anim-droop')"
+            >
               ${iconSvg('trophy', 'w-8 h-8')}
             </div>
 
@@ -682,7 +689,7 @@ export function renderArena(): string {
               <div class="lg:col-span-3 w-full max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
                 <div
                   x-show="isReveal() && activeMatch.lastRound"
-                  class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3"
+                  class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3 anim-pop-in"
                 >
                   <div class="text-[11px] font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
                   <div
@@ -703,7 +710,7 @@ export function renderArena(): string {
                   </div>
 
                   <div
-                    :class="'rounded-xl px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-2 ' + (arenaYourOutcome() === 'win' ? 'bg-c-mint text-c-ink border-c-green' : (arenaYourOutcome() === 'loss' ? 'bg-c-rose text-c-red-deep border-c-red' : 'bg-c-cream-amber text-c-amber-ink border-c-amber'))"
+                    :class="'rounded-xl px-3 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 border-2 ' + (arenaYourOutcome() === 'win' ? 'bg-c-mint text-c-ink border-c-green anim-win-glow' : (arenaYourOutcome() === 'loss' ? 'bg-c-rose text-c-red-deep border-c-red anim-shake' : 'bg-c-cream-amber text-c-amber-ink border-c-amber'))"
                   >
                     <span x-show="arenaYourOutcome() === 'win'" class="shrink-0">${iconSvg('check-circle', 'w-4 h-4')}</span>
                     <span class="leading-snug" x-text="arenaOutcomeText()"></span>
@@ -711,7 +718,7 @@ export function renderArena(): string {
 
                   <div
                     x-show="arenaNewlyCompletedQuartetName()"
-                    class="rounded-xl bg-c-mint border-2 border-c-green px-3 py-2 text-xs font-bold text-c-ink flex items-center justify-center gap-1.5"
+                    class="rounded-xl bg-c-mint border-2 border-c-green px-3 py-2 text-xs font-bold text-c-ink flex items-center justify-center gap-1.5 anim-pop-in"
                   >
                     <span class="text-c-green shrink-0">${iconSvg('award', 'w-4 h-4')}</span>
                     <span class="leading-snug" x-text="t.arena.quartetCompleted + ' ' + arenaNewlyCompletedQuartetName()"></span>
@@ -754,7 +761,7 @@ export function renderArena(): string {
                   class="mb-2 text-xs font-extrabold text-c-orange bg-c-paper px-3 py-1 rounded-lg border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
                   x-text="isReveal() ? t.arena.revealedCard : t.arena.hiddenStack"
                 ></div>
-                <div x-show="isReveal() && arenaOppCard()" class="w-full flex justify-center">
+                <div x-show="isReveal() && arenaOppCard()" class="w-full flex justify-center anim-flip-in">
                   ${renderTurbineCard('arenaOppCard()', {
                     selectedStatExpr: 'activeMatch.lastRound ? activeMatch.lastRound.chosenStat : null',
                     highlightOutcomeExpr: 'arenaOppOutcome()',
