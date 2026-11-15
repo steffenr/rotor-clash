@@ -140,6 +140,11 @@ differs in a few places, and every open gap was resolved as follows.
   7 November 2019 (GE press release).
 - **Suzlon S144 (12D)** now uses the Gondal prototype (160 m hybrid lattice-tubular tower) instead of an
   unconfirmed customer order. Year 2023 is approximate (certified November 2023).
+- **El Hierro, Thornton Bank and Anholt were replaced** because their operators publish no hub height. The
+  replacements all have a published hub height: **Húsahagi, Faroe Islands (14B)**: 13 × Enercon E-44, 900 kW, rotor
+  44 m, hub 44 m, 11.7 MW, 2014 (Ingeniøren, the Danish technical press); **Kentish Flats (16C)**: 30 × Vestas V90-3.0,
+  hub 70 m, rotor 90 m, 90 MW, 2005 (Vattenfall for the farm; two independent secondary sources agree on the
+  turbine size); **Horns Rev 2 (16D)**: 91 × Siemens SWT-2.3-93, hub 68 m, rotor 93 m, 209 MW, 2009.
 - **Quartet 7 and 16 are renamed** "Giants Under Test" and "North Sea Builders" in the game.
 
 **Hub heights and other gaps, by card (final)**
@@ -159,9 +164,6 @@ derived, typical for the model, or from a single source. They are flagged in eac
 | Block Island (11C) | hub 100 m | Database value for the Haliade 150-6MW | ≈ |
 | Horse Hollow (13A) | hub 80 m | GE 1.5sle offers 80 or 85 m; one listing says 85 m | ≈ |
 | Shepherds Flat (13C) | hub 85 m | GE 2.5-100 offers 75 or 85 m | ≈ |
-| Thornton Bank (16C) | hub 95 m | Single database entry; Nordsee One's 152 m total height suggests it can be lower | ≈ |
-| Anholt (16D) | hub 82 m | Derived: 141.6 m total height − 60 m rotor radius | ≈ |
-| El Hierro (14B) | hub 64 m, rotor 71 m | Enercon E-70 option list; the as-built values are not published | ≈ |
 | Ross Island (14A) | hub 37 m, rotor 33 m | "37 m-high" turbines (hub or tip not stated); E33 rotor from the model | ≈ |
 | Burradale (14D) | hub 45 m | One listing's average across V47 and V52 | ≈ |
 | Gedser (9C) | hub 25 m | Database | ≈ |
@@ -171,8 +173,8 @@ derived, typical for the model, or from a single source. They are flagged in eac
 | Suzlon S144 (12D) | year 2023 | Prototype reported installed by November 2023; no exact commissioning date | ≈ |
 
 Rated power, rotor diameter, plant capacity and year are documented for every other card. First-power year
-replaces cut-in speed in this deck, so the previously missing cut-in values no longer matter. The operators
-of El Hierro, Thornton Bank and Anholt do not publish hub heights, so those stay approximate by necessity.
+replaces cut-in speed in this deck, so the previously missing cut-in values no longer matter. Cards whose operators publish no hub height were replaced (see above), so no hub height in the deck is a guess
+with no source; the remaining ≈ values are documented as approximate.
 
 ## Photos and licences
 
@@ -183,12 +185,12 @@ by eye, and downloaded at 1100 px wide. Author, licence, licence URL, Commons pa
 file are in `src/data/photoCredits.ts`; a readable list is in [`../PHOTO_CREDITS.md`](../PHOTO_CREDITS.md).
 `tests/photoCredits.test.ts` fails if an image has no credit, a non-free licence, or does not match its hash.
 
-- **36 real photos** are used. The old, unattributed files were deleted (including two unused leftovers).
+- **35 real photos** are used. The old, unattributed files were deleted (including two unused leftovers).
 - **No free photo exists on Commons** (under several searches) for these cards, which therefore show Rotor
   Clash's own concept illustration and say so in the card detail: Vestas 4R (10B), GE hybrid tower at Gaildorf
   (10C; the only free photo was a construction site), Vindeby (11A), Lake Turkana (12A; the free photo showed a
   site camp, not turbines), Hornsdale (12B), Macarthur (12C), Suzlon S144 (12D), Horse Hollow (13A), Ross Island
-  (14A), Samsø (14C), SG DD-276 (15A), CRRC 20 MW (15C), Dongfang 17 MW (15D), plus deck-1 cards Kincardine (4C)
+  (14A), Samsø (14C), Horns Rev 2 (16D), SG DD-276 (15A), CRRC 20 MW (15C), Dongfang 17 MW (15D), plus deck-1 cards Kincardine (4C)
   and Hornsea 2 (6A; the only free photo was almost empty sea).
 - Where a farm photo shows a similar machine rather than the exact model (for example the Skabersjö V90 for
   the Thanet card), the card still names the right plant and model; the photo is illustrative.
