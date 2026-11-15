@@ -318,12 +318,11 @@
 - drivetrain: Gearless, variable speed
 - engineeringNote: The southernmost wind farm on Earth: three 330 kW turbines that help power Scott Base and McMurdo.
 
-## 14B — Enercon E-70
+## 14B — Enercon E-44
 - id: 14B
-- country: Spain
+- country: Faroe Islands
 - drivetrain: Gearless, variable speed
-- engineeringNote: Five turbines plus pumped hydro supply an island: 11.5 MW of wind and a water reservoir for calm days.
-
+- engineeringNote: Thirteen turbines are expected to produce 41 GWh a year, about 23% of the Faroe Islands’ electricity.
 ## 14C — Bonus B82/2300
 - id: 14C
 - country: Denmark
@@ -372,14 +371,13 @@
 - drivetrain: Geared doubly-fed generator
 - engineeringNote: Germany’s first offshore wind farm: six REpower 5M and six AREVA M5000 turbines in 30 m of water.
 
-## 16C — Senvion 6.2M126
+## 16C — Vestas V90-3.0 MW (Kentish Flats)
 - id: 16C
-- country: Belgium
-- drivetrain: Gearbox with doubly-fed generator
-- engineeringNote: Built in three phases from 2009; the later phases use 6.15 MW turbines on 28 km offshore.
-
-## 16D — Siemens SWT-3.6-120
+- country: England, UK
+- drivetrain: Pitch-regulated, geared
+- engineeringNote: Thirty Vestas turbines, commissioned in 2005, stand about 60 km east of central London.
+## 16D — Siemens SWT-2.3-93 (Horns Rev 2)
 - id: 16D
 - country: Denmark
-- drivetrain: Geared, pitch-regulated
-- engineeringNote: 111 turbines made it the largest wind farm in Denmark from 2013 to 2019, at 399.6 MW.
+- drivetrain: Geared induction generator
+- engineeringNote: The world’s largest offshore wind farm when it opened in 2009, until Thanet overtook it in 2010.

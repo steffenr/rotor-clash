@@ -318,12 +318,11 @@
 - drivetrain: Getriebelos, drehzahlvariabel
 - engineeringNote: Der südlichste Windpark der Erde: drei 330-kW-Anlagen helfen, Scott Base und McMurdo zu versorgen.
 
-## 14B — Enercon E-70
+## 14B — Enercon E-44
 - id: 14B
-- country: Spanien
+- country: Färöer
 - drivetrain: Getriebelos, drehzahlvariabel
-- engineeringNote: Fünf Anlagen plus Pumpspeicher versorgen eine Insel: 11,5 MW Wind und ein Wasserspeicher für Flauten.
-
+- engineeringNote: Dreizehn Anlagen sollen 41 GWh pro Jahr erzeugen, rund 23 % des Stroms der Färöer.
 ## 14C — Bonus B82/2300
 - id: 14C
 - country: Dänemark
@@ -372,14 +371,13 @@
 - drivetrain: Getriebe mit doppelt gespeistem Generator
 - engineeringNote: Der erste deutsche Offshore-Windpark: sechs REpower-5M- und sechs AREVA-M5000-Anlagen in 30 m Wassertiefe.
 
-## 16C — Senvion 6.2M126
+## 16C — Vestas V90-3.0 MW (Kentish Flats)
 - id: 16C
-- country: Belgien
-- drivetrain: Getriebe mit doppelt gespeistem Generator
-- engineeringNote: In drei Bauphasen ab 2009 errichtet; die späteren Phasen nutzen 6,15-MW-Anlagen, 28 km vor der Küste.
-
-## 16D — Siemens SWT-3.6-120
+- country: England, Großbritannien
+- drivetrain: Pitch-geregelt, mit Getriebe
+- engineeringNote: Dreißig Vestas-Anlagen, 2005 in Betrieb genommen, stehen rund 60 km östlich des Londoner Zentrums.
+## 16D — Siemens SWT-2.3-93 (Horns Rev 2)
 - id: 16D
 - country: Dänemark
-- drivetrain: Mit Getriebe, pitch-geregelt
-- engineeringNote: 111 Anlagen machten ihn von 2013 bis 2019 zum größten Windpark Dänemarks, mit 399,6 MW.
+- drivetrain: Getriebe mit Asynchrongenerator
+- engineeringNote: Beim Start 2009 der größte Offshore-Windpark der Welt, bis ihn 2010 Thanet überholte.
