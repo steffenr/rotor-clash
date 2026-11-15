@@ -341,11 +341,11 @@
 - drivetrain: Direktantrieb, Ringgenerator
 - engineeringNote: 2002 bei Magdeburg errichtet als größte Windkraftanlage der Welt: 4,5 MW auf einem 124 m hohen Turm.
 
-## 15B — Vestas V164-8.0 MW Prototype
+## 15B — Elsam Tjæreborg 2 MW
 - id: 15B
 - country: Dänemark
-- drivetrain: Mittelschnelles Getriebe, Permanentmagnetgenerator
-- engineeringNote: Lieferte am 28. Januar 2014 erstmals Strom, als stärkste Anlage der Welt, mit 80 m langen Blättern auf einem 140 m hohen Turm.
+- drivetrain: Dreiblatt-Luvläufer, Blattverstellung über die ganze Blattlänge
+- engineeringNote: Eine 2-MW-Versuchsanlage auf einem Betonturm, am 23. März 1988 erstmals ans Netz geschaltet und damals ein Riese.
 
 ## 15C — CRRC Qihang 20 MW
 - id: 15C
@@ -353,11 +353,11 @@
 - drivetrain: Prototyp der Klasse für schwimmende Anlagen
 - engineeringNote: Im Januar 2025 auf der Dongying-Testbasis errichtet, mit 260-m-Rotor auf 151 m Nabenhöhe.
 
-## 15D — Enercon E-126 Prototype
+## 15D — Boeing MOD-5B
 - id: 15D
-- country: Deutschland
-- drivetrain: Direktantrieb, Ringgenerator
-- engineeringNote: Der Prototyp von 2007 startete mit 6 MW und 126 m Rotor; Enercon hob die Baureihe später auf 7,58 MW an.
+- country: USA
+- drivetrain: Zweiblatt-Luvläufer
+- engineeringNote: Bereits im Juli 1987 in Kahuku in Betrieb, mit 320-ft-Rotor (97,5 m) auf einem 200-ft-Turm; die weltweit größte Horizontalachsen-Anlage.
 
 ## 16A — Bonus 2.0 MW (Middelgrunden)
 - id: 16A

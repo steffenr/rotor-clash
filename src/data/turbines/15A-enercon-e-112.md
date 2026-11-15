@@ -6,8 +6,8 @@ modelName: Enercon E-112
 manufacturer: Enercon
 deploymentType: Onshore Prototype
 imageCategory: onshore
-photoKey: fallback_onshore
-isRealPhoto: false
+photoKey: enercon_e112
+isRealPhoto: true
 year: 2002
 sweptAreaM2: 9993
 flagshipPlant: Egeln Prototype

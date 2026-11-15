@@ -341,11 +341,11 @@
 - drivetrain: Direct-drive, ring generator
 - engineeringNote: Erected near Magdeburg in 2002 as the world’s largest turbine, at 4.5 MW on a 124 m tower.
 
-## 15B — Vestas V164-8.0 MW Prototype
+## 15B — Elsam Tjæreborg 2 MW
 - id: 15B
 - country: Denmark
-- drivetrain: Medium-speed geared, permanent magnet
-- engineeringNote: Produced its first power on 28 January 2014 as the world’s most powerful turbine, with 80 m blades on a 140 m tower.
+- drivetrain: Three-blade upwind rotor, full-span pitch control
+- engineeringNote: A 2 MW test machine on a concrete tower, first connected to the grid on 23 March 1988 and a giant for its day.
 
 ## 15C — CRRC Qihang 20 MW
 - id: 15C
@@ -353,11 +353,11 @@
 - drivetrain: Floating-class offshore prototype
 - engineeringNote: Installed in January 2025 at the Dongying testing base, with a 260 m rotor on a 151 m hub.
 
-## 15D — Enercon E-126 Prototype
+## 15D — Boeing MOD-5B
 - id: 15D
-- country: Germany
-- drivetrain: Direct-drive, ring generator
-- engineeringNote: The 2007 prototype began at 6 MW with a 126 m rotor; Enercon later uprated the type to 7.58 MW.
+- country: USA
+- drivetrain: Two-blade upwind rotor
+- engineeringNote: Running at Kahuku by July 1987 with a 320 ft rotor on a 200 ft tower, it was the world’s largest horizontal-axis turbine.
 
 ## 16A — Bonus 2.0 MW (Middelgrunden)
 - id: 16A

@@ -6,8 +6,8 @@ modelName: NASA Mod-0
 manufacturer: NASA Lewis / ERDA
 deploymentType: Onshore
 imageCategory: onshore
-photoKey: fallback_onshore
-isRealPhoto: false
+photoKey: nasa_mod0
+isRealPhoto: true
 year: 1975
 sweptAreaM2: 1140
 flagshipPlant: Plum Brook Station
