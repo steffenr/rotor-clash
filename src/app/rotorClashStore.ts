@@ -154,7 +154,9 @@ export function createRotorClashApp() {
           this.secondsLeft = null;
           return;
         }
-        this.secondsLeft = Math.max(0, Math.ceil((this.activeMatch.turnDeadlineAt - Date.now()) / 1000));
+        const next = Math.max(0, Math.ceil((this.activeMatch.turnDeadlineAt - Date.now()) / 1000));
+        if (next !== this.secondsLeft && next > 0 && next <= 5 && this.isYourTurn()) soundFx.playTick();
+        this.secondsLeft = next;
       }, 500);
     },
 
@@ -324,8 +326,13 @@ export function createRotorClashApp() {
           setTimeout(() => soundFx.playQuartetChime(), 220);
         }
       } else if (this.activeMatch.status === 'FINISHED' && prevStatus !== 'FINISHED') {
-        if (this.activeMatch.winnerId === this.activeMatch.you.id) soundFx.playVictory();
-        else soundFx.playLoseRound();
+        // Let the round-result sound finish before the game-result jingle starts.
+        const finished = this.activeMatch;
+        setTimeout(() => {
+          if (finished.winnerId === null) soundFx.playDraw();
+          else if (finished.winnerId === finished.you.id) soundFx.playVictory();
+          else soundFx.playDefeat();
+        }, 450);
       }
 
       this.scheduleBotTurnIfNeeded();
@@ -497,7 +504,7 @@ export function createRotorClashApp() {
 
     // Active Gameplay Actions
     selectStat(statKey: StatKey) {
-      soundFx.playClick();
+      soundFx.playSelect();
       if (this.pvpMatch) {
         this.sendWs('match:play_stat', { matchId: this.pvpMatch.matchId, statKey });
       } else if (this.botMatch) {
