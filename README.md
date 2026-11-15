@@ -28,7 +28,7 @@ Players battle across **32 real-world wind turbines** organized into **8 Quartet
 ## Tech Stack
 
 - **Frontend**: [Alpine.js](https://alpinejs.dev/) (`v3.17.5`) + [Tailwind CSS 4.x](https://tailwindcss.com/) (`v4.3.5` via `@tailwindcss/vite`) + TypeScript (`v7.0.2`) + Vite (`v8.3.8`)
-- **Backend**: Node.js (`>=22.0.0`, tested on v22 LTS, v24 LTS, and v26 LTS) + Express (`v5.3.0`) + WebSockets (`ws v8.23.0`)
+- **Backend**: Node.js (`>=26.0.0`, pinned via `.nvmrc`) + Express (`v5.3.0`) + WebSockets (`ws v8.23.0`)
 - **Bundling & Tooling**: `tsx` (`v4.23.15`), `esbuild` (`v0.28.2`), `tsc`, Node built-in test runner (`node:test` via `tsx --test`)
 
 ---

@@ -39,7 +39,7 @@ This file defines the architectural rules, conventions, and verification steps f
    - Any new key added to `EN_UI` must also be added to `DE_UI` and `Translations` (`src/lib/i18n.ts`). `tests/deckIntegrity.test.ts` enforces strict key parity.
 
 4. **Server, Node.js & hosting panel Production Compatibility**:
-   - Requires Node.js `>=22.0.0` (actively verified across Node 22 LTS, 24 LTS, and 26 LTS).
+   - Requires Node.js `>=26.0.0`; CI and the release workflow read the version from `.nvmrc`.
    - `.nvmrc` and `.node-version` lock the target version (`26`).
    - `server.ts` must lazy-import `vite` inside `if (!IS_PROD)` so production builds never load Vite dev dependencies at runtime.
    - `server.ts` must continue supporting both numeric TCP ports and Unix socket strings in `process.env.PORT` (used by Phusion Passenger on the target host).
