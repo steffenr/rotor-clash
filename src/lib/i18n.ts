@@ -73,8 +73,22 @@ export interface Translations {
     prevCard: string;
     nextCard: string;
   };
+  decks: {
+    title: string;
+    modern: { name: string; desc: string };
+    records: { name: string; desc: string };
+    mixed: { name: string; desc: string };
+    grand: { name: string; desc: string };
+    tabModern: string;
+    tabRecords: string;
+    photoCredit: string;
+    photoBy: string;
+    photoLicense: string;
+    photoViewSource: string;
+    photoConcept: string;
+  };
   stats: Record<
-    'ratedPowerMw' | 'rotorDiameterM' | 'hubHeightM' | 'cutInWindMs' | 'plantCapacityMw',
+    'ratedPowerMw' | 'rotorDiameterM' | 'hubHeightM' | 'cutInWindMs' | 'plantCapacityMw' | 'firstPowerYear',
     { label: string; shortLabel: string; description: string }
   >;
   arena: {

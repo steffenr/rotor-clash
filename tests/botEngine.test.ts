@@ -70,3 +70,22 @@ test('resolveBotRoundFromDeck finishes match when one player loses all cards', (
   assert.equal(finished.winnerId, 'p1');
   assert.equal(finished.winReason, 'ALL_CARDS');
 });
+
+test('bot matches follow the deck mode: Grand Tour deals 32 cards each and allows 48 rounds', () => {
+  const grand = createLocalBotMatchFromDeck('p1', 'Explorer', 1200, 'tactical', SERVER_TURBINE_DECK, 'grand');
+  assert.equal(grand.deckMode, 'grand');
+  assert.equal(grand.p1Deck.length, 32);
+  assert.equal(grand.p2Deck.length, 32);
+  assert.equal(grand.maxRounds, 48);
+  assert.equal(new Set([...grand.p1Deck, ...grand.p2Deck]).size, 64);
+  const state = serializeBotMatchFromDeck(grand, SERVER_CARD_BY_ID);
+  assert.equal(state.deckMode, 'grand');
+  assert.equal(state.quartetGroupIds.length, 16);
+});
+
+test('records bot matches pick from the records stat set (first-power year can be the standout)', () => {
+  const match = createLocalBotMatchFromDeck('p1', 'Explorer', 1200, 'tactical', SERVER_TURBINE_DECK, 'records');
+  assert.equal(match.maxRounds, 24);
+  match.p2Deck = ['9A']; // 1888 Brush windmill: oldest machine in the game
+  assert.equal(chooseBotStatFromDeck(match, SERVER_CARD_BY_ID), 'firstPowerYear');
+});

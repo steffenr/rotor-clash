@@ -39,3 +39,43 @@
 - id: 8
 - code: 8
 - category: windbase
+
+## Group 9
+- id: 9
+- code: 9
+- category: onshore
+
+## Group 10
+- id: 10
+- code: 10
+- category: onshore
+
+## Group 11
+- id: 11
+- code: 11
+- category: offshore
+
+## Group 12
+- id: 12
+- code: 12
+- category: onshore
+
+## Group 13
+- id: 13
+- code: 13
+- category: windbase
+
+## Group 14
+- id: 14
+- code: 14
+- category: onshore
+
+## Group 15
+- id: 15
+- code: 15
+- category: offshore
+
+## Group 16
+- id: 16
+- code: 16
+- category: offshore

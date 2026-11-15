@@ -1,9 +1,11 @@
+import type { DeckMode } from './decks.ts';
 export type StatKey =
   | 'ratedPowerMw'
   | 'rotorDiameterM'
   | 'hubHeightM'
   | 'cutInWindMs'
-  | 'plantCapacityMw';
+  | 'plantCapacityMw'
+  | 'firstPowerYear';
 
 export type ImageCategory = 'offshore' | 'onshore' | 'floating' | 'windbase';
 
@@ -98,6 +100,7 @@ export interface OpenRoomSummary {
   hostCallsign: string;
   hostElo: number;
   createdAt: number;
+  deckMode: DeckMode;
 }
 
 export interface RoundResolution {
@@ -148,6 +151,10 @@ export interface ClientMatchState {
   eloChange: number | null;
   /** Set when the match ended because someone left. Abandoned matches are not counted. */
   abandonedBy: 'you' | 'opponent' | null;
+  /** Which cards and stats this match uses. */
+  deckMode: DeckMode;
+  /** Quartet groups in play (8, or 16 in the Grand Tour). */
+  quartetGroupIds: number[];
 }
 
 export const STAT_DEFINITIONS: StatDefinition[] = [
@@ -190,6 +197,14 @@ export const STAT_DEFINITIONS: StatDefinition[] = [
     unit: 'MW',
     higherWins: true,
     description: 'Total installed capacity of this turbine’s flagship wind farm.',
+  },
+  {
+    key: 'firstPowerYear',
+    label: 'First Power',
+    shortLabel: 'Since',
+    unit: '',
+    higherWins: false,
+    description: 'Year the turbine first fed power to the grid (oldest wins!).',
   },
 ];
 

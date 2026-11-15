@@ -7,13 +7,23 @@ import {
 } from '../src/server/turbineRepository.ts';
 import { EN_UI } from '../src/data/locales/en/ui.ts';
 import { DE_UI } from '../src/data/locales/de/ui.ts';
+import { DECKS, cardsOfDeck, deckIdOfCard, statKeysForDeck } from '../src/shared/decks.ts';
 
-test('deck contains exactly 8 quartet groups and 32 unique turbine cards', () => {
-  assert.equal(SERVER_QUARTET_GROUPS.length, 8);
-  assert.equal(SERVER_TURBINE_DECK.length, 32);
+test('the game has two decks, each with 8 quartet groups and 32 unique turbine cards (64 total)', () => {
+  assert.equal(SERVER_QUARTET_GROUPS.length, 16);
+  assert.equal(SERVER_TURBINE_DECK.length, 64);
 
   const ids = new Set(SERVER_TURBINE_DECK.map((c) => c.id));
-  assert.equal(ids.size, 32);
+  assert.equal(ids.size, 64);
+
+  for (const deck of DECKS) {
+    assert.equal(cardsOfDeck(SERVER_TURBINE_DECK, deck.id).length, 32, `${deck.id} deck size`);
+    assert.deepEqual(
+      SERVER_QUARTET_GROUPS.filter((g) => deck.groupIds.includes(g.id)).map((g) => g.id),
+      deck.groupIds,
+      `${deck.id} groups`
+    );
+  }
 
   for (const group of SERVER_QUARTET_GROUPS) {
     assert.ok(group.translations.en.name.trim().length > 0, `Group ${group.id} missing EN name`);
@@ -31,7 +41,7 @@ test('deck contains exactly 8 quartet groups and 32 unique turbine cards', () =>
   }
 });
 
-test('all 32 turbine cards have valid engineering stats, source URLs, and EN/DE translations', () => {
+test('all 64 turbine cards have valid engineering stats, source URLs, and EN/DE translations', () => {
   for (const card of SERVER_TURBINE_DECK) {
     assert.ok(card.modelName.trim().length > 0, `${card.id} missing modelName`);
     assert.ok(card.manufacturer.trim().length > 0, `${card.id} missing manufacturer`);
@@ -39,18 +49,21 @@ test('all 32 turbine cards have valid engineering stats, source URLs, and EN/DE 
     assert.ok(card.sweptAreaM2 > 0, `${card.id} sweptAreaM2 must be > 0`);
     assert.ok(card.photoKey && card.photoKey.trim().length > 0, `${card.id} missing photoKey`);
 
-    if (card.id === '4C') {
-      assert.equal(card.photoKey, 'kincardine_floating', '4C must use kincardine_floating photoKey');
+    // Floating offshore turbines (group 4) never show onshore or fixed-foundation imagery.
+    if (card.groupId === 4) {
+      assert.ok(
+        ['hywind', 'kincardine_floating', 'windfloat_atlantic', 'fallback_floating'].includes(card.photoKey),
+        `${card.id} must use a floating photo or the floating concept illustration`
+      );
     }
     if (card.id === '4D') {
       assert.equal(card.photoKey, 'windfloat_atlantic', '4D must use windfloat_atlantic photoKey');
     }
 
-    assert.ok(card.stats.ratedPowerMw > 0, `${card.id} ratedPowerMw`);
-    assert.ok(card.stats.rotorDiameterM > 0, `${card.id} rotorDiameterM`);
-    assert.ok(card.stats.hubHeightM > 0, `${card.id} hubHeightM`);
-    assert.ok(card.stats.cutInWindMs > 0, `${card.id} cutInWindMs`);
-    assert.ok(card.stats.plantCapacityMw > 0, `${card.id} plantCapacityMw`);
+    // Every stat compared in the card's own deck must be present (deck 2 has no cut-in speed).
+    for (const key of statKeysForDeck(deckIdOfCard(card))) {
+      assert.ok(card.stats[key] > 0, `${card.id} ${key}`);
+    }
 
     for (const lang of ['en', 'de'] as const) {
       const loc = card.translations[lang];
@@ -90,4 +103,16 @@ test('EN and DE UI translation dictionaries have matching keys and non-empty str
   };
 
   checkShape(EN_UI, DE_UI);
+});
+
+test('the deck is ordered by group then slot, so 9A comes before 10A (not alphabetically)', () => {
+  const ids = SERVER_TURBINE_DECK.map((c) => c.id);
+  const expected = [...SERVER_TURBINE_DECK]
+    .sort((a, b) => a.groupId - b.groupId || a.slot.localeCompare(b.slot))
+    .map((c) => c.id);
+  assert.deepEqual(ids, expected);
+  assert.equal(ids[0], '1A');
+  assert.equal(ids[31], '8D');
+  assert.equal(ids[32], '9A');
+  assert.equal(ids[63], '16D');
 });

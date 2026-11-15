@@ -1,5 +1,15 @@
 import { ClientMatchState, RoundResolution, StatKey, TurbineCard } from './gameTypes.ts';
 import { compareStat, computeCompletedQuartets } from './turbines.ts';
+import {
+  DEFAULT_DECK_MODE,
+  buildMatchCardIds,
+  maxRoundsForMode,
+  quartetGroupIdsOf,
+  rankStatsByStrength,
+  resolveDeckMode,
+  statKeysForMode,
+  type DeckMode,
+} from './decks.ts';
 
 export type BotDifficulty = 'standard' | 'tactical';
 
@@ -21,6 +31,8 @@ export interface LocalBotMatch {
   lastRound: RoundResolution | null;
   winnerId: string | null;
   winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
+  deckMode: DeckMode;
+  quartetGroupIds: number[];
 }
 
 function shuffleIds(ids: string[]): string[] {
@@ -37,9 +49,11 @@ export function createLocalBotMatchFromDeck(
   playerCallsign: string,
   playerElo: number,
   difficulty: BotDifficulty,
-  deck: TurbineCard[]
+  deck: TurbineCard[],
+  requestedMode: DeckMode = DEFAULT_DECK_MODE
 ): LocalBotMatch {
-  const shuffled = shuffleIds(deck.map((c) => c.id));
+  const deckMode = resolveDeckMode(requestedMode, deck);
+  const shuffled = buildMatchCardIds(deckMode, deck);
   const half = Math.floor(shuffled.length / 2);
   return {
     matchId: `bot_${Date.now()}`,
@@ -55,10 +69,12 @@ export function createLocalBotMatchFromDeck(
     tiePot: [],
     turnPlayerId: playerId,
     roundNumber: 1,
-    maxRounds: 24,
+    maxRounds: maxRoundsForMode(deckMode),
     lastRound: null,
     winnerId: null,
     winReason: null,
+    deckMode,
+    quartetGroupIds: quartetGroupIdsOf(shuffled, deck),
   };
 }
 
@@ -70,21 +86,13 @@ export function chooseBotStatFromDeck(
   const card = topId ? cardById[topId] : null;
   if (!card) return 'ratedPowerMw';
 
-  const stats = card.stats;
-  const scored: { key: StatKey; score: number }[] = [
-    { key: 'ratedPowerMw', score: stats.ratedPowerMw / 26 },
-    { key: 'rotorDiameterM', score: stats.rotorDiameterM / 310 },
-    { key: 'hubHeightM', score: stats.hubHeightM / 185 },
-    { key: 'cutInWindMs', score: Math.max(0, (4.2 - stats.cutInWindMs) / 2.2) },
-    { key: 'plantCapacityMw', score: Math.log10(Math.max(10, stats.plantCapacityMw)) / 4.1 },
-  ];
-  scored.sort((a, b) => b.score - a.score);
+  const ranked = rankStatsByStrength(card.stats, statKeysForMode(match.deckMode));
 
   if (match.difficulty === 'tactical') {
-    return scored[0].key;
+    return ranked[0];
   }
   const idx = Math.random() < 0.72 ? 0 : 1;
-  return scored[idx].key;
+  return ranked[idx];
 }
 
 export function resolveBotRoundFromDeck(
@@ -241,5 +249,7 @@ export function serializeBotMatchFromDeck(
     winReason: match.winReason,
     eloChange: null,
     abandonedBy: null,
+    deckMode: match.deckMode,
+    quartetGroupIds: match.quartetGroupIds,
   };
 }

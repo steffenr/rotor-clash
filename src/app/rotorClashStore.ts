@@ -5,6 +5,7 @@ import {
   MatchRecord,
   OpenRoomSummary,
   PlayerProfile,
+  QuartetGroup,
   RANK_TIERS,
   STAT_DEFINITIONS,
   StatDefinition,
@@ -14,6 +15,7 @@ import {
 import { compareStat } from '../shared/turbines';
 import { CARD_BY_ID, GROUP_BY_ID, QUARTET_GROUPS, TURBINE_DECK } from '../lib/turbineDeck';
 import { resolveCardPhoto } from '../lib/cardImages';
+import { getPhotoCredit, type PhotoCredit } from '../shared/photoCredits';
 import {
   getOrCreateIdentity,
   getSavedCallsign,
@@ -34,6 +36,21 @@ import {
 } from '../lib/botEngine';
 import { soundFx } from '../lib/soundFx';
 import { launchConfetti } from '../lib/celebrate';
+import {
+  DECKS,
+  DECK_MODES,
+  DEFAULT_DECK_ID,
+  deckIdOfCard,
+  lastCardIdOfDeck,
+  resolveDeckMode,
+  statDefinitionsForDeck,
+  statDefinitionsForMode,
+  formatStatValue as sharedFormatStatValue,
+  statStrengthPercent as sharedStatStrengthPercent,
+  type DeckId,
+  type DeckMode,
+} from '../shared/decks';
+import { loadSavedDeckMode, saveDeckMode } from '../lib/deckPreference';
 import { Theme, applyTheme, loadSavedTheme, resolveInitialTheme, saveTheme } from '../lib/theme';
 import { Language, TRANSLATIONS, Translations } from '../lib/i18n';
 import fieldDeskImg from '../assets/images/field_guide_desk_1794678472040.jpg';
@@ -111,6 +128,9 @@ export function createRotorClashApp() {
 
     // Compendium & Tutorial State
     compendiumGroup: 'all' as number | 'all',
+    compendiumDeck: 'modern' as DeckId,
+    deckMode: resolveDeckMode(loadSavedDeckMode(), TURBINE_DECK) as DeckMode,
+    deckModes: DECK_MODES.filter((m) => resolveDeckMode(m, TURBINE_DECK) === m) as DeckMode[],
     compendiumSearch: '',
     tutorialStep: 0,
     tutorialInspectedStat: 'ratedPowerMw' as StatKey,
@@ -453,7 +473,13 @@ export function createRotorClashApp() {
       if (this.inQueue) this.sendWs('queue:leave');
       if (this.hostedRoom) this.sendWs('room:cancel');
       this.pvpMatch = null;
-      this.botMatch = createLocalBotMatch(identity.playerId, this.profile.callsign, this.profile.elo, chosenDiff);
+      this.botMatch = createLocalBotMatch(
+        identity.playerId,
+        this.profile.callsign,
+        this.profile.elo,
+        chosenDiff,
+        this.deckMode
+      );
       this.activeTab = 'arena';
       this.syncActiveMatch();
     },
@@ -468,7 +494,16 @@ export function createRotorClashApp() {
         );
         return;
       }
-      this.sendWs('queue:join');
+      this.sendWs('queue:join', { deckMode: this.deckMode });
+    },
+
+    setDeckMode(mode: DeckMode) {
+      if (!this.deckModes.includes(mode)) return;
+      soundFx.playClick();
+      // Leave a waiting line so players never wait in a queue for a deck they no longer want.
+      if (this.inQueue && mode !== this.deckMode) this.sendWs('queue:leave');
+      this.deckMode = mode;
+      saveDeckMode(mode);
     },
 
     leaveQueue() {
@@ -486,7 +521,7 @@ export function createRotorClashApp() {
         );
         return;
       }
-      this.sendWs('room:create');
+      this.sendWs('room:create', { deckMode: this.deckMode });
     },
 
     cancelRoom() {
@@ -568,7 +603,7 @@ export function createRotorClashApp() {
         this.sendWs('match:dismiss');
         this.pvpMatch = null;
         this.syncActiveMatch();
-        if (wasRanked) this.sendWs('queue:join');
+        if (wasRanked) this.sendWs('queue:join', { deckMode: this.deckMode });
       } else if (this.botMatch) {
         this.startBotMatch(this.botMatch.difficulty);
       }
@@ -724,6 +759,7 @@ export function createRotorClashApp() {
     filteredDeck(): TurbineCard[] {
       const q = this.compendiumSearch.trim().toLowerCase();
       return TURBINE_DECK.filter((card) => {
+        if (deckIdOfCard(card) !== this.compendiumDeck) return false;
         if (this.compendiumGroup !== 'all' && card.groupId !== this.compendiumGroup) return false;
         if (!q) return true;
         const loc = this.cardLocale(card);
@@ -915,18 +951,48 @@ export function createRotorClashApp() {
     },
 
     statStrengthPercent(key: StatKey, value: number): number {
-      switch (key) {
-        case 'ratedPowerMw':
-          return Math.min(100, Math.max(12, Math.round((value / 26) * 100)));
-        case 'rotorDiameterM':
-          return Math.min(100, Math.max(20, Math.round((value / 310) * 100)));
-        case 'hubHeightM':
-          return Math.min(100, Math.max(20, Math.round((value / 190) * 100)));
-        case 'cutInWindMs':
-          return Math.min(100, Math.max(18, Math.round(((4.5 - value) / 2.5) * 100)));
-        case 'plantCapacityMw':
-          return Math.min(100, Math.max(14, Math.round((Math.log10(Math.max(10, value)) / 4.05) * 100)));
-      }
+      return sharedStatStrengthPercent(key, value);
+    },
+
+    photoCredit(card: TurbineCard | null): PhotoCredit | null {
+      return card && card.isRealPhoto ? getPhotoCredit(card.photoKey) : null;
+    },
+
+    /** The five stats compared for this card's deck. */
+    statDefsFor(card: TurbineCard | null, mode?: DeckMode | null): StatDefinition[] {
+      // In a match every card is compared on the match's stat set; elsewhere a card shows its own deck's.
+      if (mode) return statDefinitionsForMode(mode);
+      return statDefinitionsForDeck(card ? deckIdOfCard(card) : DEFAULT_DECK_ID);
+    },
+
+    /** Quartet groups in play in the current match (8, or 16 in the Grand Tour). */
+    matchGroups(): QuartetGroup[] {
+      const ids = this.activeMatch?.quartetGroupIds;
+      return ids && ids.length ? QUARTET_GROUPS.filter((g) => ids.includes(g.id)) : QUARTET_GROUPS;
+    },
+
+    matchQuartetTotal(): number {
+      return this.activeMatch?.quartetGroupIds?.length || 8;
+    },
+
+    deckModeName(mode: DeckMode): string {
+      return this.t.decks[mode].name;
+    },
+
+    lastCardId(card: TurbineCard | null): string {
+      return card ? lastCardIdOfDeck(card) : '8D';
+    },
+
+    /** Groups shown as chips in the Card Album for the selected deck tab. */
+    compendiumGroups(): QuartetGroup[] {
+      const deck = DECKS.find((d) => d.id === this.compendiumDeck) ?? DECKS[0];
+      return QUARTET_GROUPS.filter((g) => deck.groupIds.includes(g.id));
+    },
+
+    setCompendiumDeck(deckId: DeckId) {
+      soundFx.playClick();
+      this.compendiumDeck = deckId;
+      this.compendiumGroup = 'all';
     },
 
     statRowClass(
@@ -948,13 +1014,7 @@ export function createRotorClashApp() {
     },
 
     formatStatValue(key: StatKey, val: number): string {
-      if (key === 'plantCapacityMw' || key === 'rotorDiameterM' || key === 'hubHeightM') {
-        return val.toLocaleString(this.lang === 'de' ? 'de-DE' : 'en-US', { maximumFractionDigits: 0 });
-      }
-      if (key === 'ratedPowerMw') {
-        return val % 1 === 0 ? val.toFixed(1) : val.toFixed(2).replace(/0$/, '');
-      }
-      return val.toFixed(1);
+      return sharedFormatStatValue(key, val, this.lang);
     },
 
     formatNumber(val: number): string {
