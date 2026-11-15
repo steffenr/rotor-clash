@@ -34,6 +34,8 @@ export interface ActiveMatch {
   winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
   p1EloChange: number | null;
   p2EloChange: number | null;
+  /** Player who left / dropped out; the match is then not counted. */
+  abandonedById: string | null;
   turnDeadlineAt: number | null;
   revealTimer?: NodeJS.Timeout;
   turnTimer?: NodeJS.Timeout;
@@ -184,8 +186,7 @@ export class MatchEngine {
     const timer = setTimeout(() => {
       if (match.status === 'FINISHED') return;
       if (!this.isPlayerConnected(playerId)) {
-        const winnerId = match.p1Id === playerId ? match.p2Id : match.p1Id;
-        this.finishMatch(match, winnerId, 'FORFEIT');
+        this.abandonMatch(match, playerId);
       }
     }, DISCONNECT_GRACE_MS);
 
@@ -327,6 +328,7 @@ export class MatchEngine {
       winReason: null,
       p1EloChange: null,
       p2EloChange: null,
+      abandonedById: null,
       turnDeadlineAt: Date.now() + TURN_DURATION_MS,
     };
 
@@ -471,8 +473,16 @@ export class MatchEngine {
     const match = this.matches.get(matchId);
     if (!match || match.status === 'FINISHED') return;
     if (playerId !== match.p1Id && playerId !== match.p2Id) return;
-    const winnerId = match.p1Id === playerId ? match.p2Id : match.p1Id;
-    this.finishMatch(match, winnerId, 'FORFEIT');
+    this.abandonMatch(match, playerId);
+  }
+
+  /**
+   * A player left (Leave button) or stayed disconnected past the grace window.
+   * Only matches played to the end count, so nobody gets a win, a loss, ELO or a history entry.
+   */
+  private abandonMatch(match: ActiveMatch, leaverId: string) {
+    match.abandonedById = leaverId;
+    this.finishMatch(match, null, 'FORFEIT');
   }
 
   public dismissFinishedMatch(playerId: string) {
@@ -498,30 +508,34 @@ export class MatchEngine {
     match.winReason = reason;
     match.turnDeadlineAt = null;
 
-    const p1Quartets = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID).length;
-    const p2Quartets = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID).length;
+    if (reason !== 'FORFEIT') {
+      const p1Quartets = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID).length;
+      const p2Quartets = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID).length;
 
-    const { p1Delta, p2Delta } = this.store.recordPvpMatch({
-      matchId: match.id,
-      mode: match.mode,
-      p1Id: match.p1Id,
-      p2Id: match.p2Id,
-      p1Cards: match.p1Deck.length,
-      p2Cards: match.p2Deck.length,
-      p1Quartets,
-      p2Quartets,
-      winnerId,
-      roundsPlayed: match.roundNumber,
-    });
+      const { p1Delta, p2Delta } = this.store.recordPvpMatch({
+        matchId: match.id,
+        mode: match.mode,
+        p1Id: match.p1Id,
+        p2Id: match.p2Id,
+        p1Cards: match.p1Deck.length,
+        p2Cards: match.p2Deck.length,
+        p1Quartets,
+        p2Quartets,
+        winnerId,
+        roundsPlayed: match.roundNumber,
+      });
 
-    match.p1EloChange = p1Delta;
-    match.p2EloChange = p2Delta;
+      match.p1EloChange = p1Delta;
+      match.p2EloChange = p2Delta;
+    }
 
     this.broadcastMatchState(match);
-    this.broadcastAll('leaderboard:updated', {
-      leaderboard: this.store.getLeaderboard(),
-      recentMatches: this.store.getRecentMatches(),
-    });
+    if (reason !== 'FORFEIT') {
+      this.broadcastAll('leaderboard:updated', {
+        leaderboard: this.store.getLeaderboard(),
+        recentMatches: this.store.getRecentMatches(),
+      });
+    }
 
     // Clear active match binding after sending final screen (client can still view local state until dismissed)
     const cleanupTimer = setTimeout(() => {
@@ -621,6 +635,7 @@ export class MatchEngine {
       winnerId: match.winnerId,
       winReason: match.winReason,
       eloChange: isP1 ? match.p1EloChange : match.p2EloChange,
+      abandonedBy: match.abandonedById === null ? null : match.abandonedById === playerId ? 'you' : 'opponent',
     };
   }
 }

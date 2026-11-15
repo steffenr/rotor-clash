@@ -146,6 +146,8 @@ export interface ClientMatchState {
   winnerId: string | null;
   winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
   eloChange: number | null;
+  /** Set when the match ended because someone left. Abandoned matches are not counted. */
+  abandonedBy: 'you' | 'opponent' | null;
 }
 
 export const STAT_DEFINITIONS: StatDefinition[] = [

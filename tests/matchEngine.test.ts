@@ -127,14 +127,62 @@ test('MatchEngine pairs private room players, enforces turns, resolves rounds, a
     assert.equal(revealState.status, 'ROUND_REVEAL');
     assert.equal(revealState.lastRound?.chosenStat, 'ratedPowerMw');
 
-    // Forfeit settles match & updates store
+    // Leaving ends the match but does NOT count: no winner, no ELO, no stats, no history entry.
     engine.forfeitMatch('bob', aliceState.matchId);
     const finished = engine.getMatchForPlayer('alice') as ClientMatchState;
+    const leaver = engine.getMatchForPlayer('bob') as ClientMatchState;
     assert.equal(finished.status, 'FINISHED');
-    assert.equal(finished.winnerId, 'alice');
     assert.equal(finished.winReason, 'FORFEIT');
+    assert.equal(finished.winnerId, null);
+    assert.equal(finished.eloChange, null);
+    assert.equal(leaver.eloChange, null);
+    assert.equal(finished.abandonedBy, 'opponent');
+    assert.equal(leaver.abandonedBy, 'you');
+    assert.equal(store.getRecentMatches().length, 0);
+    for (const id of ['alice', 'bob']) {
+      const p = store.getOrCreatePlayer(id);
+      assert.equal(p.elo, 1200);
+      assert.equal(p.gamesPlayed, 0);
+      assert.equal(p.wins + p.losses + p.draws, 0);
+    }
+  } finally {
+    engine.dispose();
+  }
+});
+
+test('MatchEngine counts a match (ELO, stats, history) only when it is played to the end', () => {
+  const store = createMemoryStore();
+  const engine = new MatchEngine(
+    () => {},
+    () => {},
+    () => true,
+    store
+  );
+
+  try {
+    const code = engine.createRoom('alice').room!.roomCode;
+    engine.joinRoom('bob', code);
+    const matchId = (engine.getMatchForPlayer('alice') as ClientMatchState).matchId;
+
+    for (let i = 0; i < 200; i++) {
+      const state = engine.getMatchForPlayer('alice') as ClientMatchState;
+      if (state.status === 'FINISHED') break;
+      if (state.status === 'PLAYING') {
+        engine.playStat(state.turnPlayerId!, matchId, 'ratedPowerMw');
+      } else {
+        // skip the short anti-skip lock on the reveal screen
+        (engine as unknown as { matches: Map<string, { revealLockedUntil: number }> }).matches.get(matchId)!.revealLockedUntil = 0;
+        engine.requestNextRound('alice', matchId);
+      }
+    }
+
+    const done = engine.getMatchForPlayer('alice') as ClientMatchState;
+    assert.equal(done.status, 'FINISHED');
+    assert.notEqual(done.winReason, 'FORFEIT');
+    assert.equal(done.abandonedBy, null);
     assert.equal(store.getRecentMatches().length, 1);
-    assert.ok(broadcasts.some((b) => b.event === 'leaderboard:updated'));
+    assert.equal(store.getOrCreatePlayer('alice').gamesPlayed, 1);
+    assert.equal(store.getOrCreatePlayer('bob').gamesPlayed, 1);
   } finally {
     engine.dispose();
   }

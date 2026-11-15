@@ -240,5 +240,6 @@ export function serializeBotMatchFromDeck(
     winnerId: match.winnerId,
     winReason: match.winReason,
     eloChange: null,
+    abandonedBy: null,
   };
 }
