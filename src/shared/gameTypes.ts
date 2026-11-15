@@ -192,7 +192,7 @@ export const STAT_DEFINITIONS: StatDefinition[] = [
 ];
 
 export const RANK_TIERS: RankTier[] = [
-  { name: 'Aeolian Grandmaster', minElo: 1600, accentHex: '#B45309' },
+  { name: 'Rotor Clash Grandmaster', minElo: 1600, accentHex: '#B45309' },
   { name: 'Offshore Ace', minElo: 1400, accentHex: '#0E7490' },
   { name: 'Turbine Lead', minElo: 1250, accentHex: '#1B6B52' },
   { name: 'Grid Engineer', minElo: 1150, accentHex: '#475569' },

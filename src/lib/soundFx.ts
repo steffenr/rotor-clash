@@ -1,10 +1,22 @@
+const MUTE_KEY = 'rotor_clash_muted';
+const LEGACY_MUTE_KEY = 'aeolian_muted';
+
 class SoundFxManager {
   private ctx: AudioContext | null = null;
   private muted = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      this.muted = localStorage.getItem('aeolian_muted') === '1';
+      let stored = localStorage.getItem(MUTE_KEY);
+      if (stored === null) {
+        const legacy = localStorage.getItem(LEGACY_MUTE_KEY);
+        if (legacy !== null) {
+          localStorage.setItem(MUTE_KEY, legacy);
+          localStorage.removeItem(LEGACY_MUTE_KEY);
+          stored = legacy;
+        }
+      }
+      this.muted = stored === '1';
     }
   }
 
@@ -15,7 +27,7 @@ class SoundFxManager {
   public toggleMute(): boolean {
     this.muted = !this.muted;
     if (typeof window !== 'undefined') {
-      localStorage.setItem('aeolian_muted', this.muted ? '1' : '0');
+      localStorage.setItem(MUTE_KEY, this.muted ? '1' : '0');
     }
     return this.muted;
   }
