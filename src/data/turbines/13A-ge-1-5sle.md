@@ -18,6 +18,5 @@ rotorDiameterM: 77
 hubHeightM: 80
 plantCapacityMw: 735.5
 sourceUrl: https://www.nexteraenergyresources.com/content/dam/neer/us/en/pdf/portfolio/horsehollow.pdf
-sourceLabel: NextEra Energy · Horse Hollow
-approximateStats: hubHeightM
+sourceLabel: NextEra Energy · Horse Hollow; GE 1.5 MW technical brochure
 ---
