@@ -66,6 +66,13 @@ export type EmitToPlayerFn = (playerId: string, event: string, payload: unknown)
 export type BroadcastAllFn = (event: string, payload: unknown) => void;
 export type IsPlayerConnectedFn = (playerId: string) => boolean;
 
+export interface MatchStoreLike {
+  getOrCreatePlayer: typeof leaderboardStore.getOrCreatePlayer;
+  recordPvpMatch: typeof leaderboardStore.recordPvpMatch;
+  getLeaderboard: typeof leaderboardStore.getLeaderboard;
+  getRecentMatches: typeof leaderboardStore.getRecentMatches;
+}
+
 export class MatchEngine {
   private matches = new Map<string, ActiveMatch>();
   private playerToMatch = new Map<string, string>();
@@ -75,14 +82,27 @@ export class MatchEngine {
   constructor(
     private emitToPlayer: EmitToPlayerFn,
     private broadcastAll: BroadcastAllFn,
-    private isPlayerConnected: IsPlayerConnectedFn
+    private isPlayerConnected: IsPlayerConnectedFn,
+    private store: MatchStoreLike = leaderboardStore
   ) {}
+
+  public dispose() {
+    for (const match of this.matches.values()) {
+      this.clearTimers(match);
+      if (match.p1DisconnectTimer) clearTimeout(match.p1DisconnectTimer);
+      if (match.p2DisconnectTimer) clearTimeout(match.p2DisconnectTimer);
+    }
+    this.matches.clear();
+    this.playerToMatch.clear();
+    this.queue = [];
+    this.rooms.clear();
+  }
 
   public getLobbySnapshot(onlineCount: number) {
     const openRooms: OpenRoomSummary[] = Array.from(this.rooms.values())
       .sort((a, b) => b.createdAt - a.createdAt)
       .map((room) => {
-        const host = leaderboardStore.getOrCreatePlayer(room.hostId);
+        const host = this.store.getOrCreatePlayer(room.hostId);
         return {
           roomCode: room.roomCode,
           hostCallsign: host.callsign,
@@ -112,7 +132,7 @@ export class MatchEngine {
   public getWaitingRoomForPlayer(playerId: string): OpenRoomSummary | null {
     for (const room of this.rooms.values()) {
       if (room.hostId === playerId) {
-        const host = leaderboardStore.getOrCreatePlayer(room.hostId);
+        const host = this.store.getOrCreatePlayer(room.hostId);
         return {
           roomCode: room.roomCode,
           hostCallsign: host.callsign,
@@ -235,7 +255,7 @@ export class MatchEngine {
     };
     this.rooms.set(code, room);
 
-    const host = leaderboardStore.getOrCreatePlayer(playerId);
+    const host = this.store.getOrCreatePlayer(playerId);
     return {
       ok: true,
       room: {
@@ -481,7 +501,7 @@ export class MatchEngine {
     const p1Quartets = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID).length;
     const p2Quartets = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID).length;
 
-    const { p1Delta, p2Delta } = leaderboardStore.recordPvpMatch({
+    const { p1Delta, p2Delta } = this.store.recordPvpMatch({
       matchId: match.id,
       mode: match.mode,
       p1Id: match.p1Id,
@@ -499,12 +519,12 @@ export class MatchEngine {
 
     this.broadcastMatchState(match);
     this.broadcastAll('leaderboard:updated', {
-      leaderboard: leaderboardStore.getLeaderboard(),
-      recentMatches: leaderboardStore.getRecentMatches(),
+      leaderboard: this.store.getLeaderboard(),
+      recentMatches: this.store.getRecentMatches(),
     });
 
     // Clear active match binding after sending final screen (client can still view local state until dismissed)
-    setTimeout(() => {
+    const cleanupTimer = setTimeout(() => {
       if (this.playerToMatch.get(match.p1Id) === match.id) {
         this.playerToMatch.delete(match.p1Id);
       }
@@ -513,6 +533,7 @@ export class MatchEngine {
       }
       this.matches.delete(match.id);
     }, 30_000);
+    cleanupTimer.unref?.();
   }
 
   private scheduleTurnTimer(match: ActiveMatch) {
@@ -566,8 +587,8 @@ export class MatchEngine {
     const yourDeck = isP1 ? match.p1Deck : match.p2Deck;
     const oppDeck = isP1 ? match.p2Deck : match.p1Deck;
 
-    const youProfile = leaderboardStore.getOrCreatePlayer(youId);
-    const oppProfile = leaderboardStore.getOrCreatePlayer(oppId);
+    const youProfile = this.store.getOrCreatePlayer(youId);
+    const oppProfile = this.store.getOrCreatePlayer(oppId);
 
     return {
       matchId: match.id,
