@@ -127,13 +127,42 @@ jobs:
           scp -P "$SSH_PORT" -i ~/.ssh/deploy_key /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
 
           # Extract cleanly, remove archive, install production dependencies using hosting panel Node.js & reload Passenger
+          # The remote script runs via `bash -s`, so it does not depend on the server's login-shell PATH.
           ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
-            "cd '$DEPLOY_PATH' && \
-             tar -xzf rotor-clash-release.tar.gz && \
-             rm -f rotor-clash-release.tar.gz && \
-             export PATH=\"/opt/panel/node/26/bin:/opt/panel/node/24/bin:/opt/panel/node/22/bin:/opt/panel/node/20/bin:\$PATH\" && \
-             npm install --omit=dev && \
-             touch tmp/restart.txt"
+            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          tar -xzf rotor-clash-release.tar.gz
+          rm -f rotor-clash-release.tar.gz
+
+          # Find an npm: prefer the hosting panel Node.js version from .nvmrc, then the newest installed one,
+          # then whatever is already on PATH.
+          WANT="$(tr -d '[:space:]v' < .nvmrc)"
+          NODE_BIN=""
+          CANDIDATES="/opt/panel/node/${WANT}/bin $(ls -d /opt/panel/node/*/bin 2>/dev/null | sort -t/ -k5 -nr | tr '\n' ' ')"
+          for dir in $CANDIDATES; do
+            if [ -x "$dir/npm" ] && [ -x "$dir/node" ]; then
+              NODE_BIN="$dir"
+              break
+            fi
+          done
+          if [ -n "$NODE_BIN" ]; then
+            export PATH="$NODE_BIN:$PATH"
+          fi
+          if ! command -v npm >/dev/null 2>&1; then
+            echo "Error: npm not found on the server (wanted Node ${WANT})." >&2
+            echo "PATH=$PATH" >&2
+            echo "--- /opt/panel/node ---" >&2
+            ls -la /opt/panel/node 2>&1 >&2 || true
+            echo "--- command -v node ---" >&2
+            command -v node >&2 || true
+            exit 1
+          fi
+
+          echo "Using node $(node -v) and npm $(npm -v) from $(dirname "$(command -v npm)")"
+          npm install --omit=dev
+          touch tmp/restart.txt
+          REMOTE
 
       - name: Commit version, create tag & push to main
         env:
