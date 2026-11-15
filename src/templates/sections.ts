@@ -898,19 +898,8 @@ export function renderCompendium(): string {
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center"
       >
         <template x-for="card in filteredDeck()" :key="card.id">
-          <div class="w-full flex flex-col items-center space-y-2.5">
+          <div class="w-full flex flex-col items-center">
             ${renderTurbineCard('card', { compact: true, playfulHover: true })}
-            <div class="w-full max-w-[308px] flex items-start justify-between gap-2 px-1">
-              <p class="text-xs text-c-ink-2 leading-relaxed line-clamp-2" x-text="cardLocale(card).engineeringNote"></p>
-              <button
-                type="button"
-                @click="inspectCard(card)"
-                class="text-[11px] font-bold text-c-teal hover:text-c-ink hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
-              >
-                ${iconSvg('maximize', 'w-3 h-3')}
-                <span x-text="t.compendium.inspectFull"></span>
-              </button>
-            </div>
           </div>
         </template>
       </div>
