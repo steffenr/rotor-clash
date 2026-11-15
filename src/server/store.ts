@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { MatchRecord, PlayerProfile } from '../shared/gameTypes.ts';
+import type { MatchRecord, PlayerProfile } from '../shared/gameTypes.ts';
 
 interface PersistedData {
   players: Record<string, PlayerProfile>;
@@ -30,8 +30,6 @@ class LeaderboardStore {
           players: parsed.players ?? {},
           matches: Array.isArray(parsed.matches) ? parsed.matches : [],
         };
-      } else {
-        this.persist();
       }
     } catch (err) {
       console.error('Failed to load leaderboard store:', err);
@@ -62,7 +60,9 @@ class LeaderboardStore {
       if (cleanCallsign && existing.callsign !== cleanCallsign) {
         existing.callsign = cleanCallsign;
         existing.updatedAt = Date.now();
-        this.persist();
+        if (existing.gamesPlayed > 0) {
+          this.persist();
+        }
       }
       return existing;
     }
@@ -81,7 +81,6 @@ class LeaderboardStore {
       updatedAt: Date.now(),
     };
     this.data.players[id] = created;
-    this.persist();
     return created;
   }
 
