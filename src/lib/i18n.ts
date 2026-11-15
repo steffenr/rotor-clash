@@ -31,6 +31,7 @@ export interface Translations {
     roomPlaceholder: string;
     joinRoom: string;
     practiceBot: string;
+    botDifficultyLabel: string;
     botCadet: string;
     botTactical: string;
     openRoomsTitle: string;

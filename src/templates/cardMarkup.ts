@@ -55,7 +55,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             x-text="formatStatValue(stat.key, ${cardExpr}.stats[stat.key])"
           ></span>
           <span
-            class="text-[11px] font-semibold text-[#3C5866] w-7 text-right"
+            class="text-[11px] font-semibold text-[#3C5866] min-w-[1.5rem] text-right"
             x-text="stat.unit"
           ></span>
         </div>
