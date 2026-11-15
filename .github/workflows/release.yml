@@ -113,6 +113,12 @@ jobs:
           ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH' '$DEPLOY_PATH/tmp' '$DEPLOY_PATH/data'"
 
+          # The netcup SSH shell has no Node.js / npm, so production dependencies are installed here
+          # (express, ws and dotenv are pure JavaScript) and shipped inside the archive.
+          PROD_DIR="$(mktemp -d)"
+          cp package.json "$PROD_DIR/"
+          (cd "$PROD_DIR" && npm install --omit=dev --ignore-scripts --no-audit --no-fund)
+
           # Package production release payload into a compressed archive
           tar -czf /tmp/rotor-clash-release.tar.gz \
             package.json \
@@ -121,54 +127,23 @@ jobs:
             .node-version \
             dist \
             dist-server \
-            src/data
+            src/data \
+            -C "$PROD_DIR" node_modules
 
           # Upload archive via SCP (universally supported on all SSH hosts, no remote rsync dependency)
           scp -P "$SSH_PORT" -i ~/.ssh/deploy_key /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
 
-          # Extract cleanly, remove archive, install production dependencies using Plesk Node.js & reload Passenger
-          # The remote script runs via `bash -s`, so it does not depend on the server's login-shell PATH.
+          # Replace node_modules, extract the release, remove the archive and reload Passenger.
+          # data/ and tmp/ are left untouched.
           ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' bash -l -s" <<'REMOTE'
+            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$DEPLOY_PATH"
+          rm -rf node_modules
           tar -xzf rotor-clash-release.tar.gz
           rm -f rotor-clash-release.tar.gz
-
-          # Find an npm: prefer the Plesk Node.js version from .nvmrc, then the newest installed one,
-          # then whatever is already on PATH.
-          WANT="$(tr -d '[:space:]v' < .nvmrc)"
-          NODE_BIN=""
-          if ! command -v npm >/dev/null 2>&1; then
-            PLESK_DIRS="$(ls -d /opt/plesk/node/*/bin 2>/dev/null | sort -t/ -k5 -nr | tr '\n' ' ' || true)"
-            NVM_DIRS="$(ls -d "$HOME"/.nvm/versions/node/*/bin 2>/dev/null | sort -r | tr '\n' ' ' || true)"
-            CANDIDATES="/opt/plesk/node/${WANT}/bin ${PLESK_DIRS} ${NVM_DIRS} /usr/local/bin /usr/bin"
-            for dir in $CANDIDATES; do
-              if [ -x "$dir/npm" ] && [ -x "$dir/node" ]; then
-                export PATH="$dir:$PATH"
-                break
-              fi
-            done
-          fi
-          if ! command -v npm >/dev/null 2>&1; then
-            echo "Error: npm not found on the server (wanted Node ${WANT})." >&2
-            echo "PATH=$PATH" >&2
-            echo "--- /opt/plesk ---" >&2
-            ls -la /opt/plesk 2>&1 >&2 || true
-            echo "--- /opt/plesk/node ---" >&2
-            ls -la /opt/plesk/node 2>&1 >&2 || true
-            echo "--- ~/.nvm ---" >&2
-            ls -la "$HOME/.nvm" 2>&1 >&2 || true
-            echo "--- which node/npm/nodejs ---" >&2
-            command -v node npm nodejs >&2 || true
-            echo "--- find */bin/npm ---" >&2
-            find /opt /usr/local /usr/lib "$HOME" -maxdepth 6 -name npm -path '*bin*' 2>/dev/null | head -20 >&2 || true
-            exit 1
-          fi
-
-          echo "Using node $(node -v) and npm $(npm -v) from $(dirname "$(command -v npm)")"
-          npm install --omit=dev
           touch tmp/restart.txt
+          echo "Deployed to $DEPLOY_PATH; Passenger restart requested."
           REMOTE
 
       - name: Commit version, create tag & push to main
