@@ -113,7 +113,7 @@ export const DE_UI: Translations = {
       description: 'Gesamtleistung des Windparks, in dem diese Anlage steht.',
     },
     firstPowerYear: {
-      label: 'Erster Strom',
+      label: 'Am Netz seit',
       shortLabel: 'Seit',
       description: 'Jahr, in dem die Anlage zum ersten Mal Strom ins Netz einspeiste. Die älteste gewinnt!',
     },
@@ -209,7 +209,9 @@ export const DE_UI: Translations = {
       'Tipp: Kleine Anlagen an Land laufen schon bei 2,0–2,5 m/s an. Bei der Anlaufwindgeschwindigkeit schlagen sie damit große Anlagen auf dem Meer, die mehr Wind brauchen.',
     step1TipHub:
       'Wusstest du schon? Moderne Turbinen an Land haben 175–179 m Nabenhöhe. Das ist fast viermal so hoch wie ein Leuchtturm.',
-    step1TipDefault: 'Tippe auch auf die anderen Zeilen der Vestas V236 und sieh dir alle 5 Werte an.',
+    step1TipFirstPower:
+      'Tipp: Hier gewinnt das Alter. Eine Anlage, die schon 1957 Strom ins Netz brachte, schlägt jede Anlage aus den 2000ern. So können Pioniere die Riesen schlagen!',
+    step1TipDefault: 'Tippe auch auf die anderen Zeilen der Karte und sieh dir alle 5 Werte an.',
     nextStep2: 'Testrunde spielen',
     step2Tag: 'Schritt 2 von 4 · Testrunde',
     step2Title: 'Kann deine Turbine an Land eine 20-MW-Anlage vom Meer schlagen?',

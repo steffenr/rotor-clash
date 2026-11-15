@@ -133,6 +133,8 @@ export function createRotorClashApp() {
     compendiumSearch: '',
     tutorialStep: 0,
     tutorialInspectedStat: 'ratedPowerMw' as StatKey,
+    /** Which deck's example card step 1 of the tutorial shows (Start Wind vs. First Power). */
+    tutorialDeck: 'modern' as 'modern' | 'records',
     tutorialPracticeStat: null as StatKey | null,
 
     // Static References
@@ -780,6 +782,18 @@ export function createRotorClashApp() {
     setTutorialInspectedStat(statKey: StatKey) {
       soundFx.playClick();
       this.tutorialInspectedStat = statKey;
+    },
+
+    /** Example card for step 1: a Modern Giants card or a Records & Firsts card (Gedser, 1957). */
+    tutorialCardId(): string {
+      return this.tutorialDeck === 'records' ? '9C' : '2A';
+    },
+
+    setTutorialDeck(deck: 'modern' | 'records') {
+      if (deck === this.tutorialDeck) return;
+      soundFx.playClick();
+      this.tutorialDeck = deck;
+      this.tutorialInspectedStat = 'ratedPowerMw';
     },
 
     playTutorialPracticeStat(statKey: StatKey) {

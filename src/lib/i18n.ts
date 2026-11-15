@@ -178,6 +178,7 @@ export interface Translations {
     step1Desc: string;
     step1TipCutIn: string;
     step1TipHub: string;
+    step1TipFirstPower: string;
     step1TipDefault: string;
     nextStep2: string;
     step2Tag: string;
