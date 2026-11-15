@@ -30,8 +30,8 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-1.5 min-w-0">
           <span
-            class="inline-flex items-center justify-center w-5 h-5 rounded shrink-0 border border-[#173240]/15"
-            :style="'background-color:' + (stat.higherWins ? '#EAE1CA' : '#FFE8DC') + '; color:' + (stat.higherWins ? '#173240' : '#C94213')"
+            class="inline-flex items-center justify-center w-5 h-5 rounded shrink-0 border border-c-ink/15"
+            :style="'background-color:' + (stat.higherWins ? 'var(--c-sand)' : 'var(--c-peach)') + '; color:' + (stat.higherWins ? 'var(--c-ink)' : 'var(--c-orange-deep)')"
             :title="stat.higherWins ? t.card.higherWins : t.card.lowerWins"
           >
             <span x-show="stat.key === 'ratedPowerMw'">${iconSvg('zap', 'w-3.5 h-3.5')}</span>
@@ -43,7 +43,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
           <span class="text-xs font-bold truncate" x-text="t.stats[stat.key].label"></span>
           <span
             x-show="!stat.higherWins"
-            class="text-[10px] font-bold text-[#C94213] inline-flex items-center gap-0.5 shrink-0"
+            class="text-[10px] font-bold text-c-orange-deep inline-flex items-center gap-0.5 shrink-0"
           >
             ${iconSvg('arrow-down', 'w-2.5 h-2.5')}
             <span x-text="lang === 'de' ? 'Niedriger' : 'Min'"></span>
@@ -51,19 +51,19 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         </div>
         <div class="flex items-baseline gap-1 shrink-0">
           <span
-            class="font-mono tabular-nums text-sm font-bold text-[#173240]"
+            class="font-mono tabular-nums text-sm font-bold text-c-ink"
             x-text="formatStatValue(stat.key, ${cardExpr}.stats[stat.key])"
           ></span>
           <span
-            class="text-[11px] font-semibold text-[#3C5866] min-w-[1.5rem] text-right"
+            class="text-[11px] font-semibold text-c-ink-2 min-w-[1.5rem] text-right"
             x-text="stat.unit"
           ></span>
         </div>
       </div>
-      <div class="h-1.5 w-full rounded-full bg-[#E5DAC0] overflow-hidden border border-[#173240]/10">
+      <div class="h-1.5 w-full rounded-full bg-c-sand overflow-hidden border border-c-ink/10">
         <div
           class="h-full rounded-full transition-all duration-300"
-          :style="'width:' + statStrengthPercent(stat.key, ${cardExpr}.stats[stat.key]) + '%; background-color:' + (stat.higherWins ? cardTheme(${cardExpr}).bar : '#F15A24')"
+          :style="'width:' + statStrengthPercent(stat.key, ${cardExpr}.stats[stat.key]) + '%; background-color:' + (stat.higherWins ? cardTheme(${cardExpr}).bar : 'var(--c-orange)')"
         ></div>
       </div>
     </div>
@@ -72,16 +72,16 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
   return `
     <template x-if="${cardExpr}">
       <article
-        class="relative flex flex-col rounded-2xl bg-[#FFFDF7] text-[#173240] border-[2.5px] border-[#173240] shadow-[0_5px_0_#173240] overflow-hidden transition-transform duration-200 ${widthClass} ${hoverClass}"
+        class="relative flex flex-col rounded-2xl bg-c-paper-hi text-c-ink border-[2.5px] border-c-ink shadow-[0_5px_0_var(--c-line)] overflow-hidden transition-transform duration-200 ${widthClass} ${hoverClass}"
       >
       <!-- Category Color Crest Band -->
       <div class="h-1.5 w-full shrink-0" :style="'background-color:' + cardTheme(${cardExpr}).border"></div>
 
       <!-- Explorer Header with Harbor-Ink Stamped Quartet Seal -->
-      <div class="px-3.5 pt-2.5 pb-2.5 bg-[#FAF4E4] border-b-2 border-[#173240]/15 flex items-start gap-2.5">
+      <div class="px-3.5 pt-2.5 pb-2.5 bg-c-paper border-b-2 border-c-ink/15 flex items-start gap-2.5">
         <div
           :style="'background-color:' + cardTheme(${cardExpr}).stampBg + '; color:' + cardTheme(${cardExpr}).stampText"
-          class="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-sm border-2 border-[#173240] shadow-[0_2px_0_#173240]"
+          class="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-mono font-bold text-sm border-2 border-c-ink shadow-[0_2px_0_var(--c-line)]"
           :title="groupName(${cardExpr}.groupId)"
           x-text="${cardExpr}.id"
         ></div>
@@ -94,13 +94,13 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
               x-text="groupName(${cardExpr}.groupId)"
             ></span>
             <div class="flex items-center gap-1.5 shrink-0">
-              <span class="font-mono tabular-nums text-[11px] font-semibold text-[#4B6675]" x-text="${cardExpr}.year"></span>
+              <span class="font-mono tabular-nums text-[11px] font-semibold text-c-ink-3" x-text="${cardExpr}.year"></span>
               <button
                 type="button"
                 @click="inspectCard(${cardExpr})"
                 :title="t.card.fullView"
                 :aria-label="t.card.fullView + ': ' + ${cardExpr}.modelName"
-                class="w-6 h-6 rounded-md bg-[#FFFDF7] hover:bg-[#DCEEF5] border border-[#173240]/35 text-[#173240] flex items-center justify-center transition-colors"
+                class="w-6 h-6 rounded-md bg-c-paper-hi hover:bg-c-sky border border-c-ink/35 text-c-ink flex items-center justify-center transition-colors"
               >
                 ${iconSvg('maximize', 'w-3.5 h-3.5')}
               </button>
@@ -108,13 +108,13 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
           </div>
 
           <h3
-            class="font-display text-base sm:text-lg font-extrabold leading-snug text-[#173240] truncate"
+            class="font-display text-base sm:text-lg font-extrabold leading-snug text-c-ink truncate"
             :title="${cardExpr}.modelName"
             x-text="${cardExpr}.modelName"
           ></h3>
 
-          <div class="text-[11px] text-[#3C5866] truncate">
-            <span class="font-bold text-[#173240]" x-text="${cardExpr}.manufacturer"></span>
+          <div class="text-[11px] text-c-ink-2 truncate">
+            <span class="font-bold text-c-ink" x-text="${cardExpr}.manufacturer"></span>
             <span aria-hidden="true"> · </span>
             <span x-text="cardLocale(${cardExpr}).country"></span>
           </div>
@@ -122,13 +122,13 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
       </div>
 
       <!-- Mounted Field Photo + Coastal Sky Arch Lighthouse Scale Diagram -->
-      <div class="px-3.5 pt-3 pb-2 grid grid-cols-12 gap-2.5 items-stretch bg-[#FFFDF7]">
+      <div class="px-3.5 pt-3 pb-2 grid grid-cols-12 gap-2.5 items-stretch bg-c-paper-hi">
         <div
-          class="col-span-8 bg-[#FAF4E4] p-1 rounded-xl border-2 border-[#173240]/25 shadow-sm flex flex-col"
+          class="col-span-8 bg-c-paper p-1 rounded-xl border-2 border-c-ink/25 shadow-sm flex flex-col"
           x-data="{ imgFailed: false }"
           x-effect="void (${cardExpr}?.id); imgFailed = false"
         >
-          <div class="relative w-full overflow-hidden rounded-lg bg-[#E4DEC9] ${photoHeightClass}">
+          <div class="relative w-full overflow-hidden rounded-lg bg-c-sand-soft ${photoHeightClass}">
             <img
               x-show="!imgFailed"
               :src="photoUrl(${cardExpr})"
@@ -139,12 +139,12 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             />
             <div
               x-show="imgFailed"
-              class="h-full w-full bg-gradient-to-br from-[#DCEEF5] to-[#FAF4E4] flex flex-col items-center justify-center text-[#1E7898] p-2 text-center"
+              class="h-full w-full bg-gradient-to-br from-c-sky to-c-paper flex flex-col items-center justify-center text-c-teal p-2 text-center"
             >
               ${iconSvg('wind', 'w-7 h-7 mb-1')}
               <span class="text-[11px] font-semibold leading-tight" x-text="${cardExpr}.modelName"></span>
             </div>
-            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#173240]/85 via-[#173240]/40 to-transparent px-2 py-1.5 text-white">
+            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-c-ink/85 via-c-ink/40 to-transparent px-2 py-1.5 text-white">
               <div class="text-[10px] font-semibold leading-tight truncate" x-text="${cardExpr}.flagshipPlant"></div>
               <div class="text-[9px] text-white/85 truncate" x-text="${cardExpr}.flagshipLocation"></div>
             </div>
@@ -152,7 +152,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         </div>
 
         <div
-          class="col-span-4 rounded-t-[2.25rem] rounded-b-xl border-2 border-[#173240] bg-gradient-to-b from-[#2A86A8] via-[#B4DFEF] to-[#EDF6F9] p-1.5 flex flex-col items-center justify-between text-center overflow-hidden shadow-inner"
+          class="col-span-4 rounded-t-[2.25rem] rounded-b-xl border-2 border-c-ink bg-gradient-to-b from-[#2A86A8] via-[#B4DFEF] to-[#EDF6F9] p-1.5 flex flex-col items-center justify-between text-center overflow-hidden shadow-inner"
           :title="lighthouseTooltip(${cardExpr})"
         >
           <svg viewBox="0 0 72 84" class="w-full h-24 overflow-visible" aria-hidden="true">
@@ -212,14 +212,14 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             </g>
           </svg>
           <span
-            class="font-mono tabular-nums text-[9px] font-bold text-[#173240] bg-[#FAF4E4]/95 px-1.5 py-0.5 rounded border border-[#173240]/35 leading-none"
+            class="font-mono tabular-nums text-[9px] font-bold text-c-ink bg-c-paper/95 px-1.5 py-0.5 rounded border border-c-ink/35 leading-none"
             x-text="${cardExpr}.stats.hubHeightM + 'm / 45m'"
           ></span>
         </div>
       </div>
 
       <!-- 5 Kid-Friendly Stat Rows -->
-      <div class="px-3.5 pb-3 pt-1 flex flex-col gap-1.5 bg-[#FFFDF7]">
+      <div class="px-3.5 pb-3 pt-1 flex flex-col gap-1.5 bg-c-paper-hi">
         <template x-for="stat in statDefinitions" :key="stat.key">
           <div>
             ${
@@ -249,13 +249,13 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
       </div>
 
       <!-- Field Guide Footer -->
-      <div class="px-3.5 py-2 bg-[#FAF4E4] border-t-2 border-[#173240]/15 text-[11px] text-[#3C5866] flex items-center justify-between gap-2">
+      <div class="px-3.5 py-2 bg-c-paper border-t-2 border-c-ink/15 text-[11px] text-c-ink-2 flex items-center justify-between gap-2">
         <span
           class="font-mono tabular-nums font-semibold truncate"
           x-text="formatNumber(${cardExpr}.sweptAreaM2) + ' m²'"
         ></span>
         <div class="flex items-center gap-3 shrink-0">
-          <span class="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-semibold text-[#4B6675]">
+          <span class="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-semibold text-c-ink-3">
             ${iconSvg('arrow-up', 'w-2.5 h-2.5')}
             <span x-text="t.card.higherWins"></span>
           </span>
@@ -264,7 +264,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             target="_blank"
             rel="noopener noreferrer"
             :title="${cardExpr}.sourceLabel"
-            class="inline-flex items-center gap-1 font-bold text-[#1E7898] hover:text-[#173240] hover:underline"
+            class="inline-flex items-center gap-1 font-bold text-c-teal hover:text-c-ink hover:underline"
           >
             <span x-text="t.card.source"></span>
             ${iconSvg('external-link', 'w-3 h-3')}
@@ -287,31 +287,31 @@ export function renderTurbineCardBack(
 
   return `
     <div
-      class="relative rounded-2xl bg-[#FAF4E4] border-[2.5px] border-[#173240] shadow-[0_5px_0_#173240] overflow-hidden flex flex-col items-center justify-between p-3 text-center select-none ${sizeClass}"
+      class="relative rounded-2xl bg-c-paper border-[2.5px] border-c-ink shadow-[0_5px_0_var(--c-line)] overflow-hidden flex flex-col items-center justify-between p-3 text-center select-none ${sizeClass}"
     >
-      <div class="relative w-full h-full rounded-xl overflow-hidden border-2 border-[#173240] flex flex-col items-center justify-between py-5 px-4 bg-[#173240]">
+      <div class="relative w-full h-full rounded-xl overflow-hidden border-2 border-c-ink flex flex-col items-center justify-between py-5 px-4 bg-c-ink">
         <!-- Coastal Teal & Beacon Orange Horizontal Speed Stripes -->
         <div class="absolute inset-x-0 top-1/2 -translate-y-12 pointer-events-none space-y-2 opacity-90" aria-hidden="true">
-          <div class="h-2.5 w-full bg-[#1E7898]"></div>
-          <div class="h-2.5 w-full bg-[#1E7898]"></div>
+          <div class="h-2.5 w-full bg-c-teal"></div>
+          <div class="h-2.5 w-full bg-c-teal"></div>
         </div>
         <div class="absolute inset-x-0 top-1/2 translate-y-6 pointer-events-none space-y-2 opacity-95" aria-hidden="true">
-          <div class="h-2.5 w-full bg-[#F15A24]"></div>
-          <div class="h-2.5 w-full bg-[#F15A24]"></div>
+          <div class="h-2.5 w-full bg-c-orange"></div>
+          <div class="h-2.5 w-full bg-c-orange"></div>
         </div>
         <div
-          class="absolute inset-2.5 rounded-lg border border-[#FAF4E4]/30 pointer-events-none"
+          class="absolute inset-2.5 rounded-lg border border-c-paper/30 pointer-events-none"
           aria-hidden="true"
         ></div>
 
         <div
-          class="relative z-10 px-3 py-1 rounded-lg bg-[#FAF4E4] border-2 border-[#173240] text-xs font-bold text-[#173240] max-w-full truncate shadow-[0_2px_0_rgba(0,0,0,0.25)]"
+          class="relative z-10 px-3 py-1 rounded-lg bg-c-paper border-2 border-c-ink text-xs font-bold text-c-ink max-w-full truncate shadow-[0_2px_0_rgba(0,0,0,0.25)]"
           x-text="${labelExpr}"
         ></div>
 
         <!-- Central Collector Medallion featuring the Rotor Clash Emblem -->
-        <div class="relative z-10 w-48 h-48 rounded-full bg-[#FFFDF7] border-[3px] border-[#173240] shadow-[0_4px_0_rgba(0,0,0,0.35)] flex flex-col items-center justify-center p-4">
-          <div class="w-full h-full rounded-full border-2 border-dashed border-[#1E7898]/50 flex flex-col items-center justify-center p-2">
+        <div class="relative z-10 w-48 h-48 rounded-full bg-c-paper-hi border-[3px] border-c-ink shadow-[0_4px_0_rgba(0,0,0,0.35)] flex flex-col items-center justify-center p-4">
+          <div class="w-full h-full rounded-full border-2 border-dashed border-c-teal/50 flex flex-col items-center justify-center p-2">
             <img
               src="/assets/aistudio/logo_rotor_clash_3a6e5dcc.png"
               alt="Rotor Clash"
@@ -321,10 +321,10 @@ export function renderTurbineCardBack(
           </div>
         </div>
 
-        <div class="relative z-10 px-4 py-2 rounded-xl bg-[#FAF4E4] border-2 border-[#173240] shadow-[0_2px_0_rgba(0,0,0,0.25)]">
-          <span class="font-mono tabular-nums text-xl font-bold text-[#F15A24]" x-text="${countExpr}"></span>
+        <div class="relative z-10 px-4 py-2 rounded-xl bg-c-paper border-2 border-c-ink shadow-[0_2px_0_rgba(0,0,0,0.25)]">
+          <span class="font-mono tabular-nums text-xl font-bold text-c-orange" x-text="${countExpr}"></span>
           <span
-            class="ml-2 text-xs font-bold text-[#173240]"
+            class="ml-2 text-xs font-bold text-c-ink"
             x-text="(${countExpr}) === 1 ? t.arena.cardRemaining : t.arena.cardsRemaining"
           ></span>
         </div>

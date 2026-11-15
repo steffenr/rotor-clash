@@ -33,6 +33,7 @@ import {
   serializeBotMatch,
 } from '../lib/botEngine';
 import { soundFx } from '../lib/soundFx';
+import { Theme, applyTheme, loadSavedTheme, resolveInitialTheme, saveTheme } from '../lib/theme';
 import { Language, TRANSLATIONS, Translations } from '../lib/i18n';
 import fieldDeskImg from '../assets/images/field_guide_desk_1794678472040.jpg';
 
@@ -50,7 +51,7 @@ const CATEGORY_THEME: Record<
 > = {
   offshore: { border: '#1E7898', stampBg: '#1E7898', stampText: '#FAF4E4', bar: '#1E7898' },
   onshore: { border: '#2F6F4E', stampBg: '#2F6F4E', stampText: '#FAF4E4', bar: '#2F6F4E' },
-  floating: { border: '#173240', stampBg: '#173240', stampText: '#FAF4E4', bar: '#173240' },
+  floating: { border: 'var(--c-ink)', stampBg: 'var(--c-ink)', stampText: 'var(--c-paper)', bar: 'var(--c-ink)' },
   windbase: { border: '#F15A24', stampBg: '#F15A24', stampText: '#FFFDF7', bar: '#F15A24' },
 };
 
@@ -79,6 +80,7 @@ export function createRotorClashApp() {
     callsignDraft: identity.callsign,
     callsignSaved: false,
     muted: soundFx.isMuted(),
+    theme: resolveInitialTheme() as Theme,
     inspectedCard: null as TurbineCard | null,
 
     // Lobby & WS
@@ -129,6 +131,14 @@ export function createRotorClashApp() {
     },
 
     init() {
+      applyTheme(this.theme);
+      // Follow the OS setting live until the player picks a theme explicitly.
+      window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (loadSavedTheme()) return;
+        this.theme = e.matches ? 'dark' : 'light';
+        applyTheme(this.theme);
+      });
+
       fetch('/api/leaderboard')
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
@@ -360,6 +370,12 @@ export function createRotorClashApp() {
       this.lang = nextLang;
       this.t = TRANSLATIONS[nextLang];
       saveLanguage(nextLang);
+    },
+
+    toggleTheme() {
+      this.theme = this.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(this.theme);
+      saveTheme(this.theme);
     },
 
     toggleMute() {
@@ -888,15 +904,15 @@ export function createRotorClashApp() {
       outcome: 'win' | 'loss' | 'tie' | null
     ): string {
       if (selectedStat === statKey) {
-        if (outcome === 'win') return 'bg-[#E7F4EC] border-[#2F6F4E] text-[#173240] ring-2 ring-[#2F6F4E]/30';
-        if (outcome === 'loss') return 'bg-[#FEECEB] border-[#DC2626] text-[#7F1D1D]';
-        if (outcome === 'tie') return 'bg-[#FEF3C7] border-[#D97706] text-[#78350F]';
-        return 'bg-[#DCEEF5] border-[#1E7898] text-[#173240] ring-2 ring-[#1E7898]/30';
+        if (outcome === 'win') return 'bg-c-mint border-c-green text-c-ink ring-2 ring-c-green/30';
+        if (outcome === 'loss') return 'bg-c-rose border-c-red text-c-red-deep';
+        if (outcome === 'tie') return 'bg-c-cream-amber border-c-amber text-c-amber-ink';
+        return 'bg-c-sky border-c-teal text-c-ink ring-2 ring-c-teal/30';
       }
       if (selectable) {
-        return 'bg-[#FAF4E4] border-[#173240]/30 hover:border-[#1E7898] hover:bg-[#E7F4F9] hover:translate-x-0.5 text-[#173240] shadow-[0_2px_0_rgba(23,50,64,0.18)] active:translate-y-0.5';
+        return 'bg-c-paper border-c-ink/30 hover:border-c-teal hover:bg-c-sky-soft hover:translate-x-0.5 text-c-ink shadow-[0_2px_0_rgba(23,50,64,0.18)] active:translate-y-0.5';
       }
-      return 'bg-[#FAF4E4] border-[#173240]/20 text-[#173240]';
+      return 'bg-c-paper border-c-ink/20 text-c-ink';
     },
 
     formatStatValue(key: StatKey, val: number): string {

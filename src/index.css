@@ -1,17 +1,150 @@
 @import "tailwindcss";
 
-@theme {
+/* Dark mode is toggled by the `dark` class on <html> (see src/lib/theme.ts). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Semantic colour tokens. Light values are the original "paper & ink" palette;
+ * dark values live under `.dark`. Templates use `bg-c-paper`, `text-c-ink`, ...
+ * Turbine cards (cardMarkup.ts) deliberately keep fixed light colours so they
+ * read like physical cards in both themes.
+ */
+:root {
+  color-scheme: light;
+  --c-ink: #173240;
+  --c-paper: #FAF4E4;
+  --c-paper-hi: #FFFDF7;
+  --c-canvas: #F5EFE0;
+  --c-ink-2: #3C5866;
+  --c-ink-3: #4B6675;
+  --c-ink-4: #667D8A;
+  --c-ink-5: #8CA0AB;
+  --c-sand: #EAE1CA;
+  --c-sand-soft: #EFE7D1;
+  --c-sand-hover: #DCD1B4;
+  --c-sky: #DCEEF5;
+  --c-sky-soft: #E7F4F9;
+  --c-green: #2F6F4E;
+  --c-green-deep: #23553C;
+  --c-mint: #E7F4EC;
+  --c-mint-hover: #D1EBE0;
+  --c-teal: #1E7898;
+  --c-teal-deep: #155B75;
+  --c-orange: #F15A24;
+  --c-orange-deep: #C94213;
+  --c-peach: #FFE8DC;
+  --c-red: #DC2626;
+  --c-red-deep: #7F1D1D;
+  --c-red-ink: #991B1B;
+  --c-red-hover: #B91C1C;
+  --c-rose: #FEECEB;
+  --c-amber: #D97706;
+  --c-amber-deep: #B45309;
+  --c-amber-ink: #78350F;
+  --c-cream-amber: #FEF3C7;
+  --c-canvas-2: #EFE8D6;
+  /* Outline colour for the hard "ink" borders/shadows */
+  --c-line: #173240;
+  --c-dot: rgba(23, 50, 64, 0.065);
+  --c-glow: rgba(220, 238, 245, 0.42);
+  --c-glow-end: rgba(245, 239, 224, 0);
+}
+
+.dark {
+  color-scheme: dark;
+  --c-ink: #E8E2D0;
+  --c-paper: #1D2F3B;
+  --c-paper-hi: #25394A;
+  --c-canvas: #0F1D26;
+  --c-ink-2: #BCC9D1;
+  --c-ink-3: #A6B6C0;
+  --c-ink-4: #8BA0AC;
+  --c-ink-5: #7A909C;
+  --c-sand: #2D4553;
+  --c-sand-soft: #263E4B;
+  --c-sand-hover: #36505F;
+  --c-sky: #193A4A;
+  --c-sky-soft: #1E4254;
+  --c-green: #4EAE80;
+  --c-green-deep: #8FE0B4;
+  --c-mint: #17382A;
+  --c-mint-hover: #1F4A38;
+  --c-teal: #2E96BC;
+  --c-teal-deep: #7CCBE6;
+  --c-orange: #F26B3A;
+  --c-orange-deep: #FF8A5C;
+  --c-peach: #3D2A20;
+  --c-red: #EF5350;
+  --c-red-deep: #F5A5A5;
+  --c-red-ink: #F5A5A5;
+  --c-red-hover: #D84343;
+  --c-rose: #3B1F22;
+  --c-amber: #E58A1F;
+  --c-amber-deep: #F0A64A;
+  --c-amber-ink: #F5C27A;
+  --c-cream-amber: #3A3118;
+  --c-canvas-2: #14262F;
+  --c-line: #070F14;
+  --c-dot: rgba(232, 226, 208, 0.05);
+  --c-glow: rgba(46, 150, 188, 0.14);
+  --c-glow-end: rgba(15, 29, 38, 0);
+}
+
+@theme inline {
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-c-ink: var(--c-ink);
+  --color-c-paper: var(--c-paper);
+  --color-c-paper-hi: var(--c-paper-hi);
+  --color-c-canvas: var(--c-canvas);
+  --color-c-canvas-2: var(--c-canvas-2);
+  --color-c-ink-2: var(--c-ink-2);
+  --color-c-ink-3: var(--c-ink-3);
+  --color-c-ink-4: var(--c-ink-4);
+  --color-c-ink-5: var(--c-ink-5);
+  --color-c-sand: var(--c-sand);
+  --color-c-sand-soft: var(--c-sand-soft);
+  --color-c-sand-hover: var(--c-sand-hover);
+  --color-c-sky: var(--c-sky);
+  --color-c-sky-soft: var(--c-sky-soft);
+  --color-c-green: var(--c-green);
+  --color-c-green-deep: var(--c-green-deep);
+  --color-c-mint: var(--c-mint);
+  --color-c-mint-hover: var(--c-mint-hover);
+  --color-c-teal: var(--c-teal);
+  --color-c-teal-deep: var(--c-teal-deep);
+  --color-c-orange: var(--c-orange);
+  --color-c-orange-deep: var(--c-orange-deep);
+  --color-c-peach: var(--c-peach);
+  --color-c-red: var(--c-red);
+  --color-c-red-deep: var(--c-red-deep);
+  --color-c-red-ink: var(--c-red-ink);
+  --color-c-red-hover: var(--c-red-hover);
+  --color-c-rose: var(--c-rose);
+  --color-c-amber: var(--c-amber);
+  --color-c-amber-deep: var(--c-amber-deep);
+  --color-c-amber-ink: var(--c-amber-ink);
+  --color-c-cream-amber: var(--c-cream-amber);
+  --color-c-line: var(--c-line);
 }
 
 @layer base {
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
-    background-color: #F5EFE0;
-    color: #173240;
+    background-color: var(--c-canvas);
+    color: var(--c-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* Respect notches / home indicator when installed to the home screen */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -24,8 +157,18 @@
     cursor: pointer;
   }
 
+  /* No 300ms delay / double-tap zoom on controls */
+  button, [role="button"], a, input, select, summary {
+    touch-action: manipulation;
+  }
+
+  /* 16px inputs stop iOS Safari from zooming the page on focus */
+  input, select, textarea {
+    font-size: max(16px, 1em);
+  }
+
   *:focus-visible {
-    outline: 2px solid #1E7898;
+    outline: 2px solid var(--c-teal);
     outline-offset: 2px;
   }
 }
@@ -36,20 +179,30 @@
 
 .paper-grain {
   background-image:
-    radial-gradient(rgba(23, 50, 64, 0.065) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(220, 238, 245, 0.42) 0%, rgba(245, 239, 224, 0) 340px);
+    radial-gradient(var(--c-dot) 1px, transparent 1px),
+    linear-gradient(180deg, var(--c-glow) 0%, var(--c-glow-end) 340px);
   background-size: 18px 18px, 100% 100%;
 }
 
 .ink-panel {
-  border: 2px solid #173240;
-  box-shadow: 0 4px 0 #173240;
+  border: 2px solid var(--c-line);
+  box-shadow: 0 4px 0 var(--c-line);
 }
 
 .ink-card {
-  border: 2.5px solid #173240;
-  box-shadow: 0 5px 0 #173240;
+  border: 2.5px solid var(--c-line);
+  box-shadow: 0 5px 0 var(--c-line);
 }
+
+/* The hard outlines should not glare in dark mode */
+.dark .border-c-ink {
+  border-color: var(--c-ink-5);
+}
+
+/* Theme toggle: show sun in dark mode (switch to light), moon in light mode */
+.theme-icon-sun { display: none; }
+.dark .theme-icon-sun { display: block; }
+.dark .theme-icon-moon { display: none; }
 
 @keyframes gentleBob {
   0%, 100% {
