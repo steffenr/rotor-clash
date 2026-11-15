@@ -18,6 +18,6 @@ rotorDiameterM: 292
 hubHeightM: 165
 cutInWindMs: 3
 plantCapacityMw: 20
-sourceUrl: https://en.wind-turbine-models.com/turbines/2461-mingyang-myse-18.x-20mw
-sourceLabel: Wind-Turbine-Models · MingYang 20 MW
+sourceUrl: https://www.windtech-international.com/product-news/mingyang-smart-energy-unveils-myse-18-x-20mw
+sourceLabel: Windtech Reference · MySE 18.X-20MW
 ---

@@ -18,6 +18,6 @@ rotorDiameterM: 175
 hubHeightM: 162
 cutInWindMs: 2.5
 plantCapacityMw: 210
-sourceUrl: https://www.enercon.de/en/products/ep5/e-175-ep5/
+sourceUrl: https://www.enercon.de/en/turbines/e-175-ep5
 sourceLabel: Enercon Official · E-175 EP5
 ---

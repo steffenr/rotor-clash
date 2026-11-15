@@ -18,6 +18,6 @@ rotorDiameterM: 164
 hubHeightM: 108
 cutInWindMs: 3.5
 plantCapacityMw: 50
-sourceUrl: https://en.wikipedia.org/wiki/Kincardine_offshore_wind_farm
+sourceUrl: https://en.wikipedia.org/wiki/Kincardine_floating_offshore_wind_farm
 sourceLabel: Project Reference · Kincardine Floating
 ---

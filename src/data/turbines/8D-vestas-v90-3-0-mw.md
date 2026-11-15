@@ -18,6 +18,6 @@ rotorDiameterM: 90
 hubHeightM: 105
 cutInWindMs: 3.5
 plantCapacityMw: 300
-sourceUrl: https://en.wind-turbine-models.com/turbines/16-vestas-v90-3.0
-sourceLabel: Wind-Turbine-Models · Vestas V90
+sourceUrl: https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCA_V903MW_version_1_1.pdf.coredownload.inline.pdf
+sourceLabel: Vestas Official Report (PDF) · V90-3.0 MW
 ---

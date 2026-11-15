@@ -18,6 +18,6 @@ rotorDiameterM: 310
 hubHeightM: 185
 cutInWindMs: 3
 plantCapacityMw: 26
-sourceUrl: https://en.wind-turbine-models.com/turbines/2478-dongfang-electric-26mw-offshore
-sourceLabel: Wind-Turbine-Models · Dongfang 26 MW
+sourceUrl: https://dew.dongfang.com/en/info/1017/1109.htm
+sourceLabel: Dongfang Electric Official · 26 MW
 ---

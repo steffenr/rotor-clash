@@ -18,6 +18,6 @@ rotorDiameterM: 117
 hubHeightM: 92
 cutInWindMs: 3
 plantCapacityMw: 1057
-sourceUrl: https://fosen-vind.no/
-sourceLabel: Fosen Vind Official
+sourceUrl: https://www.vestas.com/en/energy-solutions/onshore-wind-turbines/4-mw-platform/V117-4-2-MW
+sourceLabel: Vestas Official · V117-4.2 MW
 ---

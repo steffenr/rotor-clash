@@ -18,6 +18,6 @@ rotorDiameterM: 200
 hubHeightM: 125
 cutInWindMs: 3
 plantCapacityMw: 1500
-sourceUrl: https://www.siemensgamesa.com/en-int/products-and-services/offshore/wind-turbine-sg-11-200-dd
-sourceLabel: Siemens Gamesa Official · SG 11.0-200
+sourceUrl: https://www.siemensgamesa.com/global/en/home/products-and-services/offshore/wind-turbine-sg-11-0-200-dd.html
+sourceLabel: Siemens Gamesa Official · SG 11.0-200 DD
 ---

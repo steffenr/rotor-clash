@@ -18,6 +18,6 @@ rotorDiameterM: 158
 hubHeightM: 161
 cutInWindMs: 3
 plantCapacityMw: 1050
-sourceUrl: https://www.gevernova.com/wind-power/onshore-wind/cypress-platform
+sourceUrl: https://www.gevernova.com/wind-power/wind-turbines/onshore-wind-turbines-6mw
 sourceLabel: GE Vernova Official · Cypress Platform
 ---

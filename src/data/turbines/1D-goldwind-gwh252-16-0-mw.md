@@ -18,6 +18,6 @@ rotorDiameterM: 252
 hubHeightM: 146
 cutInWindMs: 3.2
 plantCapacityMw: 400
-sourceUrl: https://en.wind-turbine-models.com/turbines/2380-goldwind-gwh252-16mw
-sourceLabel: Wind-Turbine-Models · Goldwind GWH252
+sourceUrl: https://www.goldwind.com/en/news/focus-922147832985810944/?id=922141562484459520
+sourceLabel: Goldwind Official · GWH252-16MW
 ---
