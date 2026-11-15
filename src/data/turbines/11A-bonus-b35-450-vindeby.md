@@ -15,9 +15,8 @@ flagshipLocation: Lolland, Denmark
 turbineCountInPlant: 11
 ratedPowerMw: 0.45
 rotorDiameterM: 35
-hubHeightM: 35
+hubHeightM: 37.5
 plantCapacityMw: 4.95
 sourceUrl: https://orsted.com/en/our-business/offshore-wind/offshore-wind-pioneers
-sourceLabel: Ørsted · Offshore wind pioneers
-approximateStats: hubHeightM
+sourceLabel: Ørsted · pioneers; DONG Energy/NIRAS decommissioning report (2016)
 ---

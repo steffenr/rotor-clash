@@ -286,3 +286,15 @@ Candidates checked and rejected: Nibe B (no hub), Blyth (hub 62 m vs 40 m), Ashe
 Photos: 9B (NARA, public domain, Martin Brown), 12D (USAID, public domain) and 15A (Hadhuey, CC BY-SA 3.0, the Egeln turbine itself) are real Commons photos with credits in `src/data/photoCredits.ts`. 15B and 15D use the concept image because Commons searches found no photo of either. The Smith-Putnam and Haliade-X photos stay in `src/assets/images/real/` with their credits.
 
 Vindeby, round 2: Wikipedia's infobox gives rotor 35 and hub 35 (no unit); Tethys (PNNL) gives B35/450, hub 37.5 m, rotor 37 m. The sources disagree, so the "≈" stays. Burradale: Shetland Aerogenerators gives V47 rotor 47 m and "tower height 43m" but no hub height. Ross Island: the operator page gives 3 × E33 at 300 kW and no dimensions. Horse Hollow and Shepherds Flat: no hub or rotor in the operator or GE pages or Wikipedia.
+
+## Round 3 (2026-11-15): last five "≈" values closed by the owner's research
+
+| Card | Value | Source given by the owner |
+|---|---|---|
+| 11A Vindeby | hub 37.5 m (was 35 m); rotor stays 35 m | DONG Energy / NIRAS decommissioning report, 2016. This also matches Tethys (PNNL), which lists hub 37.5 m. |
+| 13A Horse Hollow | hub 80 m | GE's technical brochure for the 1.5 MW series |
+| 13C Shepherds Flat | hub 85 m | Windpower Monthly project profile (the 85 m configuration) |
+| 14A Ross Island | hub 38 m (was 37 m), rotor 33.4 m (was 33 m) | Owner's research; the 33.4 m rotor also matches the Power Technology and database listings |
+| 14D Burradale | hub 45 m | Owner's inference: the "43 m" in the operator's description is the tower height, and the hub sits above it. No source states 45 m directly. |
+
+14D Burradale keeps its "≈" on the hub height: 45 m is an inference from the 43 m tower, not a cited figure. Remove the flag (`approximateStats` in the card file) if a source states 45 m. The other four cards are unflagged. One caveat for Ross Island: the operator page lists the E33 at 300 kW, while the card says 330 kW.
