@@ -1,0 +1,197 @@
+import { EN_UI } from '../data/locales/en/ui';
+import { DE_UI } from '../data/locales/de/ui';
+
+export type Language = 'en' | 'de';
+
+export interface Translations {
+  nav: {
+    arena: string;
+    compendium: string;
+    leaderboard: string;
+    tutorial: string;
+    quickMatch: string;
+    resumeMatch: string;
+    searching: string;
+  };
+  lobby: {
+    kicker: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    searchingTitle: string;
+    inQueue: string;
+    online: string;
+    cancelQueue: string;
+    roomReady: string;
+    copiedLink: string;
+    copyInviteLink: string;
+    closeRoom: string;
+    findOnlineMatch: string;
+    searchingBtn: string;
+    createPrivateRoom: string;
+    roomPlaceholder: string;
+    joinRoom: string;
+    practiceBot: string;
+    botCadet: string;
+    botTactical: string;
+    openRoomsTitle: string;
+    yourRoom: string;
+    joinDuel: string;
+    tutorialPrompt: string;
+    launchTutorial: string;
+    previewLabel: string;
+    pilotCallsign: string;
+    save: string;
+    saved: string;
+    competitiveRank: string;
+    quartets: string;
+    multiplayerServer: string;
+    connected: string;
+    reconnecting: string;
+    openRoomsCount: string;
+    tableAudioQuickStart: string;
+    audioMuted: string;
+    audioOn: string;
+    soloWarmup: string;
+  };
+  card: {
+    flagshipPlant: string;
+    fullView: string;
+    source: string;
+    higherWins: string;
+    lowerWins: string;
+    photoReal: string;
+    photoConcept: string;
+    drivetrain: string;
+    sweptArea: string;
+    deployedYear: string;
+    plantUnits: string;
+    country: string;
+    engineeringSummary: string;
+    technicalSource: string;
+    close: string;
+  };
+  stats: Record<
+    'ratedPowerMw' | 'rotorDiameterM' | 'hubHeightM' | 'cutInWindMs' | 'plantCapacityMw',
+    { label: string; shortLabel: string; description: string }
+  >;
+  arena: {
+    you: string;
+    round: string;
+    tiePot: string;
+    leave: string;
+    confirmForfeit: string;
+    cancel: string;
+    disconnectedMsg: string;
+    matchDrawn: string;
+    victorySecured: string;
+    matchDefeat: string;
+    reasonAllCardsWin: string;
+    reasonAllCardsLoss: string;
+    reasonRoundLimit: string;
+    reasonForfeitWin: string;
+    reasonForfeitLoss: string;
+    reasonDraw: string;
+    finalCards: string;
+    quartetsBuilt: string;
+    practiceMode: string;
+    eloDelta: string;
+    unranked: string;
+    playAgain: string;
+    returnLobby: string;
+    yourTopCard: string;
+    revealedCard: string;
+    hiddenStack: string;
+    statCompared: string;
+    highestWins: string;
+    lowestWins: string;
+    youWonCards: string;
+    oppWonCards: string;
+    tiePotAdded: string;
+    quartetCompleted: string;
+    nextRound: string;
+    yourTurnTitle: string;
+    oppTurnTitle: string;
+    yourTurnDesc: string;
+    oppTurnDesc: string;
+    cardsRemaining: string;
+    cardRemaining: string;
+    encryptedStack: string;
+    quartetStripLabel: string;
+    showMatrix: string;
+    hideMatrix: string;
+    fullscreen: string;
+    exitFullscreen: string;
+  };
+  compendium: {
+    title: string;
+    subtitle: string;
+    searchPlaceholder: string;
+    allQuartets: string;
+    noMatches: string;
+    inspectFull: string;
+  };
+  leaderboard: {
+    title: string;
+    subtitle: string;
+    playRanked: string;
+    standings: string;
+    rankedPlayers: string;
+    emptyTitle: string;
+    emptyDesc: string;
+    colRank: string;
+    colPlayer: string;
+    colTier: string;
+    colElo: string;
+    colWld: string;
+    colWinPct: string;
+    colQuartets: string;
+    recentMatches: string;
+    noMatchesYet: string;
+    rounds: string;
+    cards: string;
+  };
+  tutorial: {
+    title: string;
+    subtitle: string;
+    steps: [string, string, string, string];
+    step1Tag: string;
+    step1Title: string;
+    step1Desc: string;
+    step1TipCutIn: string;
+    step1TipHub: string;
+    step1TipDefault: string;
+    nextStep2: string;
+    step2Tag: string;
+    step2Title: string;
+    step2Desc: string;
+    resetPractice: string;
+    pickYourStat: string;
+    pickHint: string;
+    youWinBoth: string;
+    oppWinsHint: string;
+    exactTie: string;
+    winDesc: string;
+    lossDesc: string;
+    prev: string;
+    nextStep3: string;
+    step3Tag: string;
+    step3Title: string;
+    tiePotTitle: string;
+    tiePotDesc: string;
+    quartetTitle: string;
+    quartetDesc: string;
+    exampleMatrix: string;
+    nextStep4: string;
+    mpTitle: string;
+    mpDesc: string;
+    eloTitle: string;
+    eloDesc: string;
+    startBotBtn: string;
+    enterArenaBtn: string;
+  };
+}
+
+export const TRANSLATIONS: Record<Language, Translations> = {
+  en: EN_UI,
+  de: DE_UI,
+};

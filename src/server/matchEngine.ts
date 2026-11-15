@@ -1,0 +1,605 @@
+import crypto from 'node:crypto';
+import {
+  ClientMatchState,
+  OpenRoomSummary,
+  RoundResolution,
+  StatKey,
+} from '../shared/gameTypes.ts';
+import {
+  compareStat,
+  computeCompletedQuartets,
+} from '../shared/turbines.ts';
+import {
+  SERVER_CARD_BY_ID,
+  SERVER_TURBINE_DECK,
+} from './turbineRepository.ts';
+import { leaderboardStore } from './store.ts';
+
+export interface ActiveMatch {
+  id: string;
+  mode: 'ranked' | 'room';
+  roomCode?: string;
+  status: 'PLAYING' | 'ROUND_REVEAL' | 'FINISHED';
+  p1Id: string;
+  p2Id: string;
+  p1Deck: string[];
+  p2Deck: string[];
+  tiePot: string[];
+  turnPlayerId: string;
+  roundNumber: number;
+  maxRounds: number;
+  lastRound: RoundResolution | null;
+  revealLockedUntil: number;
+  winnerId: string | null;
+  winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
+  p1EloChange: number | null;
+  p2EloChange: number | null;
+  turnDeadlineAt: number | null;
+  revealTimer?: NodeJS.Timeout;
+  turnTimer?: NodeJS.Timeout;
+  p1DisconnectTimer?: NodeJS.Timeout;
+  p2DisconnectTimer?: NodeJS.Timeout;
+}
+
+interface WaitingRoom {
+  roomCode: string;
+  hostId: string;
+  createdAt: number;
+}
+
+const TURN_DURATION_MS = 45_000;
+const REVEAL_AUTO_ADVANCE_MS = 5_500;
+const REVEAL_MIN_LOCK_MS = 600;
+const DISCONNECT_GRACE_MS = 25_000;
+const MAX_ROUNDS = 24;
+
+function shuffleIds(ids: string[]): string[] {
+  const arr = [...ids];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+export type EmitToPlayerFn = (playerId: string, event: string, payload: unknown) => void;
+export type BroadcastAllFn = (event: string, payload: unknown) => void;
+export type IsPlayerConnectedFn = (playerId: string) => boolean;
+
+export class MatchEngine {
+  private matches = new Map<string, ActiveMatch>();
+  private playerToMatch = new Map<string, string>();
+  private queue: string[] = [];
+  private rooms = new Map<string, WaitingRoom>();
+
+  constructor(
+    private emitToPlayer: EmitToPlayerFn,
+    private broadcastAll: BroadcastAllFn,
+    private isPlayerConnected: IsPlayerConnectedFn
+  ) {}
+
+  public getLobbySnapshot(onlineCount: number) {
+    const openRooms: OpenRoomSummary[] = Array.from(this.rooms.values())
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map((room) => {
+        const host = leaderboardStore.getOrCreatePlayer(room.hostId);
+        return {
+          roomCode: room.roomCode,
+          hostCallsign: host.callsign,
+          hostElo: host.elo,
+          createdAt: room.createdAt,
+        };
+      });
+
+    return {
+      onlineCount,
+      queueCount: this.queue.length,
+      openRooms,
+    };
+  }
+
+  public getMatchForPlayer(playerId: string): ClientMatchState | null {
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) return null;
+    const match = this.matches.get(matchId);
+    if (!match) {
+      this.playerToMatch.delete(playerId);
+      return null;
+    }
+    return this.serializeMatchForPlayer(match, playerId);
+  }
+
+  public getWaitingRoomForPlayer(playerId: string): OpenRoomSummary | null {
+    for (const room of this.rooms.values()) {
+      if (room.hostId === playerId) {
+        const host = leaderboardStore.getOrCreatePlayer(room.hostId);
+        return {
+          roomCode: room.roomCode,
+          hostCallsign: host.callsign,
+          hostElo: host.elo,
+          createdAt: room.createdAt,
+        };
+      }
+    }
+    return null;
+  }
+
+  public handlePlayerConnected(playerId: string) {
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) return;
+    const match = this.matches.get(matchId);
+    if (!match) return;
+
+    if (match.p1Id === playerId && match.p1DisconnectTimer) {
+      clearTimeout(match.p1DisconnectTimer);
+      match.p1DisconnectTimer = undefined;
+    }
+    if (match.p2Id === playerId && match.p2DisconnectTimer) {
+      clearTimeout(match.p2DisconnectTimer);
+      match.p2DisconnectTimer = undefined;
+    }
+
+    this.broadcastMatchState(match);
+  }
+
+  public handlePlayerDisconnected(playerId: string) {
+    // Remove from matchmaking queue
+    this.removeFromQueue(playerId);
+
+    // Cancel any waiting room hosted by this player
+    for (const [code, room] of this.rooms.entries()) {
+      if (room.hostId === playerId) {
+        this.rooms.delete(code);
+      }
+    }
+
+    // Handle active match disconnect grace window
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) return;
+    const match = this.matches.get(matchId);
+    if (!match || match.status === 'FINISHED') return;
+
+    this.broadcastMatchState(match);
+
+    const timer = setTimeout(() => {
+      if (match.status === 'FINISHED') return;
+      if (!this.isPlayerConnected(playerId)) {
+        const winnerId = match.p1Id === playerId ? match.p2Id : match.p1Id;
+        this.finishMatch(match, winnerId, 'FORFEIT');
+      }
+    }, DISCONNECT_GRACE_MS);
+
+    if (match.p1Id === playerId) {
+      if (match.p1DisconnectTimer) clearTimeout(match.p1DisconnectTimer);
+      match.p1DisconnectTimer = timer;
+    } else {
+      if (match.p2DisconnectTimer) clearTimeout(match.p2DisconnectTimer);
+      match.p2DisconnectTimer = timer;
+    }
+  }
+
+  public joinQueue(playerId: string): { ok: boolean; error?: string } {
+    if (this.playerToMatch.has(playerId)) {
+      const existing = this.matches.get(this.playerToMatch.get(playerId)!);
+      if (existing && existing.status !== 'FINISHED') {
+        return { ok: false, error: 'You are already in an active match.' };
+      }
+      this.playerToMatch.delete(playerId);
+    }
+
+    this.cancelHostedRooms(playerId);
+
+    if (!this.queue.includes(playerId)) {
+      this.queue.push(playerId);
+    }
+
+    // Attempt pairing connected players
+    this.queue = this.queue.filter((id) => this.isPlayerConnected(id));
+    if (this.queue.length >= 2) {
+      const p1 = this.queue.shift()!;
+      const p2 = this.queue.shift()!;
+      if (p1 !== p2) {
+        this.createAndStartMatch(p1, p2, 'ranked');
+      }
+    }
+
+    return { ok: true };
+  }
+
+  public removeFromQueue(playerId: string) {
+    this.queue = this.queue.filter((id) => id !== playerId);
+  }
+
+  public createRoom(playerId: string): { ok: boolean; room?: OpenRoomSummary; error?: string } {
+    if (this.playerToMatch.has(playerId)) {
+      const existing = this.matches.get(this.playerToMatch.get(playerId)!);
+      if (existing && existing.status !== 'FINISHED') {
+        return { ok: false, error: 'Finish or leave your active match first.' };
+      }
+      this.playerToMatch.delete(playerId);
+    }
+
+    this.removeFromQueue(playerId);
+    this.cancelHostedRooms(playerId);
+
+    let code = '';
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    do {
+      code = Array.from({ length: 6 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
+    } while (this.rooms.has(code));
+
+    const room: WaitingRoom = {
+      roomCode: code,
+      hostId: playerId,
+      createdAt: Date.now(),
+    };
+    this.rooms.set(code, room);
+
+    const host = leaderboardStore.getOrCreatePlayer(playerId);
+    return {
+      ok: true,
+      room: {
+        roomCode: room.roomCode,
+        hostCallsign: host.callsign,
+        hostElo: host.elo,
+        createdAt: room.createdAt,
+      },
+    };
+  }
+
+  public cancelHostedRooms(playerId: string) {
+    for (const [code, room] of this.rooms.entries()) {
+      if (room.hostId === playerId) {
+        this.rooms.delete(code);
+      }
+    }
+  }
+
+  public joinRoom(playerId: string, rawCode: string): { ok: boolean; error?: string } {
+    const code = rawCode.trim().toUpperCase();
+    const room = this.rooms.get(code);
+    if (!room) {
+      return { ok: false, error: `Room "${code}" was not found or has already started.` };
+    }
+    if (room.hostId === playerId) {
+      return { ok: false, error: 'Cannot join your own room as opponent. Share the code or open another tab.' };
+    }
+    if (!this.isPlayerConnected(room.hostId)) {
+      this.rooms.delete(code);
+      return { ok: false, error: 'Room host disconnected.' };
+    }
+
+    this.rooms.delete(code);
+    this.removeFromQueue(playerId);
+    this.cancelHostedRooms(playerId);
+
+    this.createAndStartMatch(room.hostId, playerId, 'room', code);
+    return { ok: true };
+  }
+
+  private createAndStartMatch(
+    p1Id: string,
+    p2Id: string,
+    mode: 'ranked' | 'room',
+    roomCode?: string
+  ) {
+    const shuffled = shuffleIds(SERVER_TURBINE_DECK.map((c) => c.id));
+    const p1Deck = shuffled.slice(0, 16);
+    const p2Deck = shuffled.slice(16, 32);
+    const startingPlayer = Math.random() < 0.5 ? p1Id : p2Id;
+
+    const match: ActiveMatch = {
+      id: crypto.randomUUID(),
+      mode,
+      roomCode,
+      status: 'PLAYING',
+      p1Id,
+      p2Id,
+      p1Deck,
+      p2Deck,
+      tiePot: [],
+      turnPlayerId: startingPlayer,
+      roundNumber: 1,
+      maxRounds: MAX_ROUNDS,
+      lastRound: null,
+      revealLockedUntil: 0,
+      winnerId: null,
+      winReason: null,
+      p1EloChange: null,
+      p2EloChange: null,
+      turnDeadlineAt: Date.now() + TURN_DURATION_MS,
+    };
+
+    this.matches.set(match.id, match);
+    this.playerToMatch.set(p1Id, match.id);
+    this.playerToMatch.set(p2Id, match.id);
+
+    this.scheduleTurnTimer(match);
+    this.broadcastMatchState(match);
+  }
+
+  public playStat(playerId: string, matchId: string, statKey: StatKey): { ok: boolean; error?: string } {
+    const match = this.matches.get(matchId);
+    if (!match) return { ok: false, error: 'Match not found.' };
+    if (match.status !== 'PLAYING') return { ok: false, error: 'Wait for the next round.' };
+    if (match.turnPlayerId !== playerId) return { ok: false, error: 'It is not your turn.' };
+
+    this.clearTimers(match);
+
+    const p1CardId = match.p1Deck.shift();
+    const p2CardId = match.p2Deck.shift();
+    if (!p1CardId || !p2CardId) {
+      const winnerId = match.p1Deck.length > match.p2Deck.length ? match.p1Id : match.p2Id;
+      this.finishMatch(match, winnerId, 'ALL_CARDS');
+      return { ok: true };
+    }
+
+    const p1Card = SERVER_CARD_BY_ID[p1CardId];
+    const p2Card = SERVER_CARD_BY_ID[p2CardId];
+    const p1Val = p1Card.stats[statKey];
+    const p2Val = p2Card.stats[statKey];
+    const cmp = compareStat(statKey, p1Val, p2Val);
+
+    const prevQuartetsP1 = new Set(computeCompletedQuartets([...match.p1Deck, p1CardId], SERVER_CARD_BY_ID));
+    const prevQuartetsP2 = new Set(computeCompletedQuartets([...match.p2Deck, p2CardId], SERVER_CARD_BY_ID));
+
+    let winnerId: string | null = null;
+    let cardsWonCount = 0;
+
+    if (cmp === 0) {
+      // Tie: add both cards to tiePot
+      match.tiePot.push(p1CardId, p2CardId);
+    } else if (cmp === 1) {
+      winnerId = match.p1Id;
+      const won = [...match.tiePot, p1CardId, p2CardId];
+      cardsWonCount = won.length;
+      match.tiePot = [];
+      match.p1Deck.push(...won);
+      match.turnPlayerId = match.p1Id;
+    } else {
+      winnerId = match.p2Id;
+      const won = [...match.tiePot, p2CardId, p1CardId];
+      cardsWonCount = won.length;
+      match.tiePot = [];
+      match.p2Deck.push(...won);
+      match.turnPlayerId = match.p2Id;
+    }
+
+    const nextQuartetsP1 = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID);
+    const nextQuartetsP2 = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID);
+
+    const newlyCompletedQuartetsP1 = nextQuartetsP1.filter((q) => !prevQuartetsP1.has(q));
+    const newlyCompletedQuartetsP2 = nextQuartetsP2.filter((q) => !prevQuartetsP2.has(q));
+
+    match.lastRound = {
+      roundNumber: match.roundNumber,
+      chosenStat: statKey,
+      chosenByPlayerId: playerId,
+      p1Card,
+      p2Card,
+      p1Value: p1Val,
+      p2Value: p2Val,
+      winnerId,
+      tiePotSizeAfter: match.tiePot.length,
+      cardsWonCount,
+      newlyCompletedQuartetsP1,
+      newlyCompletedQuartetsP2,
+    };
+
+    // Check immediate elimination
+    if (match.p1Deck.length === 0 || match.p2Deck.length === 0) {
+      if (match.p1Deck.length === 0 && match.p2Deck.length === 0) {
+        this.finishMatch(match, null, 'DRAW');
+      } else {
+        const finalWinner = match.p1Deck.length > 0 ? match.p1Id : match.p2Id;
+        this.finishMatch(match, finalWinner, 'ALL_CARDS');
+      }
+      return { ok: true };
+    }
+
+    // Check round limit
+    if (match.roundNumber >= match.maxRounds) {
+      if (match.p1Deck.length > match.p2Deck.length) {
+        this.finishMatch(match, match.p1Id, 'ROUND_LIMIT');
+      } else if (match.p2Deck.length > match.p1Deck.length) {
+        this.finishMatch(match, match.p2Id, 'ROUND_LIMIT');
+      } else {
+        const q1 = nextQuartetsP1.length;
+        const q2 = nextQuartetsP2.length;
+        const finalWinner = q1 > q2 ? match.p1Id : q2 > q1 ? match.p2Id : null;
+        this.finishMatch(match, finalWinner, finalWinner ? 'ROUND_LIMIT' : 'DRAW');
+      }
+      return { ok: true };
+    }
+
+    match.status = 'ROUND_REVEAL';
+    match.revealLockedUntil = Date.now() + REVEAL_MIN_LOCK_MS;
+    match.turnDeadlineAt = null;
+    this.broadcastMatchState(match);
+
+    match.revealTimer = setTimeout(() => {
+      this.advanceRound(match);
+    }, REVEAL_AUTO_ADVANCE_MS);
+
+    return { ok: true };
+  }
+
+  public requestNextRound(playerId: string, matchId: string) {
+    const match = this.matches.get(matchId);
+    if (!match || match.status !== 'ROUND_REVEAL') return;
+    if (playerId !== match.p1Id && playerId !== match.p2Id) return;
+    if (Date.now() < match.revealLockedUntil) return;
+
+    this.advanceRound(match);
+  }
+
+  private advanceRound(match: ActiveMatch) {
+    if (match.status !== 'ROUND_REVEAL') return;
+    if (match.revealTimer) {
+      clearTimeout(match.revealTimer);
+      match.revealTimer = undefined;
+    }
+
+    match.roundNumber += 1;
+    match.status = 'PLAYING';
+    match.turnDeadlineAt = Date.now() + TURN_DURATION_MS;
+    this.scheduleTurnTimer(match);
+    this.broadcastMatchState(match);
+  }
+
+  public forfeitMatch(playerId: string, matchId: string) {
+    const match = this.matches.get(matchId);
+    if (!match || match.status === 'FINISHED') return;
+    if (playerId !== match.p1Id && playerId !== match.p2Id) return;
+    const winnerId = match.p1Id === playerId ? match.p2Id : match.p1Id;
+    this.finishMatch(match, winnerId, 'FORFEIT');
+  }
+
+  public dismissFinishedMatch(playerId: string) {
+    const matchId = this.playerToMatch.get(playerId);
+    if (!matchId) return;
+    const match = this.matches.get(matchId);
+    if (!match || match.status === 'FINISHED') {
+      this.playerToMatch.delete(playerId);
+    }
+  }
+
+  private finishMatch(
+    match: ActiveMatch,
+    winnerId: string | null,
+    reason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW'
+  ) {
+    this.clearTimers(match);
+    if (match.p1DisconnectTimer) clearTimeout(match.p1DisconnectTimer);
+    if (match.p2DisconnectTimer) clearTimeout(match.p2DisconnectTimer);
+
+    match.status = 'FINISHED';
+    match.winnerId = winnerId;
+    match.winReason = reason;
+    match.turnDeadlineAt = null;
+
+    const p1Quartets = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID).length;
+    const p2Quartets = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID).length;
+
+    const { p1Delta, p2Delta } = leaderboardStore.recordPvpMatch({
+      matchId: match.id,
+      mode: match.mode,
+      p1Id: match.p1Id,
+      p2Id: match.p2Id,
+      p1Cards: match.p1Deck.length,
+      p2Cards: match.p2Deck.length,
+      p1Quartets,
+      p2Quartets,
+      winnerId,
+      roundsPlayed: match.roundNumber,
+    });
+
+    match.p1EloChange = p1Delta;
+    match.p2EloChange = p2Delta;
+
+    this.broadcastMatchState(match);
+    this.broadcastAll('leaderboard:updated', {
+      leaderboard: leaderboardStore.getLeaderboard(),
+      recentMatches: leaderboardStore.getRecentMatches(),
+    });
+
+    // Clear active match binding after sending final screen (client can still view local state until dismissed)
+    setTimeout(() => {
+      if (this.playerToMatch.get(match.p1Id) === match.id) {
+        this.playerToMatch.delete(match.p1Id);
+      }
+      if (this.playerToMatch.get(match.p2Id) === match.id) {
+        this.playerToMatch.delete(match.p2Id);
+      }
+      this.matches.delete(match.id);
+    }, 30_000);
+  }
+
+  private scheduleTurnTimer(match: ActiveMatch) {
+    if (match.turnTimer) clearTimeout(match.turnTimer);
+    match.turnTimer = setTimeout(() => {
+      if (match.status !== 'PLAYING') return;
+      const activeId = match.turnPlayerId;
+      const deck = activeId === match.p1Id ? match.p1Deck : match.p2Deck;
+      const topId = deck[0];
+      const topCard = topId ? SERVER_CARD_BY_ID[topId] : null;
+      if (!topCard) return;
+
+      // Auto-pick best stat on timeout so game stays moving
+      const bestStat = this.pickStrongestStat(topCard.stats);
+      this.playStat(activeId, match.id, bestStat);
+    }, TURN_DURATION_MS);
+  }
+
+  private pickStrongestStat(stats: Record<StatKey, number>): StatKey {
+    const normalized: { key: StatKey; score: number }[] = [
+      { key: 'ratedPowerMw', score: stats.ratedPowerMw / 26 },
+      { key: 'rotorDiameterM', score: stats.rotorDiameterM / 310 },
+      { key: 'hubHeightM', score: stats.hubHeightM / 185 },
+      { key: 'cutInWindMs', score: Math.max(0, (4.2 - stats.cutInWindMs) / 2.2) },
+      { key: 'plantCapacityMw', score: Math.log10(Math.max(10, stats.plantCapacityMw)) / 4.1 },
+    ];
+    normalized.sort((a, b) => b.score - a.score);
+    return normalized[0].key;
+  }
+
+  private clearTimers(match: ActiveMatch) {
+    if (match.turnTimer) {
+      clearTimeout(match.turnTimer);
+      match.turnTimer = undefined;
+    }
+    if (match.revealTimer) {
+      clearTimeout(match.revealTimer);
+      match.revealTimer = undefined;
+    }
+  }
+
+  private broadcastMatchState(match: ActiveMatch) {
+    this.emitToPlayer(match.p1Id, 'match:state', this.serializeMatchForPlayer(match, match.p1Id));
+    this.emitToPlayer(match.p2Id, 'match:state', this.serializeMatchForPlayer(match, match.p2Id));
+  }
+
+  private serializeMatchForPlayer(match: ActiveMatch, playerId: string): ClientMatchState {
+    const isP1 = playerId === match.p1Id;
+    const youId = isP1 ? match.p1Id : match.p2Id;
+    const oppId = isP1 ? match.p2Id : match.p1Id;
+    const yourDeck = isP1 ? match.p1Deck : match.p2Deck;
+    const oppDeck = isP1 ? match.p2Deck : match.p1Deck;
+
+    const youProfile = leaderboardStore.getOrCreatePlayer(youId);
+    const oppProfile = leaderboardStore.getOrCreatePlayer(oppId);
+
+    return {
+      matchId: match.id,
+      mode: match.mode,
+      roomCode: match.roomCode,
+      status: match.status,
+      roundNumber: match.roundNumber,
+      maxRounds: match.maxRounds,
+      tiePotCount: match.tiePot.length,
+      turnPlayerId: match.turnPlayerId,
+      turnDeadlineAt: match.turnDeadlineAt,
+      you: {
+        id: youId,
+        callsign: youProfile.callsign,
+        elo: youProfile.elo,
+        cardCount: yourDeck.length,
+        topCard: yourDeck[0] ? SERVER_CARD_BY_ID[yourDeck[0]] : null,
+        ownedCardIds: [...yourDeck],
+        completedQuartets: computeCompletedQuartets(yourDeck, SERVER_CARD_BY_ID),
+      },
+      opponent: {
+        id: oppId,
+        callsign: oppProfile.callsign,
+        elo: oppProfile.elo,
+        cardCount: oppDeck.length,
+        completedQuartets: computeCompletedQuartets(oppDeck, SERVER_CARD_BY_ID),
+        connected: this.isPlayerConnected(oppId),
+      },
+      lastRound: match.lastRound,
+      winnerId: match.winnerId,
+      winReason: match.winReason,
+      eloChange: isP1 ? match.p1EloChange : match.p2EloChange,
+    };
+  }
+}
