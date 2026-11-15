@@ -48,10 +48,10 @@ const CATEGORY_THEME: Record<
   ImageCategory,
   { border: string; stampBg: string; stampText: string; bar: string }
 > = {
-  offshore: { border: '#0E7490', stampBg: '#0E7490', stampText: '#FFFFFF', bar: '#0E7490' },
-  onshore: { border: '#1B6B52', stampBg: '#1B6B52', stampText: '#FFFFFF', bar: '#1B6B52' },
-  floating: { border: '#1D4ED8', stampBg: '#1D4ED8', stampText: '#FFFFFF', bar: '#1D4ED8' },
-  windbase: { border: '#EA580C', stampBg: '#EA580C', stampText: '#FFFFFF', bar: '#EA580C' },
+  offshore: { border: '#1E7898', stampBg: '#1E7898', stampText: '#FAF4E4', bar: '#1E7898' },
+  onshore: { border: '#2F6F4E', stampBg: '#2F6F4E', stampText: '#FAF4E4', bar: '#2F6F4E' },
+  floating: { border: '#173240', stampBg: '#173240', stampText: '#FAF4E4', bar: '#173240' },
+  windbase: { border: '#F15A24', stampBg: '#F15A24', stampText: '#FFFDF7', bar: '#F15A24' },
 };
 
 export function createRotorClashApp() {
@@ -872,15 +872,15 @@ export function createRotorClashApp() {
       outcome: 'win' | 'loss' | 'tie' | null
     ): string {
       if (selectedStat === statKey) {
-        if (outcome === 'win') return 'bg-[#E6F4EE] border-[#1B6B52] text-[#0F4232] ring-1 ring-[#1B6B52]/30';
+        if (outcome === 'win') return 'bg-[#E7F4EC] border-[#2F6F4E] text-[#173240] ring-2 ring-[#2F6F4E]/30';
         if (outcome === 'loss') return 'bg-[#FEECEB] border-[#DC2626] text-[#7F1D1D]';
         if (outcome === 'tie') return 'bg-[#FEF3C7] border-[#D97706] text-[#78350F]';
-        return 'bg-[#E6F4F6] border-[#0E7490] text-[#0A4E61] ring-1 ring-[#0E7490]/30';
+        return 'bg-[#DCEEF5] border-[#1E7898] text-[#173240] ring-2 ring-[#1E7898]/30';
       }
       if (selectable) {
-        return 'bg-[#FAF6EC] border-[#DDD3BC] hover:border-[#0E7490] hover:bg-[#ECF7F9] hover:translate-x-0.5 text-[#1F2933] shadow-[0_2px_0_rgba(31,41,51,0.06)] active:translate-y-0.5';
+        return 'bg-[#FAF4E4] border-[#173240]/30 hover:border-[#1E7898] hover:bg-[#E7F4F9] hover:translate-x-0.5 text-[#173240] shadow-[0_2px_0_rgba(23,50,64,0.18)] active:translate-y-0.5';
       }
-      return 'bg-[#FAF6EC] border-[#E4DBC7] text-[#1F2933]';
+      return 'bg-[#FAF4E4] border-[#173240]/20 text-[#173240]';
     },
 
     formatStatValue(key: StatKey, val: number): string {

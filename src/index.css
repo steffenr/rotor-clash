@@ -10,8 +10,8 @@
   html {
     font-family: var(--font-sans);
     scroll-behavior: smooth;
-    background-color: #F6F2E9;
-    color: #1F2933;
+    background-color: #F5EFE0;
+    color: #173240;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -25,7 +25,7 @@
   }
 
   *:focus-visible {
-    outline: 2px solid #0E7490;
+    outline: 2px solid #1E7898;
     outline-offset: 2px;
   }
 }
@@ -35,8 +35,20 @@
 }
 
 .paper-grain {
-  background-image: radial-gradient(rgba(120, 98, 66, 0.08) 1px, transparent 1px);
-  background-size: 18px 18px;
+  background-image:
+    radial-gradient(rgba(23, 50, 64, 0.065) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(220, 238, 245, 0.42) 0%, rgba(245, 239, 224, 0) 340px);
+  background-size: 18px 18px, 100% 100%;
+}
+
+.ink-panel {
+  border: 2px solid #173240;
+  box-shadow: 0 4px 0 #173240;
+}
+
+.ink-card {
+  border: 2.5px solid #173240;
+  box-shadow: 0 5px 0 #173240;
 }
 
 @keyframes gentleBob {
