@@ -7,24 +7,50 @@ interface PersistedData {
   matches: MatchRecord[];
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'leaderboard.json');
+const DEFAULT_DATA_FILE = path.join(path.resolve(process.cwd(), 'data'), 'leaderboard.json');
 
-class LeaderboardStore {
+/** Visitors who never finished a game carry no data worth keeping. */
+const INACTIVE_VISITOR_MS = 30 * 24 * 60 * 60 * 1000;
+const PRUNE_INTERVAL_MS = 60 * 60 * 1000;
+const DEFAULT_LEADERBOARD_LIMIT = 50;
+
+export class LeaderboardStore {
   private data: PersistedData = { players: {}, matches: [] };
   private writeQueue: Promise<void> = Promise.resolve();
+  private readonly dataDir: string;
+  /** All ranked players (>= 1 game), best first. Rebuilt lazily after any ranking change. */
+  private rankedCache: PlayerProfile[] | null = null;
+  private lastPruneAt = Date.now();
 
-  constructor() {
+  constructor(private readonly dataFile: string = DEFAULT_DATA_FILE) {
+    this.dataDir = path.dirname(dataFile);
     this.load();
+    this.pruneInactive();
+  }
+
+  /**
+   * Removes players with zero games who have not been seen for 30 days.
+   * Players with at least one game are never removed. Returns how many were dropped.
+   */
+  public pruneInactive(now = Date.now()): number {
+    this.lastPruneAt = now;
+    let removed = 0;
+    for (const [id, player] of Object.entries(this.data.players)) {
+      if (player.gamesPlayed === 0 && now - player.updatedAt >= INACTIVE_VISITOR_MS) {
+        delete this.data.players[id];
+        removed += 1;
+      }
+    }
+    return removed;
   }
 
   private load() {
     try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
+      if (!fs.existsSync(this.dataDir)) {
+        fs.mkdirSync(this.dataDir, { recursive: true });
       }
-      if (fs.existsSync(DATA_FILE)) {
-        const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      if (fs.existsSync(this.dataFile)) {
+        const raw = fs.readFileSync(this.dataFile, 'utf-8');
         const parsed = JSON.parse(raw) as Partial<PersistedData>;
         this.data = {
           players: parsed.players ?? {},
@@ -41,12 +67,12 @@ class LeaderboardStore {
     const snapshot = JSON.stringify(this.data, null, 2);
     this.writeQueue = this.writeQueue
       .then(async () => {
-        if (!fs.existsSync(DATA_DIR)) {
-          await fs.promises.mkdir(DATA_DIR, { recursive: true });
+        if (!fs.existsSync(this.dataDir)) {
+          await fs.promises.mkdir(this.dataDir, { recursive: true });
         }
-        const tmpFile = `${DATA_FILE}.tmp`;
+        const tmpFile = `${this.dataFile}.tmp`;
         await fs.promises.writeFile(tmpFile, snapshot, 'utf-8');
-        await fs.promises.rename(tmpFile, DATA_FILE);
+        await fs.promises.rename(tmpFile, this.dataFile);
       })
       .catch((err) => {
         console.error('Failed to persist leaderboard store:', err);
@@ -61,6 +87,7 @@ class LeaderboardStore {
         existing.callsign = cleanCallsign;
         existing.updatedAt = Date.now();
         if (existing.gamesPlayed > 0) {
+          this.rankedCache = null;
           this.persist();
         }
       }
@@ -81,6 +108,7 @@ class LeaderboardStore {
       updatedAt: Date.now(),
     };
     this.data.players[id] = created;
+    if (Date.now() - this.lastPruneAt >= PRUNE_INTERVAL_MS) this.pruneInactive();
     return created;
   }
 
@@ -90,6 +118,7 @@ class LeaderboardStore {
     if (clean) {
       player.callsign = clean;
       player.updatedAt = Date.now();
+      if (player.gamesPlayed > 0) this.rankedCache = null;
       this.persist();
     }
     return player;
@@ -185,19 +214,23 @@ class LeaderboardStore {
       this.data.matches = this.data.matches.slice(0, 50);
     }
 
+    this.rankedCache = null;
     this.persist();
     return { p1Delta, p2Delta };
   }
 
-  public getLeaderboard(limit = 50): PlayerProfile[] {
-    return Object.values(this.data.players)
-      .filter((p) => p.gamesPlayed > 0)
-      .sort((a, b) => {
-        if (b.elo !== a.elo) return b.elo - a.elo;
-        if (b.wins !== a.wins) return b.wins - a.wins;
-        return a.updatedAt - b.updatedAt;
-      })
-      .slice(0, limit);
+  /** Ranking is only recomputed after a result or rename; connects and broadcasts reuse it. */
+  public getLeaderboard(limit = DEFAULT_LEADERBOARD_LIMIT): PlayerProfile[] {
+    if (!this.rankedCache) {
+      this.rankedCache = Object.values(this.data.players)
+        .filter((p) => p.gamesPlayed > 0)
+        .sort((a, b) => {
+          if (b.elo !== a.elo) return b.elo - a.elo;
+          if (b.wins !== a.wins) return b.wins - a.wins;
+          return a.updatedAt - b.updatedAt;
+        });
+    }
+    return this.rankedCache.slice(0, limit);
   }
 
   public getRecentMatches(limit = 20): MatchRecord[] {
