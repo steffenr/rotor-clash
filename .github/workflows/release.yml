@@ -1,0 +1,102 @@
+name: Release — Deploy to netcup
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_note:
+        description: 'Optional release note for deployment summary'
+        required: false
+        default: 'Manual release deployment'
+        type: string
+
+jobs:
+  deploy:
+    name: Test, Build & Deploy to netcup Webhosting 4000
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout selected branch
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: TypeScript typecheck
+        run: npm run lint
+
+      - name: Run automated test suite
+        run: npm test
+
+      - name: Build frontend & server bundle
+        run: |
+          npm run build
+          npm run build:server
+
+      - name: Validate deployment configuration
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST || vars.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER || vars.SSH_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          for var_name in SSH_HOST SSH_USER DEPLOY_PATH SSH_PRIVATE_KEY; do
+            if [ -z "${!var_name}" ]; then
+              echo "Error: Missing required GitHub Secret or Variable: $var_name" >&2
+              exit 1
+            fi
+          done
+
+      - name: Deploy files via rsync over SSH & restart Plesk Passenger
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST || vars.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER || vars.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || vars.SSH_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Ensure target directories exist without disturbing existing data/leaderboard.json
+          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+            "mkdir -p '$DEPLOY_PATH' '$DEPLOY_PATH/tmp' '$DEPLOY_PATH/data'"
+
+          # Sync app, compiled dist/, compiled dist-server/server.cjs, and src/data/
+          rsync -avz --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.aistudio/' \
+            --exclude 'node_modules/' \
+            --exclude 'data/' \
+            --exclude 'tmp/' \
+            --exclude 'tests/' \
+            -e "ssh -p $SSH_PORT -i ~/.ssh/deploy_key" \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+          # Install production dependencies using Plesk's Node.js binary if available & reload Passenger
+          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+            "export PATH=\"/opt/plesk/node/22/bin:/opt/plesk/node/20/bin:\$PATH\"; \
+             cd '$DEPLOY_PATH' && \
+             npm install --omit=dev && \
+             touch tmp/restart.txt"
+
+      - name: Write deployment summary
+        run: |
+          {
+            echo "### Rotor Clash deployed to netcup"
+            echo "- **Branch:** \`${{ github.ref_name }}\`"
+            echo "- **Commit:** \`${{ github.sha }}\`"
+            echo "- **Note:** ${{ github.event.inputs.release_note }}"
+          } >> "$GITHUB_STEP_SUMMARY"
