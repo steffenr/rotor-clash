@@ -53,7 +53,6 @@ import {
 import { loadSavedDeckMode, saveDeckMode } from '../lib/deckPreference';
 import { Theme, applyTheme, loadSavedTheme, resolveInitialTheme, saveTheme } from '../lib/theme';
 import { Language, TRANSLATIONS, Translations } from '../lib/i18n';
-import fieldDeskImg from '../assets/images/field_guide_desk_1794678472040.jpg';
 
 type NavTab = 'arena' | 'compendium' | 'leaderboard' | 'tutorial';
 
@@ -140,7 +139,6 @@ export function createRotorClashApp() {
     quartetGroups: QUARTET_GROUPS,
     statDefinitions: STAT_DEFINITIONS,
     rankTiersReversed: RANK_TIERS.slice().reverse(),
-    fieldDeskImg,
 
     previewOptions() {
       return [
