@@ -10,13 +10,68 @@ import {
 } from './src/server/turbineRepository.ts';
 import { MatchEngine } from './src/server/matchEngine.ts';
 import { leaderboardStore } from './src/server/store.ts';
+import {
+  ConnectionLimiter,
+  MAX_MESSAGE_BYTES,
+  RateLimiter,
+  clientIp,
+  isAllowedOrigin,
+  isValidPlayerId,
+  isValidSecret,
+  parseClientMessage,
+  securityHeaders,
+} from './src/server/security.ts';
 
 const RAW_PORT = process.env.PORT || '3000';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
+/** Sockets per client address (several players can share one school / home network) and overall. */
+const MAX_SOCKETS_PER_IP = 30;
+const MAX_SOCKETS_TOTAL = 2000;
+/** Per socket: a burst of 30 messages, then 10 per second. Sustained abuse closes the socket. */
+const MESSAGE_BURST = 30;
+const MESSAGES_PER_SECOND = 10;
+const MAX_DROPPED_MESSAGES = 100;
+/** REST API: 60 requests per minute and address. */
+const API_BURST = 60;
+const API_REFILL_PER_SECOND = 1;
+/** Lobby and leaderboard broadcasts reach every client, so bursts are merged into one. */
+const BROADCAST_DELAY_MS = 250;
+const RENAME_COOLDOWN_MS = 2000;
+
+const trimString = (value: unknown, max: number): string =>
+  typeof value === 'string' ? value.slice(0, max) : '';
+
 async function bootstrap() {
   const app = express();
-  app.use(express.json());
+  app.disable('x-powered-by');
+  app.use(securityHeaders(IS_PROD));
+
+  // Small per-address limit on the REST API.
+  const apiLimiters = new Map<string, { limiter: RateLimiter; lastSeen: number }>();
+  const apiCleanup = setInterval(() => {
+    const cutoff = Date.now() - 10 * 60 * 1000;
+    for (const [ip, entry] of apiLimiters) {
+      if (entry.lastSeen < cutoff) apiLimiters.delete(ip);
+    }
+  }, 5 * 60 * 1000);
+  apiCleanup.unref();
+
+  app.use('/api', (req, res, next) => {
+    const ip = clientIp(req);
+    let entry = apiLimiters.get(ip);
+    if (!entry) {
+      entry = { limiter: new RateLimiter(API_BURST, API_REFILL_PER_SECOND), lastSeen: Date.now() };
+      apiLimiters.set(ip, entry);
+    }
+    entry.lastSeen = Date.now();
+    if (!entry.limiter.take()) {
+      res.status(429).json({ error: 'Too many requests' });
+      return;
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
 
   // REST API endpoints
   app.get('/api/health', (_req, res) => {
@@ -35,7 +90,7 @@ async function bootstrap() {
   });
 
   app.get('/api/player/:id', (req, res) => {
-    const profile = leaderboardStore.getPlayer(req.params.id);
+    const profile = isValidPlayerId(req.params.id) ? leaderboardStore.getPlayer(req.params.id) : null;
     if (!profile) {
       res.status(404).json({ error: 'Player not found' });
       return;
@@ -44,11 +99,21 @@ async function bootstrap() {
   });
 
   const server = http.createServer(app);
-  const wss = new WebSocketServer({ server, path: '/ws' });
+  const wss = new WebSocketServer({
+    server,
+    path: '/ws',
+    // Real messages are tiny; `ws` defaults to 100 MiB per message.
+    maxPayload: MAX_MESSAGE_BYTES,
+    // Browsers always send Origin: refuse handshakes started from other websites.
+    verifyClient: (info: { origin: string; req: http.IncomingMessage }) =>
+      isAllowedOrigin(info.origin, info.req.headers.host),
+  });
+  const connectionLimiter = new ConnectionLimiter(MAX_SOCKETS_PER_IP, MAX_SOCKETS_TOTAL);
 
   // Track sockets by playerId
   const playerSockets = new Map<string, Set<WebSocket>>();
   const socketToPlayer = new Map<WebSocket, string>();
+  const lastRenameAt = new Map<string, number>();
 
   const sendJson = (ws: WebSocket, event: string, payload: unknown) => {
     if (ws.readyState === WebSocket.OPEN) {
@@ -81,26 +146,78 @@ async function bootstrap() {
 
   const engine = new MatchEngine(emitToPlayer, broadcastAll, isPlayerConnected);
 
+  let lobbyTimer: NodeJS.Timeout | null = null;
   const broadcastLobby = () => {
-    broadcastAll('lobby:state', engine.getLobbySnapshot(playerSockets.size));
+    if (lobbyTimer) return;
+    lobbyTimer = setTimeout(() => {
+      lobbyTimer = null;
+      broadcastAll('lobby:state', engine.getLobbySnapshot(playerSockets.size));
+    }, BROADCAST_DELAY_MS);
+    lobbyTimer.unref();
   };
 
-  wss.on('connection', (ws) => {
-    ws.on('message', (raw) => {
+  let leaderboardTimer: NodeJS.Timeout | null = null;
+  const broadcastLeaderboard = () => {
+    if (leaderboardTimer) return;
+    leaderboardTimer = setTimeout(() => {
+      leaderboardTimer = null;
+      broadcastAll('leaderboard:updated', {
+        leaderboard: leaderboardStore.getLeaderboard(),
+        recentMatches: leaderboardStore.getRecentMatches(),
+      });
+    }, BROADCAST_DELAY_MS);
+    leaderboardTimer.unref();
+  };
+
+  // `ws` reports protocol violations (for example a frame over maxPayload) as an 'error' event on the
+  // socket and closes it. Without a listener that event would be thrown and stop the whole server.
+  wss.on('error', (err) => console.error('WS server error:', err.message));
+
+  wss.on('connection', (ws, req) => {
+    ws.on('error', () => {
+      /* the socket is closed by ws itself; nothing to clean up here */
+    });
+
+    const ip = clientIp(req);
+    if (!connectionLimiter.tryAcquire(ip)) {
+      ws.close(1013, 'Too many connections');
+      return;
+    }
+
+    const limiter = new RateLimiter(MESSAGE_BURST, MESSAGES_PER_SECOND);
+    let dropped = 0;
+
+    ws.on('message', (raw, isBinary) => {
+      if (isBinary) return;
+      if (!limiter.take()) {
+        dropped += 1;
+        if (dropped >= MAX_DROPPED_MESSAGES) ws.close(1008, 'Rate limit exceeded');
+        return;
+      }
+
       try {
-        const msg = JSON.parse(raw.toString()) as { event?: string; payload?: Record<string, unknown> };
-        const event = msg.event;
-        const payload = msg.payload ?? {};
+        const msg = parseClientMessage(raw.toString());
+        if (!msg) return;
+        const { event, payload } = msg;
 
         if (event === 'auth:hello') {
-          const playerId = String(payload.playerId || '').trim();
-          const callsign = payload.callsign ? String(payload.callsign) : undefined;
-          if (!playerId || playerId.length < 4) return;
-
-          const prevId = socketToPlayer.get(ws);
-          if (prevId && prevId !== playerId) {
-            playerSockets.get(prevId)?.delete(ws);
+          const playerId = payload.playerId;
+          const secret = payload.secret;
+          if (!isValidPlayerId(playerId) || !isValidSecret(secret)) {
+            sendJson(ws, 'auth:rejected', { reason: 'invalid' });
+            return;
           }
+
+          const authedAs = socketToPlayer.get(ws);
+          if (authedAs && authedAs !== playerId) return; // one identity per connection
+
+          // The id is a public handle (it appears in rankings); the secret is the credential.
+          if (leaderboardStore.authenticate(playerId, secret) === 'mismatch') {
+            sendJson(ws, 'auth:rejected', { reason: 'secret' });
+            return;
+          }
+
+          const callsign = trimString(payload.callsign, 64) || undefined;
 
           socketToPlayer.set(ws, playerId);
           if (!playerSockets.has(playerId)) {
@@ -136,14 +253,19 @@ async function bootstrap() {
 
         switch (event) {
           case 'profile:rename': {
-            const callsign = String(payload.callsign || '');
-            const profile = leaderboardStore.updateCallsign(playerId, callsign);
+            const now = Date.now();
+            if (now - (lastRenameAt.get(playerId) ?? 0) < RENAME_COOLDOWN_MS) {
+              sendJson(ws, 'error:toast', { message: 'Please wait a moment before renaming again.' });
+              break;
+            }
+            lastRenameAt.set(playerId, now);
+            const before = leaderboardStore.getPlayer(playerId)?.callsign;
+            const profile = leaderboardStore.updateCallsign(playerId, trimString(payload.callsign, 64));
             emitToPlayer(playerId, 'auth:ack', { profile });
-            broadcastLobby();
-            broadcastAll('leaderboard:updated', {
-              leaderboard: leaderboardStore.getLeaderboard(),
-              recentMatches: leaderboardStore.getRecentMatches(),
-            });
+            if (profile.callsign !== before) {
+              broadcastLobby();
+              if (profile.gamesPlayed > 0) broadcastLeaderboard();
+            }
             break;
           }
           case 'queue:join': {
@@ -172,6 +294,13 @@ async function bootstrap() {
             broadcastLobby();
             break;
           }
+          case 'room:visibility': {
+            if (typeof payload.listed !== 'boolean') break;
+            const room = engine.setRoomListed(playerId, payload.listed);
+            if (room) sendJson(ws, 'room:created', { room });
+            broadcastLobby();
+            break;
+          }
           case 'room:cancel': {
             engine.cancelHostedRooms(playerId);
             sendJson(ws, 'room:cancelled', {});
@@ -179,7 +308,7 @@ async function bootstrap() {
             break;
           }
           case 'room:join': {
-            const roomCode = String(payload.roomCode || '');
+            const roomCode = trimString(payload.roomCode, 12);
             const res = engine.joinRoom(playerId, roomCode);
             if (!res.ok) {
               sendJson(ws, 'error:toast', { message: res.error });
@@ -188,8 +317,8 @@ async function bootstrap() {
             break;
           }
           case 'match:play_stat': {
-            const matchId = String(payload.matchId || '');
-            const statKey = String(payload.statKey || '') as StatKey;
+            const matchId = trimString(payload.matchId, 64);
+            const statKey = trimString(payload.statKey, 32) as StatKey;
             const res = engine.playStat(playerId, matchId, statKey);
             if (!res.ok && res.error) {
               sendJson(ws, 'error:toast', { message: res.error });
@@ -197,13 +326,11 @@ async function bootstrap() {
             break;
           }
           case 'match:next_round': {
-            const matchId = String(payload.matchId || '');
-            engine.requestNextRound(playerId, matchId);
+            engine.requestNextRound(playerId, trimString(payload.matchId, 64));
             break;
           }
           case 'match:forfeit': {
-            const matchId = String(payload.matchId || '');
-            engine.forfeitMatch(playerId, matchId);
+            engine.forfeitMatch(playerId, trimString(payload.matchId, 64));
             break;
           }
           case 'match:dismiss': {
@@ -218,6 +345,7 @@ async function bootstrap() {
     });
 
     ws.on('close', () => {
+      connectionLimiter.release(ip);
       const playerId = socketToPlayer.get(ws);
       socketToPlayer.delete(ws);
       if (!playerId) return;
@@ -226,6 +354,7 @@ async function bootstrap() {
         set.delete(ws);
         if (set.size === 0) {
           playerSockets.delete(playerId);
+          lastRenameAt.delete(playerId);
           engine.handlePlayerDisconnected(playerId);
         }
       }
@@ -260,6 +389,15 @@ async function bootstrap() {
       console.log(`Rotor Clash server listening on socket ${RAW_PORT}`);
     });
   }
+
+  // Writes are coalesced; make sure the last changes reach the disk when the process is stopped.
+  const shutdown = () => {
+    const force = setTimeout(() => process.exit(0), 3000);
+    force.unref();
+    void leaderboardStore.flush().finally(() => process.exit(0));
+  };
+  process.once('SIGTERM', shutdown);
+  process.once('SIGINT', shutdown);
 }
 
 bootstrap();

@@ -106,3 +106,11 @@ Rotor Clash requires a persistent **Node.js** process with **WebSocket (`/ws`)**
    - **Application Startup File**: `dist-server/server.cjs`
    - **Application Mode / Env**: `production` (`NODE_ENV=production`)
    - **Tip**: Configure a Plesk scheduled task to ping `/api/health` every ~5 minutes if Passenger idles out inactive workers.
+
+## Security
+
+- A player id is only a public handle; logging in needs a per-browser secret that the server stores hashed (first use binds it to the id).
+- The server validates every WebSocket message and game move, limits message size and rate, and caps connections per address.
+- Friend rooms are private (code or link) unless the host chooses *Show in open rooms*.
+- Production responses carry a Content-Security-Policy and the usual hardening headers; dependencies are installed from the lockfile and audited in CI.
+- Contributor rules live in `AGENTS.md` (section 2, item 8). Please report vulnerabilities privately to the repository owner rather than in a public issue.

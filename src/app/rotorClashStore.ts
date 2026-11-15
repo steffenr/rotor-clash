@@ -18,9 +18,11 @@ import { resolveCardPhoto } from '../lib/cardImages';
 import { getPhotoCredit, type PhotoCredit } from '../shared/photoCredits';
 import {
   getOrCreateIdentity,
+  getOrCreateSecret,
   getSavedCallsign,
   loadCachedProfile,
   loadSavedLanguage,
+  resetIdentity,
   saveCachedProfile,
   saveCallsignLocally,
   saveLanguage,
@@ -73,7 +75,9 @@ const CATEGORY_THEME: Record<
 };
 
 export function createRotorClashApp() {
-  const identity = getOrCreateIdentity();
+  let identity = getOrCreateIdentity();
+  /** The server may refuse a saved id/secret pair once; a fresh identity is created then (never in a loop). */
+  let identityResets = 0;
   const initialLang = loadSavedLanguage();
   let ws: WebSocket | null = null;
   let disposed = false;
@@ -205,6 +209,7 @@ export function createRotorClashApp() {
             event: 'auth:hello',
             payload: {
               playerId: identity.playerId,
+              secret: getOrCreateSecret(),
               callsign: getSavedCallsign(identity.callsign),
             },
           })
@@ -228,6 +233,9 @@ export function createRotorClashApp() {
                 this.joinCodeInput = code;
                 socket.send(JSON.stringify({ event: 'room:join', payload: { roomCode: code } }));
               }
+              break;
+            case 'auth:rejected':
+              this.handleAuthRejected();
               break;
             case 'lobby:state':
               if (msg.payload) this.lobby = msg.payload;
@@ -298,6 +306,26 @@ export function createRotorClashApp() {
           this.connectWebSocket();
         }, backoffMs);
       };
+    },
+
+    /** The server did not accept this browser's id/secret pair: continue with a fresh identity, once. */
+    handleAuthRejected() {
+      if (identityResets >= 1) {
+        this.showToast(this.t.lobby.authFailed);
+        return;
+      }
+      identityResets += 1;
+      identity = resetIdentity();
+      this.playerId = identity.playerId;
+      this.profile = loadCachedProfile(identity.playerId, identity.callsign) as PlayerProfile;
+      this.callsignDraft = identity.callsign;
+      this.showToast(this.t.lobby.authReset);
+      ws?.close(); // the reconnect logic logs in again with the new identity
+    },
+
+    setRoomListed(listed: boolean) {
+      soundFx.playClick();
+      this.sendWs('room:visibility', { listed });
     },
 
     sendWs(event: string, payload: Record<string, unknown> = {}) {

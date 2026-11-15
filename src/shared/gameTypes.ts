@@ -103,6 +103,8 @@ export interface OpenRoomSummary {
   hostElo: number;
   createdAt: number;
   deckMode: DeckMode;
+  /** Whether the room shows up in the public open-rooms list (otherwise: code or link only). */
+  listed: boolean;
 }
 
 export interface RoundResolution {

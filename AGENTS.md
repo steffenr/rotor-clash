@@ -63,6 +63,15 @@ This file defines the architectural rules, conventions, and verification steps f
 7. **Platform Manifest Constraint**:
    - Do **not** rename `"name"` inside `metadata.json` (required by AI Studio's applet manifest). All user-facing branding, `<title>`, OpenGraph metadata, storage keys, and UI copy must use **Rotor Clash**.
 
+8. **Security Rules (server is the trust boundary)**:
+   - **Identity**: the player id is a *public handle* (it appears in `/api/leaderboard` and in opponents' match state). The credential is the client **secret** (`rotor_clash_secret_v1`, 64 hex chars), stored server-side only as a SHA-256 hash (`LeaderboardStore.authenticate()`); the first secret presented for an id is bound to it. Never send a secret or hash to a client, never treat a player id as proof of identity, and never log either.
+   - **Client input is hostile**: parse every WebSocket message with `parseClientMessage()`, validate ids with `isValidPlayerId()`, bound string lengths before using them, and validate game moves against the match (e.g. `playStat` only accepts `statKeysForMode(match.deckMode)`). Keys that come from clients must never index a plain `{}`: use `Map`, or the prototype-less dictionaries in `store.ts`; `__proto__`, `constructor` and `prototype` are refused outright.
+   - **Limits**: `maxPayload` 4 KB, 30-message burst then 10/s per socket (sustained abuse closes the socket), 30 sockets per address, 60 REST requests per minute and address, rename cooldown, coalesced lobby and leaderboard broadcasts, debounced disk writes, and a cap on unranked profiles. Do not remove a limit without replacing it. Every `ws` socket needs an `'error'` listener, otherwise one oversized frame stops the process.
+   - **Rooms** are private (code or invite link) unless the host ticks *Show in open rooms*; room codes, shuffles and the starting player use `crypto`, never `Math.random()`.
+   - **Headers**: `securityHeaders()` sets nosniff, frame denial, referrer and permissions policies, and (production only) a CSP. The CSP needs `'unsafe-eval'` because the standard Alpine build compiles expressions; keep scripts external (`public/theme-init.js`), never inline.
+   - **Deploys**: pin GitHub Actions by commit SHA, install production dependencies with `npm ci` from the lockfile, and set the `SSH_KNOWN_HOSTS` secret/variable so the host key is pinned.
+   - Optional environment variables: `TRUST_PROXY=0` (ignore `X-Forwarded-For` when the app is exposed directly) and `ALLOWED_ORIGINS` (comma-separated extra origins allowed to open the WebSocket).
+
 ---
 
 ## 3. Required Verification Before Committing / Merging

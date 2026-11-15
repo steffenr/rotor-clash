@@ -39,12 +39,12 @@ jobs:
           fi
 
       - name: Checkout main
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
 
       - name: Set up Node.js (version from .nvmrc)
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: '.nvmrc'
 
@@ -103,21 +103,31 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT || vars.SSH_PORT || '22' }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Optional but recommended: the server's host key line(s), from `ssh-keyscan -p <port> <host>`.
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS || vars.SSH_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            # Pinned host key: a different server (man-in-the-middle) is refused.
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_KNOWN_HOSTS is not set: trusting the host key presented on first contact. Pin it (secret or variable SSH_KNOWN_HOSTS) to prevent man-in-the-middle deployments."
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+          SSH_OPTS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/deploy_key"
 
           # Ensure target directories exist without disturbing existing data/leaderboard.json
-          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+          ssh -p "$SSH_PORT" $SSH_OPTS "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH' '$DEPLOY_PATH/tmp' '$DEPLOY_PATH/data'"
 
           # The netcup SSH shell has no Node.js / npm, so production dependencies are installed here
           # (express, ws and dotenv are pure JavaScript) and shipped inside the archive.
+          # `npm ci` with the lockfile installs exactly the versions that were tested above.
           PROD_DIR="$(mktemp -d)"
-          cp package.json "$PROD_DIR/"
-          (cd "$PROD_DIR" && npm install --omit=dev --ignore-scripts --no-audit --no-fund)
+          cp package.json package-lock.json "$PROD_DIR/"
+          (cd "$PROD_DIR" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund)
 
           # Package production release payload into a compressed archive
           tar -czf /tmp/rotor-clash-release.tar.gz \
@@ -131,11 +141,11 @@ jobs:
             -C "$PROD_DIR" node_modules
 
           # Upload archive via SCP (universally supported on all SSH hosts, no remote rsync dependency)
-          scp -P "$SSH_PORT" -i ~/.ssh/deploy_key /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
+          scp -P "$SSH_PORT" $SSH_OPTS /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
 
           # Replace node_modules, extract the release, remove the archive and reload Passenger.
           # data/ and tmp/ are left untouched.
-          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+          ssh -p "$SSH_PORT" $SSH_OPTS "$SSH_USER@$SSH_HOST" \
             "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$DEPLOY_PATH"
