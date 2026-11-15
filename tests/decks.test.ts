@@ -215,3 +215,33 @@ test('plant bar grows with capacity from a tiny machine up to a gigawatt farm', 
   assert.ok(sizes[0] < sizes[3], 'a 12 kW windmill is visibly smaller than a 9 MW farm');
   assert.ok(sizes[4] >= 20, 'the 10 MW point stays where deck 1 had it');
 });
+
+// ---- approximate values are marked, not hidden ----
+test('cards can flag stats as approximate; unknown keys are ignored and the default is none', () => {
+  const base = `---
+id: 9Z
+groupId: 9
+slot: A
+modelName: T
+manufacturer: M
+deploymentType: Onshore
+imageCategory: onshore
+photoKey: fallback_onshore
+isRealPhoto: false
+year: 1950
+sweptAreaM2: 100
+flagshipPlant: P
+flagshipLocation: L
+turbineCountInPlant: 1
+ratedPowerMw: 1
+rotorDiameterM: 10
+hubHeightM: 20
+plantCapacityMw: 1
+sourceUrl: https://example.org
+sourceLabel: Example
+`;
+  const flagged = parseTurbineMarkdown(`${base}approximateStats: hubHeightM, ratedPowerMw, notAStat\n---`, { en: {}, de: {} });
+  assert.deepEqual(flagged.approximateStats, ['hubHeightM', 'ratedPowerMw']);
+  const plain = parseTurbineMarkdown(`${base}---`, { en: {}, de: {} });
+  assert.deepEqual(plain.approximateStats, []);
+});

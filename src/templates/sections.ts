@@ -1504,7 +1504,10 @@ export function renderCardDetailModal(): string {
                     <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-2 sm:p-2.5 flex flex-col justify-between">
                       <div class="text-[10px] font-bold text-c-ink-2 truncate" x-text="t.stats[stat.key].shortLabel"></div>
                       <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-c-ink leading-tight">
-                        <span x-text="formatStatValue(stat.key, inspectedCard.stats[stat.key])"></span>
+                        <span
+                          :title="isApproxStat(inspectedCard, stat.key) ? t.card.approximate : null"
+                          x-text="(isApproxStat(inspectedCard, stat.key) ? '≈ ' : '') + formatStatValue(stat.key, inspectedCard.stats[stat.key])"
+                        ></span>
                         <span class="text-[10px] font-medium text-c-ink-2" x-text="stat.unit"></span>
                       </div>
                       <div

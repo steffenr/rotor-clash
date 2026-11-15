@@ -15,8 +15,9 @@ flagshipLocation: Østerild, Denmark
 turbineCountInPlant: 1
 ratedPowerMw: 21.5
 rotorDiameterM: 276
-hubHeightM: 165
+hubHeightM: 170
 plantCapacityMw: 21.5
 sourceUrl: https://www.powermag.com/siemens-gamesa-installs-worlds-most-powerful-wind-turbine-at-denmark-test-site
 sourceLabel: POWER Magazine · Siemens Gamesa 21.5 MW
+approximateStats: hubHeightM
 ---

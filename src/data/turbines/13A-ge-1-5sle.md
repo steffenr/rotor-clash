@@ -19,4 +19,5 @@ hubHeightM: 80
 plantCapacityMw: 735.5
 sourceUrl: https://www.nexteraenergyresources.com/content/dam/neer/us/en/pdf/portfolio/horsehollow.pdf
 sourceLabel: NextEra Energy · Horse Hollow
+approximateStats: hubHeightM
 ---

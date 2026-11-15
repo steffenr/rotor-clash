@@ -3,6 +3,8 @@ import {
   ImageCategory,
   LocaleCode,
   QuartetGroup,
+  STAT_DEFINITIONS,
+  StatKey,
   TurbineCard,
   TurbineLocaleText,
 } from './gameTypes.ts';
@@ -126,6 +128,10 @@ export function parseTurbineMarkdown(
       plantCapacityMw: Number(kv.plantCapacityMw),
       firstPowerYear: Number(kv.year),
     },
+    approximateStats: (kv.approximateStats ?? '')
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k): k is StatKey => STAT_DEFINITIONS.some((d) => d.key === k)),
     translations: {
       en: enLocale,
       de: deLocale,

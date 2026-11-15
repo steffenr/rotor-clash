@@ -25,7 +25,7 @@ Players battle across **64 real-world wind turbines** in two decks of **8 Quarte
   - 4-step interactive onboarding guide teaching card reading, lower-wins strategy, tie piles, and multiplayer modes.
 - **Zero-Signup Browser Identity (`localStorage`)**:
   - Player ID, callsign, cached stats, sound mute preference, and selected language persist automatically in browser `localStorage` (`rotor_clash_*`).
-- **Photo credits**: every real photograph comes from Wikimedia Commons under a free licence; the author and licence are shown in the card detail and listed in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md).
+- **Photo credits**: every real photograph comes from Wikimedia Commons under a free licence; the author and licence are shown in the card detail and listed in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md). Cards without a free photo show an AI-generated concept image, labelled as such.
   - Global online leaderboard and recent match history persist on the server in `data/leaderboard.json`.
 
 ---
