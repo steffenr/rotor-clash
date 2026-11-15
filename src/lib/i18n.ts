@@ -93,6 +93,7 @@ export interface Translations {
     reasonRoundLimit: string;
     reasonForfeitWin: string;
     reasonForfeitLoss: string;
+    matchAbandoned: string;
     reasonDraw: string;
     finalCards: string;
     quartetsBuilt: string;
