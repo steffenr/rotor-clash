@@ -1,0 +1,46 @@
+name: CI — Lint, Test & Build
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck, Unit Tests & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: TypeScript typecheck
+        run: npm run lint
+
+      - name: Run automated test suite
+        run: npm test
+
+      - name: Build frontend (Vite + Tailwind 4 + Alpine.js)
+        run: npm run build
+
+      - name: Build server bundle (Node / hosting panel CJS)
+        run: npm run build:server

@@ -1,40 +1,17 @@
-import { ClientMatchState, RoundResolution, StatKey } from '../shared/gameTypes.ts';
+import { ClientMatchState, StatKey } from '../shared/gameTypes.ts';
 import {
-  compareStat,
-  computeCompletedQuartets,
-} from '../shared/turbines.ts';
+  advanceBotRound,
+  BotDifficulty,
+  chooseBotStatFromDeck,
+  createLocalBotMatchFromDeck,
+  LocalBotMatch,
+  resolveBotRoundFromDeck,
+  serializeBotMatchFromDeck,
+} from '../shared/botRules.ts';
 import { CARD_BY_ID, TURBINE_DECK } from './turbineDeck.ts';
 
-export type BotDifficulty = 'standard' | 'tactical';
-
-export interface LocalBotMatch {
-  matchId: string;
-  difficulty: BotDifficulty;
-  playerId: string;
-  playerCallsign: string;
-  playerElo: number;
-  botId: string;
-  botCallsign: string;
-  status: 'PLAYING' | 'ROUND_REVEAL' | 'FINISHED';
-  p1Deck: string[];
-  p2Deck: string[];
-  tiePot: string[];
-  turnPlayerId: string;
-  roundNumber: number;
-  maxRounds: number;
-  lastRound: RoundResolution | null;
-  winnerId: string | null;
-  winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
-}
-
-function shuffleIds(ids: string[]): string[] {
-  const arr = [...ids];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+export type { BotDifficulty, LocalBotMatch };
+export { advanceBotRound };
 
 export function createLocalBotMatch(
   playerId: string,
@@ -42,49 +19,11 @@ export function createLocalBotMatch(
   playerElo: number,
   difficulty: BotDifficulty
 ): LocalBotMatch {
-  const shuffled = shuffleIds(TURBINE_DECK.map((c) => c.id));
-  return {
-    matchId: `bot_${Date.now()}`,
-    difficulty,
-    playerId,
-    playerCallsign,
-    playerElo,
-    botId: 'BOT_AEOLUS',
-    botCallsign: difficulty === 'tactical' ? 'Aeolus Tactician (Bot)' : 'Nordic Cadet (Bot)',
-    status: 'PLAYING',
-    p1Deck: shuffled.slice(0, 16),
-    p2Deck: shuffled.slice(16, 32),
-    tiePot: [],
-    turnPlayerId: playerId,
-    roundNumber: 1,
-    maxRounds: 24,
-    lastRound: null,
-    winnerId: null,
-    winReason: null,
-  };
+  return createLocalBotMatchFromDeck(playerId, playerCallsign, playerElo, difficulty, TURBINE_DECK);
 }
 
 export function chooseBotStat(match: LocalBotMatch): StatKey {
-  const topId = match.p2Deck[0];
-  const card = topId ? CARD_BY_ID[topId] : null;
-  if (!card) return 'ratedPowerMw';
-
-  const stats = card.stats;
-  const scored: { key: StatKey; score: number }[] = [
-    { key: 'ratedPowerMw', score: stats.ratedPowerMw / 26 },
-    { key: 'rotorDiameterM', score: stats.rotorDiameterM / 310 },
-    { key: 'hubHeightM', score: stats.hubHeightM / 185 },
-    { key: 'cutInWindMs', score: Math.max(0, (4.2 - stats.cutInWindMs) / 2.2) },
-    { key: 'plantCapacityMw', score: Math.log10(Math.max(10, stats.plantCapacityMw)) / 4.1 },
-  ];
-  scored.sort((a, b) => b.score - a.score);
-
-  if (match.difficulty === 'tactical') {
-    return scored[0].key;
-  }
-  // Standard bot picks among top 2 stats with slight randomness
-  const idx = Math.random() < 0.72 ? 0 : 1;
-  return scored[idx].key;
+  return chooseBotStatFromDeck(match, CARD_BY_ID);
 }
 
 export function resolveBotRound(
@@ -92,149 +31,9 @@ export function resolveBotRound(
   statKey: StatKey,
   chosenByPlayerId: string
 ): LocalBotMatch {
-  if (prev.status !== 'PLAYING') return prev;
-  const p1Deck = [...prev.p1Deck];
-  const p2Deck = [...prev.p2Deck];
-  const tiePot = [...prev.tiePot];
-
-  const p1CardId = p1Deck.shift();
-  const p2CardId = p2Deck.shift();
-  if (!p1CardId || !p2CardId) return prev;
-
-  const p1Card = CARD_BY_ID[p1CardId];
-  const p2Card = CARD_BY_ID[p2CardId];
-  const p1Val = p1Card.stats[statKey];
-  const p2Val = p2Card.stats[statKey];
-  const cmp = compareStat(statKey, p1Val, p2Val);
-
-  const prevQ1 = new Set(computeCompletedQuartets([...p1Deck, p1CardId], CARD_BY_ID));
-  const prevQ2 = new Set(computeCompletedQuartets([...p2Deck, p2CardId], CARD_BY_ID));
-
-  let winnerId: string | null = null;
-  let cardsWonCount = 0;
-  let nextTurnPlayerId = prev.turnPlayerId;
-
-  if (cmp === 0) {
-    tiePot.push(p1CardId, p2CardId);
-  } else if (cmp === 1) {
-    winnerId = prev.playerId;
-    const won = [...tiePot, p1CardId, p2CardId];
-    cardsWonCount = won.length;
-    tiePot.length = 0;
-    p1Deck.push(...won);
-    nextTurnPlayerId = prev.playerId;
-  } else {
-    winnerId = prev.botId;
-    const won = [...tiePot, p2CardId, p1CardId];
-    cardsWonCount = won.length;
-    tiePot.length = 0;
-    p2Deck.push(...won);
-    nextTurnPlayerId = prev.botId;
-  }
-
-  const nextQ1 = computeCompletedQuartets(p1Deck, CARD_BY_ID);
-  const nextQ2 = computeCompletedQuartets(p2Deck, CARD_BY_ID);
-
-  const lastRound: RoundResolution = {
-    roundNumber: prev.roundNumber,
-    chosenStat: statKey,
-    chosenByPlayerId,
-    p1Card,
-    p2Card,
-    p1Value: p1Val,
-    p2Value: p2Val,
-    winnerId,
-    tiePotSizeAfter: tiePot.length,
-    cardsWonCount,
-    newlyCompletedQuartetsP1: nextQ1.filter((q) => !prevQ1.has(q)),
-    newlyCompletedQuartetsP2: nextQ2.filter((q) => !prevQ2.has(q)),
-  };
-
-  if (p1Deck.length === 0 || p2Deck.length === 0) {
-    const finalWinner = p1Deck.length > 0 ? prev.playerId : p2Deck.length > 0 ? prev.botId : null;
-    return {
-      ...prev,
-      p1Deck,
-      p2Deck,
-      tiePot,
-      lastRound,
-      turnPlayerId: nextTurnPlayerId,
-      status: 'FINISHED',
-      winnerId: finalWinner,
-      winReason: finalWinner ? 'ALL_CARDS' : 'DRAW',
-    };
-  }
-
-  if (prev.roundNumber >= prev.maxRounds) {
-    let finalWinner: string | null = null;
-    if (p1Deck.length > p2Deck.length) finalWinner = prev.playerId;
-    else if (p2Deck.length > p1Deck.length) finalWinner = prev.botId;
-    else if (nextQ1.length !== nextQ2.length) {
-      finalWinner = nextQ1.length > nextQ2.length ? prev.playerId : prev.botId;
-    }
-    return {
-      ...prev,
-      p1Deck,
-      p2Deck,
-      tiePot,
-      lastRound,
-      turnPlayerId: nextTurnPlayerId,
-      status: 'FINISHED',
-      winnerId: finalWinner,
-      winReason: finalWinner ? 'ROUND_LIMIT' : 'DRAW',
-    };
-  }
-
-  return {
-    ...prev,
-    p1Deck,
-    p2Deck,
-    tiePot,
-    lastRound,
-    turnPlayerId: nextTurnPlayerId,
-    status: 'ROUND_REVEAL',
-  };
-}
-
-export function advanceBotRound(prev: LocalBotMatch): LocalBotMatch {
-  if (prev.status !== 'ROUND_REVEAL') return prev;
-  return {
-    ...prev,
-    roundNumber: prev.roundNumber + 1,
-    status: 'PLAYING',
-  };
+  return resolveBotRoundFromDeck(prev, statKey, chosenByPlayerId, CARD_BY_ID);
 }
 
 export function serializeBotMatch(match: LocalBotMatch): ClientMatchState {
-  return {
-    matchId: match.matchId,
-    mode: 'bot',
-    status: match.status,
-    roundNumber: match.roundNumber,
-    maxRounds: match.maxRounds,
-    tiePotCount: match.tiePot.length,
-    turnPlayerId: match.turnPlayerId,
-    turnDeadlineAt: null,
-    you: {
-      id: match.playerId,
-      callsign: match.playerCallsign,
-      elo: match.playerElo,
-      cardCount: match.p1Deck.length,
-      topCard: match.p1Deck[0] ? CARD_BY_ID[match.p1Deck[0]] : null,
-      ownedCardIds: [...match.p1Deck],
-      completedQuartets: computeCompletedQuartets(match.p1Deck, CARD_BY_ID),
-    },
-    opponent: {
-      id: match.botId,
-      callsign: match.botCallsign,
-      elo: match.difficulty === 'tactical' ? 1340 : 1140,
-      cardCount: match.p2Deck.length,
-      completedQuartets: computeCompletedQuartets(match.p2Deck, CARD_BY_ID),
-      connected: true,
-    },
-    lastRound: match.lastRound,
-    winnerId: match.winnerId,
-    winReason: match.winReason,
-    eloChange: null,
-  };
+  return serializeBotMatchFromDeck(match, CARD_BY_ID);
 }

@@ -3,7 +3,6 @@ import express from 'express';
 import http from 'node:http';
 import path from 'node:path';
 import { WebSocket, WebSocketServer } from 'ws';
-import { createServer as createViteServer } from 'vite';
 import { StatKey } from './src/shared/gameTypes.ts';
 import {
   SERVER_QUARTET_GROUPS,
@@ -12,7 +11,7 @@ import {
 import { MatchEngine } from './src/server/matchEngine.ts';
 import { leaderboardStore } from './src/server/store.ts';
 
-const PORT = Number(process.env.PORT || 3000);
+const RAW_PORT = process.env.PORT || '3000';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 async function bootstrap() {
@@ -235,6 +234,7 @@ async function bootstrap() {
   });
 
   if (!IS_PROD) {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -248,9 +248,17 @@ async function bootstrap() {
     });
   }
 
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Rotor Clash server listening on http://0.0.0.0:${PORT}`);
-  });
+  if (/^\d+$/.test(RAW_PORT)) {
+    const portNum = Number(RAW_PORT);
+    server.listen(portNum, '0.0.0.0', () => {
+      console.log(`Rotor Clash server listening on http://0.0.0.0:${portNum}`);
+    });
+  } else {
+    // Phusion Passenger (e.g. the target host hosting panel) passes a Unix socket/pipe path in PORT
+    server.listen(RAW_PORT, () => {
+      console.log(`Rotor Clash server listening on socket ${RAW_PORT}`);
+    });
+  }
 }
 
 bootstrap();
