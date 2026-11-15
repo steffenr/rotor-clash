@@ -7,8 +7,8 @@
  * AI service while the project was built in Google AI Studio. tests/projectImages.test.ts checks that evidence
  * and fails for an undocumented or modified image. The game labels them as AI-generated concept images.
  *
- * Rights in generated images follow the terms of the service that produced them; the repository owner is
- * responsible for confirming that those terms allow this use.
+ * The project owner confirmed these images may be used, provided the game's description discloses that they are
+ * AI-generated (README, page description and the card detail do).
  */
 export interface ProjectImage {
   file: string;
