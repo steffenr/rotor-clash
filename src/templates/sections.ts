@@ -615,21 +615,24 @@ export function renderArena(): string {
           <!-- Finished Screen -->
           <div
             x-show="activeMatch.status === 'FINISHED'"
-            class="rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6 anim-pop-in"
+            :class="'relative overflow-hidden rounded-2xl bg-c-paper-hi ink-panel p-6 sm:p-8 max-w-2xl mx-auto text-center space-y-6 anim-pop-in ' + (activeMatch.winnerId && activeMatch.winnerId === activeMatch.you.id ? 'win-panel' : '')"
           >
-            <!-- Confetti only when you won the whole game -->
-            <div x-show="activeMatch.winnerId && activeMatch.winnerId === activeMatch.you.id" class="confetti" aria-hidden="true">
-              ${Array.from({ length: 24 }, (_, i) => `<span class="confetti-piece" style="--i:${i}"></span>`).join('')}
-            </div>
+            <!-- Victory sunburst (only visible on a win, see .win-panel in index.css) -->
+            <div class="win-rays" aria-hidden="true"></div>
 
-            <div
-              :class="'inline-flex items-center justify-center w-16 h-16 rounded-2xl border-2 border-c-ink mx-auto shadow-[0_3px_0_var(--c-line)] ' + (activeMatch.winnerId === activeMatch.you.id ? 'bg-c-cream-amber text-c-orange anim-trophy' : 'bg-c-paper text-c-ink-3 anim-droop')"
+            <button
+              type="button"
+              @click="activeMatch.winnerId === activeMatch.you.id && celebrate()"
+              :aria-label="activeMatch.winnerId === activeMatch.you.id ? 'Celebrate again' : null"
+              :tabindex="activeMatch.winnerId === activeMatch.you.id ? 0 : -1"
+              :class="'relative trophy-badge inline-flex items-center justify-center rounded-2xl border-2 border-c-ink mx-auto shadow-[0_3px_0_var(--c-line)] ' + (activeMatch.winnerId === activeMatch.you.id ? 'w-20 h-20 bg-c-cream-amber text-c-orange anim-trophy trophy-shine' : 'w-16 h-16 bg-c-paper text-c-ink-3 anim-droop pointer-events-none')"
             >
+              <span class="win-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
               ${iconSvg('trophy', 'w-8 h-8')}
-            </div>
+            </button>
 
-            <div>
-              <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-c-ink" x-text="finishedHeadline()"></h2>
+            <div class="relative">
+              <h2 :class="'font-display text-2xl sm:text-3xl font-extrabold text-c-ink ' + (activeMatch.winnerId && activeMatch.winnerId === activeMatch.you.id ? 'win-headline' : '')" x-text="finishedHeadline()"></h2>
               <p class="mt-1.5 text-sm text-c-ink-2" x-text="finishedReason()"></p>
             </div>
 
