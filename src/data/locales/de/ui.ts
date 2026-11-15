@@ -85,9 +85,9 @@ export const DE_UI: Translations = {
       description: 'Wie hoch die Mitte des Rotors über dem Boden oder dem Meer liegt.',
     },
     cutInWindMs: {
-      label: 'Startwind',
-      shortLabel: 'Startwind',
-      description: 'Ab dieser Windgeschwindigkeit beginnen sich die Blätter zu drehen. Der niedrigere Wert gewinnt!',
+      label: 'Anlaufwind',
+      shortLabel: 'Anlaufwind',
+      description: 'Die Anlaufwindgeschwindigkeit: Ab diesem Wind laufen die Blätter an. Der niedrigere Wert gewinnt!',
     },
     plantCapacityMw: {
       label: 'Windpark',
@@ -182,7 +182,7 @@ export const DE_UI: Translations = {
     step1Desc:
       'Jede Karte zeigt eine echte Windturbine, ihren Quartett-Code (z. B. 2A), einen Höhenvergleich mit einem 45 m hohen Leuchtturm und 5 Vergleichswerte.',
     step1TipCutIn:
-      'Tipp: Kleine Anlagen an Land laufen schon bei 2,0–2,5 m/s an. Beim Startwind schlagen sie damit große Anlagen auf dem Meer, die mehr Wind brauchen.',
+      'Tipp: Kleine Anlagen an Land laufen schon bei 2,0–2,5 m/s an. Bei der Anlaufwindgeschwindigkeit schlagen sie damit große Anlagen auf dem Meer, die mehr Wind brauchen.',
     step1TipHub:
       'Wusstest du schon? Moderne Turbinen an Land haben 175–179 m Nabenhöhe. Das ist fast viermal so hoch wie ein Leuchtturm.',
     step1TipDefault: 'Tippe auch auf die anderen Zeilen der Vestas V236 und sieh dir alle 5 Werte an.',
