@@ -198,11 +198,11 @@
 - drivetrain: Rad mit 144 Blättern, riemengetriebene Dynamomaschine
 - engineeringNote: Ein Holzrad mit 144 Blättern auf einem 18 m hohen Turm lud Batterien, die etwa 20 Jahre lang eine Villa in Cleveland beleuchteten.
 
-## 9B — Smith-Putnam Turbine
+## 9B — NASA Mod-0
 - id: 9B
 - country: USA
-- drivetrain: Zweiblattrotor mit Blattverstellung
-- engineeringNote: Die erste Anlage im Megawattbereich an einem US-Netz. Die Angaben schwanken zwischen 1,0 und 1,5 MW; ein Blattbruch beendete den Betrieb.
+- drivetrain: Zweiblatt-Leeläufer mit Blattverstellung
+- engineeringNote: Die Versuchsanlage von 1975 für das US-Windprogramm: ein 38-m-Rotor (125 ft) auf einem 30-m-Turm (100 ft), gebaut, um Berechnungsmethoden für die größeren Mod-Maschinen zu prüfen.
 
 ## 9C — Gedser Wind Turbine
 - id: 9C
@@ -282,11 +282,11 @@
 - drivetrain: Pitch-geregelt, mit Getriebe
 - engineeringNote: 140 Anlagen bilden einen der größten Windparks der Südhalbkugel: 420 MW.
 
-## 12D — Suzlon S144 3 MW
+## 12D — Siemens SWT-2.3-101
 - id: 12D
-- country: Indien
-- drivetrain: Doppelt gespeister Generator, Carbonfaser-Blätter
-- engineeringNote: Der Prototyp steht auf einem 160 m hohen Gitter-Rohr-Hybridturm, hoch genug für Indiens windschwache Standorte.
+- country: Südafrika
+- drivetrain: Getriebe mit Asynchrongenerator, Dreiblatt-Luvläufer
+- engineeringNote: Sechzig dieser Anlagen stehen in Jeffreys Bay in der Ostkap-Provinz; alle gingen bis Mai 2014 in Betrieb, zusammen 138 MW.
 
 ## 13A — GE 1.5sle
 - id: 13A
@@ -335,17 +335,17 @@
 - drivetrain: Pitch-geregelt, mit Getriebe
 - engineeringNote: Drei V47- und zwei V52-Anlagen auf den Shetlands erreichen einen gemeldeten Auslastungsgrad von rund 57 %.
 
-## 15A — SG DD-276 Prototype
+## 15A — Enercon E-112
 - id: 15A
-- country: Dänemark
-- drivetrain: Direktantrieb
-- engineeringNote: 135 m lange Blätter an einem 276-m-Rotor: die stärkste Anlage Europas, 2025 errichtet.
+- country: Deutschland
+- drivetrain: Direktantrieb, Ringgenerator
+- engineeringNote: 2002 bei Magdeburg errichtet als größte Windkraftanlage der Welt: 4,5 MW auf einem 124 m hohen Turm.
 
-## 15B — GE Haliade-X 12 MW Prototype
+## 15B — Vestas V164-8.0 MW Prototype
 - id: 15B
-- country: Niederlande
-- drivetrain: Permanentmagnet-Direktantrieb
-- engineeringNote: Erzeugte im November 2019 seine erste Kilowattstunde als stärkste Anlage der Welt, mit 107 m langen Blättern.
+- country: Dänemark
+- drivetrain: Mittelschnelles Getriebe, Permanentmagnetgenerator
+- engineeringNote: Lieferte am 28. Januar 2014 erstmals Strom, als stärkste Anlage der Welt, mit 80 m langen Blättern auf einem 140 m hohen Turm.
 
 ## 15C — CRRC Qihang 20 MW
 - id: 15C
@@ -353,11 +353,11 @@
 - drivetrain: Prototyp der Klasse für schwimmende Anlagen
 - engineeringNote: Im Januar 2025 auf der Dongying-Testbasis errichtet, mit 260-m-Rotor auf 151 m Nabenhöhe.
 
-## 15D — Dongfang 17 MW Floating
+## 15D — Enercon E-126 Prototype
 - id: 15D
-- country: China
-- drivetrain: Schwimmende Direktantriebsanlage
-- engineeringNote: Eine schwimmende Direktantriebsanlage, im Juli 2025 vorgestellt, ausgelegt für 24 m hohe Wellen und Supertaifune.
+- country: Deutschland
+- drivetrain: Direktantrieb, Ringgenerator
+- engineeringNote: Der Prototyp von 2007 startete mit 6 MW und 126 m Rotor; Enercon hob die Baureihe später auf 7,58 MW an.
 
 ## 16A — Bonus 2.0 MW (Middelgrunden)
 - id: 16A
