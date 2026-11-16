@@ -74,6 +74,19 @@ const CATEGORY_THEME: Record<
   windbase: { border: '#F15A24', stampBg: '#F15A24', stampText: '#FFFDF7', bar: '#F15A24' },
 };
 
+const RELOADED_FOR_KEY = 'rotor_clash_reloaded_for';
+
+/** Remembers (per browser tab session) that we already reloaded for this server version. `true` = first time. */
+function markReloadedFor(version: string): boolean {
+  try {
+    if (sessionStorage.getItem(RELOADED_FOR_KEY) === version) return false;
+    sessionStorage.setItem(RELOADED_FOR_KEY, version);
+    return true;
+  } catch {
+    return false; // storage unavailable: show the banner instead of risking a reload loop
+  }
+}
+
 export function createRotorClashApp() {
   let identity = getOrCreateIdentity();
   /** The server may refuse a saved id/secret pair once; a fresh identity is created then (never in a loop). */
@@ -85,6 +98,7 @@ export function createRotorClashApp() {
   let countdownInterval: ReturnType<typeof setInterval> | null = null;
   let botTurnTimer: ReturnType<typeof setTimeout> | null = null;
   let toastTimer: ReturnType<typeof setTimeout> | null = null;
+  let visibilityHandler: (() => void) | null = null;
   let backoffMs = 800;
   let pendingRoomInvite: string | null =
     typeof window !== 'undefined'
@@ -112,6 +126,8 @@ export function createRotorClashApp() {
     joinCodeInput: '',
     copiedCode: false,
     toastError: null as string | null,
+    /** The server runs a newer version than this page: a reload fetches the new bundle. */
+    updateAvailable: false,
 
     // Leaderboard
     leaderboard: [] as PlayerProfile[],
@@ -174,6 +190,14 @@ export function createRotorClashApp() {
 
       this.connectWebSocket();
 
+      // A home-screen app can sit in the background for days and never reload by itself:
+      // look for a newer version every time it comes back to the foreground.
+      visibilityHandler = () => {
+        if (!document.hidden) void this.checkForUpdate();
+      };
+      document.addEventListener('visibilitychange', visibilityHandler);
+      window.addEventListener('online', visibilityHandler);
+
       countdownInterval = setInterval(() => {
         if (!this.activeMatch || !this.activeMatch.turnDeadlineAt || this.activeMatch.status !== 'PLAYING') {
           this.secondsLeft = null;
@@ -191,7 +215,39 @@ export function createRotorClashApp() {
       if (countdownInterval) clearInterval(countdownInterval);
       if (botTurnTimer) clearTimeout(botTurnTimer);
       if (toastTimer) clearTimeout(toastTimer);
+      if (visibilityHandler) {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+        window.removeEventListener('online', visibilityHandler);
+      }
       ws?.close();
+    },
+
+    /** Asks the server for its version (never from the HTTP cache) and reacts if it differs from this bundle. */
+    async checkForUpdate() {
+      try {
+        const res = await fetch('/api/health', { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = (await res.json()) as { version?: unknown };
+        if (typeof data.version === 'string') this.handleServerVersion(data.version);
+      } catch {
+        // offline or server restarting: the next resume or reconnect checks again
+      }
+    },
+
+    handleServerVersion(serverVersion: string) {
+      if (serverVersion === 'unknown' || serverVersion === __APP_VERSION__) {
+        this.updateAvailable = false;
+        return;
+      }
+      this.updateAvailable = true;
+      // Reload at once only when nothing is in progress, and at most once per server version,
+      // so a stale cache can never cause a reload loop. Otherwise the banner offers the reload.
+      const idle = !this.activeMatch && !this.inQueue && !this.hostedRoom;
+      if (idle && markReloadedFor(serverVersion)) window.location.reload();
+    },
+
+    reloadForUpdate() {
+      window.location.reload();
     },
 
     connectWebSocket() {
@@ -221,6 +277,9 @@ export function createRotorClashApp() {
           const msg = JSON.parse(evt.data) as { event: string; payload: any };
           switch (msg.event) {
             case 'auth:ack':
+              if (typeof msg.payload?.serverVersion === 'string') {
+                this.handleServerVersion(msg.payload.serverVersion);
+              }
               if (msg.payload?.profile) {
                 const srvProfile = msg.payload.profile as PlayerProfile;
                 this.profile = srvProfile;

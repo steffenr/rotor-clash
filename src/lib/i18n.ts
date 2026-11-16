@@ -11,6 +11,8 @@ export interface Translations {
     tutorial: string;
     quickMatch: string;
     resumeMatch: string;
+    updateAvailable: string;
+    updateReload: string;
     searching: string;
   };
   lobby: {
