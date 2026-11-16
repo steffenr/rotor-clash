@@ -451,7 +451,7 @@ export function renderLobby(): string {
         </div>
 
         <!-- Right: Coastal Sky Showcase Preview -->
-        <div class="lg:col-span-5 rounded-2xl bg-gradient-to-b from-c-sky to-c-paper ink-panel p-6 flex flex-col items-center justify-between space-y-4">
+        <div class="lg:col-span-5 rounded-2xl bg-gradient-to-b from-c-sky to-c-paper ink-panel p-6 flex flex-col items-center justify-start space-y-4">
           <div class="w-full flex flex-wrap items-center justify-between gap-2">
             <span class="text-xs font-extrabold text-c-ink" x-text="t.lobby.previewLabel"></span>
             <div class="flex items-center gap-1 bg-c-paper-hi p-1 rounded-xl border-2 border-c-ink">
@@ -466,7 +466,9 @@ export function renderLobby(): string {
             </div>
           </div>
 
-          ${renderTurbineCard('previewCard()', { playfulHover: true })}
+          <div class="w-full flex justify-center pt-4 sm:pt-8">
+            ${renderTurbineCard('previewCard()', { playfulHover: true })}
+          </div>
         </div>
       </section>
 
