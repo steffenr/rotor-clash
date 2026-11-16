@@ -13,6 +13,7 @@ import {
   TurbineCard,
 } from '../shared/gameTypes';
 import { compareStat } from '../shared/turbines';
+import { lighthouseDiagram } from '../shared/lighthouse';
 import { CARD_BY_ID, GROUP_BY_ID, QUARTET_GROUPS, TURBINE_DECK } from '../lib/turbineDeck';
 import { resolveCardPhoto } from '../lib/cardImages';
 import { getPhotoCredit, type PhotoCredit } from '../shared/photoCredits';
@@ -1035,14 +1036,21 @@ export function createRotorClashApp() {
       return CATEGORY_THEME[card?.imageCategory ?? 'offshore'];
     },
 
+    /** Turbine and lighthouse share one scale (see shared/lighthouse.ts), so their heights are in true proportion. */
+    cardDiagram(card: TurbineCard | null) {
+      return lighthouseDiagram(card?.stats.hubHeightM ?? 100, card?.stats.rotorDiameterM ?? 100);
+    },
+
     cardHubY(card: TurbineCard | null): number {
-      if (!card) return 54;
-      return 76 - Math.min(44, Math.max(18, (card.stats.hubHeightM / 190) * 42));
+      return this.cardDiagram(card).hubY;
     },
 
     cardBladeLen(card: TurbineCard | null): number {
-      if (!card) return 18;
-      return Math.min(26, Math.max(10, (card.stats.rotorDiameterM / 310) * 25));
+      return this.cardDiagram(card).bladeLen;
+    },
+
+    cardLighthouseScale(card: TurbineCard | null): number {
+      return this.cardDiagram(card).lighthouseScale;
     },
 
     statDef(key: StatKey): StatDefinition {

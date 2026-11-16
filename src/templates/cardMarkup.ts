@@ -234,12 +234,12 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             </g>
             <circle cx="27" :cy="cardHubY(${cardExpr})" r="2.6" fill="#FAF4E4" stroke="#173240" stroke-width="1.4" />
 
-            <!-- 45m Striped Beacon Orange & Cream Coastal Lighthouse -->
-            <g>
-              <polygon points="53,74 62,74 60,57 55,57" fill="#F15A24" stroke="#173240" stroke-width="1.1" />
+            <!-- 45m Striped Beacon Orange & Cream Coastal Lighthouse: same scale as the turbine, standing on the ground line -->
+            <g :transform="'translate(57.5 76) scale(' + cardLighthouseScale(${cardExpr}) + ') translate(-57.5 -74)'">
+              <polygon points="53,74 62,74 60,57 55,57" fill="#F15A24" stroke="#173240" stroke-width="1.1" vector-effect="non-scaling-stroke" />
               <rect x="55.3" y="61" width="4.4" height="3.2" fill="#FAF4E4" />
               <rect x="54.6" y="67" width="5.8" height="3.2" fill="#FAF4E4" />
-              <rect x="55.8" y="54" width="3.4" height="3" fill="#FAF4E4" stroke="#173240" stroke-width="0.9" />
+              <rect x="55.8" y="54" width="3.4" height="3" fill="#FAF4E4" stroke="#173240" stroke-width="0.9" vector-effect="non-scaling-stroke" />
               <polygon points="54.8,54 60.2,54 57.5,51" fill="#173240" />
             </g>
           </svg>
