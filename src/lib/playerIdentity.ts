@@ -33,34 +33,21 @@ function generateId(): string {
   return `p_${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
 }
 
-const SECRET_KEY = 'rotor_clash_secret_v1';
-
-/** 32 random bytes as hex: the credential that proves this browser owns its player id. */
-function generateSecret(): string {
-  const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-/** The player id is public (it shows up in rankings); this secret never leaves the browser except to log in. */
-export function getOrCreateSecret(): string {
+/**
+ * Versions before device keys (see `deviceKey.ts`) stored a login secret as text. It is useless now,
+ * so any leftover copy is deleted rather than left lying in storage.
+ */
+function removeStaleSecret() {
   try {
-    const saved = localStorage.getItem(SECRET_KEY);
-    if (saved && /^[a-f0-9]{64}$/.test(saved)) return saved;
-  } catch {
-    // storage unavailable: fall through to a session-only secret
-  }
-  const secret = generateSecret();
-  try {
-    localStorage.setItem(SECRET_KEY, secret);
+    localStorage.removeItem('rotor_clash_secret_v1');
   } catch {
     // ignore storage errors
   }
-  return secret;
 }
 
 /**
- * Starts over with a brand-new player id and secret, e.g. after the server refused the old pair.
+ * Starts over with a brand-new player id, e.g. after the server refused the old id/key pair
+ * (the caller also calls `resetDeviceKey()`).
  * The saved callsign is kept; ranking progress belongs to the old id and stays with it.
  */
 export function resetIdentity(): { playerId: string; callsign: string } {
@@ -69,7 +56,7 @@ export function resetIdentity(): { playerId: string; callsign: string } {
     localStorage.removeItem(LEGACY_KEYS.playerId);
     localStorage.removeItem(PROFILE_KEY);
     localStorage.removeItem(LEGACY_KEYS.profile);
-    localStorage.removeItem(SECRET_KEY);
+    removeStaleSecret();
   } catch {
     // ignore storage errors
   }
@@ -77,6 +64,7 @@ export function resetIdentity(): { playerId: string; callsign: string } {
 }
 
 export function getOrCreateIdentity(): { playerId: string; callsign: string } {
+  removeStaleSecret();
   let playerId = readWithMigration(PLAYER_ID_KEY, LEGACY_KEYS.playerId);
   if (!playerId) {
     playerId = generateId();

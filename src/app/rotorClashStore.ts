@@ -20,7 +20,6 @@ import { resolveCardPhoto } from '../lib/cardImages';
 import { getPhotoCredit, type PhotoCredit } from '../shared/photoCredits';
 import {
   getOrCreateIdentity,
-  getOrCreateSecret,
   getSavedCallsign,
   loadCachedProfile,
   loadSavedLanguage,
@@ -29,6 +28,7 @@ import {
   saveCallsignLocally,
   saveLanguage,
 } from '../lib/playerIdentity';
+import { getPublicKey, resetDeviceKey, signChallenge } from '../lib/deviceKey';
 import {
   advanceBotRound,
   BotDifficulty,
@@ -261,22 +261,40 @@ export function createRotorClashApp() {
         if (disposed) return;
         this.wsConnected = true;
         backoffMs = 800;
-        socket.send(
-          JSON.stringify({
-            event: 'auth:hello',
-            payload: {
-              playerId: identity.playerId,
-              secret: getOrCreateSecret(),
-              callsign: getSavedCallsign(identity.callsign),
-            },
+        // Login is challenge-response with the device key: hello (public key) -> challenge -> proof.
+        void getPublicKey()
+          .then((publicKey) => {
+            if (socket.readyState !== WebSocket.OPEN) return;
+            socket.send(
+              JSON.stringify({
+                event: 'auth:hello',
+                payload: {
+                  playerId: identity.playerId,
+                  publicKey,
+                  callsign: getSavedCallsign(identity.callsign),
+                },
+              })
+            );
           })
-        );
+          .catch(() => this.showToast(this.t.lobby.authFailed));
       };
 
       socket.onmessage = (evt) => {
         try {
           const msg = JSON.parse(evt.data) as { event: string; payload: any };
           switch (msg.event) {
+            case 'auth:challenge':
+              if (typeof msg.payload?.nonce === 'string') {
+                const nonce = msg.payload.nonce;
+                void signChallenge(identity.playerId, nonce)
+                  .then((signature) => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                      socket.send(JSON.stringify({ event: 'auth:proof', payload: { signature } }));
+                    }
+                  })
+                  .catch(() => this.showToast(this.t.lobby.authFailed));
+              }
+              break;
             case 'auth:ack':
               if (typeof msg.payload?.serverVersion === 'string') {
                 this.handleServerVersion(msg.payload.serverVersion);
@@ -380,7 +398,8 @@ export function createRotorClashApp() {
       this.profile = loadCachedProfile(identity.playerId, identity.callsign) as PlayerProfile;
       this.callsignDraft = identity.callsign;
       this.showToast(this.t.lobby.authReset);
-      ws?.close(); // the reconnect logic logs in again with the new identity
+      // a new id gets a new device key; then the reconnect logic logs in again
+      void resetDeviceKey().finally(() => ws?.close());
     },
 
     setRoomListed(listed: boolean) {
