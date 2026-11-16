@@ -2,6 +2,14 @@
   "name": "rotor-clash",
   "private": true,
   "version": "0.2.12",
+  "license": "AGPL-3.0-only",
+  "author": "Steffen Rühlmann",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steffenr/rotor-clash.git"
+  },
+  "homepage": "https://github.com/steffenr/rotor-clash#readme",
+  "bugs": "https://github.com/steffenr/rotor-clash/issues",
   "type": "module",
   "engines": {
     "node": ">=26.0.0"
