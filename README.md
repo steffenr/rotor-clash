@@ -1,3 +1,7 @@
+<h1 align="center">
+<img width="192" height="192" alt="icon-192" src="https://github.com/user-attachments/assets/78b3f0c8-5520-4f4b-986d-ccfc384d9ba0" />
+</h1>
+
 # Rotor Clash
 
 **Rotor Clash** is a real-time 2-player multiplayer and solo-bot wind turbine Quartet card game with an **Illustrated Field Guide** visual theme and full **English (`EN`) / German (`DE`)** localization.
