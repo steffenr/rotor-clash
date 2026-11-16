@@ -64,7 +64,7 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
    - 4/12 columns: Rounded-top **Coastal Sky Arch Window** (`rounded-t-[2.25rem]`) with sky gradient (`#2A86A8` → `#B4DFEF` → `#EDF6F9`), green coastal headland, cream ink-stroked turbine, and Beacon Orange striped **45 m coastal lighthouse** (`hubHeightM / 45m`).
 3. **5 Tactile Stat Rows (`min-h-[44px]`)**:
    - Icon badge, localized kid-friendly label (*Power*, *Rotor Size*, *Tower Height*, *Wind Farm* and a fifth stat that depends on the deck), tabular metric + unit, and proportional strength bar.
-   - The fifth stat belongs to the match's deck mode: *Modern Giants* compares *Start Wind* (`cutInWindMs`, German *Anlaufwind*); *Records & Firsts*, *Mixed* and *Grand Tour* compare *First Power* (`firstPowerYear`, German *Am Netz seit*), where the oldest machine wins.
+   - The fifth stat belongs to the match's deck mode: *Modern Giants* compares *Start Wind* (`cutInWindMs`, German *Anlaufwind*); *Records & Firsts*, *Mixed* and *Grand Tour* compare *Switched On* (`firstPowerYear`, German *Eingeschaltet*, the year the machine was first switched on and made electricity), where the oldest machine wins.
    - Both lower-wins stats display an explicit Beacon Orange `Min` / `Kleiner` indicator so younger players immediately spot that the lower value wins. A value flagged as approximate (`approximateStats` in the card file) is shown with a `≈` and a tooltip.
 4. **Field Guide Footer**: Swept area (`m²`), rule reminder, and verified external technical source link.
 
@@ -93,7 +93,7 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 - Creating a friend room shows a mint panel with the 6-character code, a *Copy Invite Link* button and a **Show in open rooms** checkbox. Rooms are private by default; ticking the box lists the room under *Open rooms* for everyone, unticking hides it again.
 
 ### How to Play (Tutorial)
-- Step 1 shows an interactive example card. A **Modern Giants / Records & Firsts** switch above it swaps between the Vestas V236 (Start Wind) and the Gedser Wind Turbine (First Power), and the explanation tip follows the stat the learner taps.
+- Step 1 shows an interactive example card. A **Modern Giants / Records & Firsts** switch above it swaps between the Vestas V236 (Start Wind) and the Gedser Wind Turbine (Switched On), and the explanation tip follows the stat the learner taps.
 
 ---
 
