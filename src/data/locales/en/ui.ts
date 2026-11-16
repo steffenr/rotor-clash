@@ -10,6 +10,7 @@ export const EN_UI: Translations = {
     resumeMatch: 'Back to Game',
     updateAvailable: 'A new version of Rotor Clash is available.',
     updateReload: 'Update now',
+    quitGame: 'Quit Game',
     searching: 'Searching...',
   },
   lobby: {
@@ -128,8 +129,9 @@ export const EN_UI: Translations = {
     you: 'You',
     round: 'Round',
     tiePot: 'Tie Pile',
-    leave: 'Quit',
-    confirmForfeit: 'Confirm Quit',
+    quitTitle: 'Quit this game?',
+    quitDescBot: 'Your game against the robot ends here and is not saved.',
+    quitDescPvp: 'Your opponent is told that you left. The match does not count: nobody gets points, wins or losses.',
     cancel: 'Keep Playing',
     disconnectedMsg: 'lost connection. Holding your game for 25 seconds...',
     matchDrawn: 'It’s a Tie!',
@@ -170,8 +172,6 @@ export const EN_UI: Translations = {
     quartetStripLabel: 'Quartet Sets',
     showMatrix: 'Open Album Grid',
     hideMatrix: 'Hide Grid',
-    fullscreen: 'Full Screen',
-    exitFullscreen: 'Exit Full Screen',
   },
   compendium: {
     title: 'Wind Turbine Field Guide Album',

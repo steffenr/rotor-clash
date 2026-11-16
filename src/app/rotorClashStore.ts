@@ -14,6 +14,7 @@ import {
 } from '../shared/gameTypes';
 import { compareStat } from '../shared/turbines';
 import { lighthouseDiagram } from '../shared/lighthouse';
+import { headerAction as sharedHeaderAction, type HeaderAction } from '../shared/headerAction';
 import { CARD_BY_ID, GROUP_BY_ID, QUARTET_GROUPS, TURBINE_DECK } from '../lib/turbineDeck';
 import { resolveCardPhoto } from '../lib/cardImages';
 import { getPhotoCredit, type PhotoCredit } from '../shared/photoCredits';
@@ -141,9 +142,8 @@ export function createRotorClashApp() {
     botDifficulty: 'tactical' as BotDifficulty,
     previewCardId: '2C',
     secondsLeft: null as number | null,
-    confirmForfeit: false,
+    showQuitDialog: false,
     showMatrixDrawer: false,
-    isTheaterFull: false,
     rememberedTopCardId: null as string | null,
 
     // Compendium & Tutorial State
@@ -408,7 +408,7 @@ export function createRotorClashApp() {
       this.activeMatch = this.pvpMatch ?? (this.botMatch ? serializeBotMatch(this.botMatch) : null);
       if (!this.activeMatch) {
         this.secondsLeft = null;
-        this.confirmForfeit = false;
+        this.showQuitDialog = false;
         return;
       }
 
@@ -521,6 +521,52 @@ export function createRotorClashApp() {
       const next = soundFx.toggleMute();
       this.muted = next;
       if (!next) soundFx.playClick();
+    },
+
+    /**
+     * What the header's main button does right now:
+     * - 'quit':      a game is running and the arena is on screen -> Quit Game (asks first)
+     * - 'back':      a game is running and another page is open -> Back to Game
+     * - 'searching': waiting in the matchmaking queue
+     * - 'quick':     no game (a finished game's result counts as no game) -> Quick Match
+     */
+    headerAction(): HeaderAction {
+      return sharedHeaderAction(this.activeMatch, this.activeTab, this.inQueue);
+    },
+
+    headerLabel(): string {
+      switch (this.headerAction()) {
+        case 'quit':
+          return this.t.nav.quitGame;
+        case 'back':
+          return this.t.nav.resumeMatch;
+        case 'searching':
+          return this.t.nav.searching;
+        default:
+          return this.t.nav.quickMatch;
+      }
+    },
+
+    handleHeaderAction() {
+      const action = this.headerAction();
+      if (action === 'quit') {
+        soundFx.playClick();
+        this.showQuitDialog = true;
+        return;
+      }
+      if (action === 'back') {
+        soundFx.playClick();
+        this.activeTab = 'arena';
+        return;
+      }
+      // A finished game's result is dismissed first, then the search starts.
+      if (action === 'quick' && this.activeMatch) this.returnToLobby();
+      this.handleHeaderQuickMatch();
+    },
+
+    confirmQuit() {
+      this.showQuitDialog = false;
+      this.forfeitMatch();
     },
 
     handleHeaderQuickMatch() {
@@ -705,19 +751,6 @@ export function createRotorClashApp() {
       }
       this.botMatch = null;
       this.syncActiveMatch();
-    },
-
-    toggleTheaterFull() {
-      soundFx.playClick();
-      if (!this.isTheaterFull) {
-        this.isTheaterFull = true;
-        document.documentElement.requestFullscreen?.().catch(() => {});
-      } else {
-        this.isTheaterFull = false;
-        if (document.fullscreenElement) {
-          document.exitFullscreen?.().catch(() => {});
-        }
-      }
     },
 
     toggleMatrixDrawer() {

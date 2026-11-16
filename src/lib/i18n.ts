@@ -13,6 +13,7 @@ export interface Translations {
     resumeMatch: string;
     updateAvailable: string;
     updateReload: string;
+    quitGame: string;
     searching: string;
   };
   lobby: {
@@ -102,8 +103,9 @@ export interface Translations {
     you: string;
     round: string;
     tiePot: string;
-    leave: string;
-    confirmForfeit: string;
+    quitTitle: string;
+    quitDescBot: string;
+    quitDescPvp: string;
     cancel: string;
     disconnectedMsg: string;
     matchDrawn: string;
@@ -144,8 +146,6 @@ export interface Translations {
     quartetStripLabel: string;
     showMatrix: string;
     hideMatrix: string;
-    fullscreen: string;
-    exitFullscreen: string;
   };
   compendium: {
     title: string;

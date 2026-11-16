@@ -108,12 +108,16 @@ export function renderHeader(): string {
             <span class="theme-icon-moon">${iconSvg('moon', 'w-5 h-5')}</span>
             <span class="theme-icon-sun">${iconSvg('sun', 'w-5 h-5')}</span>
           </button>
+          <!-- One button, four jobs: Quick Match (no game) / Searching / Quit Game (in the arena) / Back to Game (on another page) -->
           <button
             type="button"
-            @click="handleHeaderQuickMatch()"
-            class="px-3 sm:px-4 h-10 sm:h-auto sm:py-2 rounded-xl bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0"
-            x-text="activeMatch ? t.nav.resumeMatch : (inQueue ? t.nav.searching : t.nav.quickMatch)"
-          ></button>
+            @click="handleHeaderAction()"
+            :class="headerAction() === 'quit' ? 'bg-c-red hover:bg-c-red-hover' : 'bg-c-green hover:bg-c-green-deep'"
+            class="px-3 sm:px-4 h-10 sm:h-auto sm:py-2 rounded-xl text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5"
+          >
+            <span x-show="headerAction() === 'quit'">${iconSvg('log-out', 'w-4 h-4')}</span>
+            <span x-text="headerLabel()"></span>
+          </button>
         </div>
       </div>
 
@@ -195,6 +199,48 @@ export function renderHeader(): string {
         ></button>
       </div>
     </div>
+
+    <!-- Quit confirmation: a small dialog instead of inline buttons in the scoreboard -->
+    <template x-if="showQuitDialog">
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quit-dialog-title"
+        x-init="$nextTick(() => $refs.keepPlaying?.focus())"
+        @keydown.escape.window="showQuitDialog = false"
+        @keydown.tab.prevent="(document.activeElement === $refs.keepPlaying ? $refs.quitNow : $refs.keepPlaying)?.focus()"
+      >
+        <div class="absolute inset-0 bg-c-ink/60" @click="showQuitDialog = false" aria-hidden="true"></div>
+        <div class="relative w-full max-w-sm rounded-2xl bg-c-paper-hi ink-panel p-5 space-y-4 anim-pop-in">
+          <div class="flex items-start gap-3">
+            <span class="shrink-0 w-10 h-10 rounded-xl bg-c-rose border-2 border-c-red text-c-red-ink inline-flex items-center justify-center">${iconSvg('log-out', 'w-5 h-5')}</span>
+            <div class="min-w-0">
+              <h2 id="quit-dialog-title" class="font-display text-lg font-extrabold text-c-ink" x-text="t.arena.quitTitle"></h2>
+              <p class="mt-1 text-sm text-c-ink-2 leading-relaxed" x-text="activeMatch?.mode === 'bot' ? t.arena.quitDescBot : t.arena.quitDescPvp"></p>
+            </div>
+          </div>
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <button
+              type="button"
+              x-ref="quitNow"
+              @click="confirmQuit()"
+              class="px-4 py-2.5 rounded-xl bg-c-red hover:bg-c-red-hover text-white border-2 border-c-ink font-bold text-sm whitespace-nowrap inline-flex items-center justify-center gap-1.5"
+            >
+              ${iconSvg('log-out', 'w-4 h-4')}
+              <span x-text="t.nav.quitGame"></span>
+            </button>
+            <button
+              type="button"
+              x-ref="keepPlaying"
+              @click="showQuitDialog = false"
+              class="px-4 py-2.5 rounded-xl bg-c-sand hover:bg-c-sand-hover text-c-ink border-2 border-c-ink font-bold text-sm whitespace-nowrap"
+              x-text="t.arena.cancel"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <!-- Error Toast -->
     <div x-show="toastError" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 w-full">
@@ -510,7 +556,7 @@ export function renderArena(): string {
     <template x-if="activeTab === 'arena' && activeMatch">
       <div
         id="arena-root"
-        :class="'relative overflow-hidden border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16 ' + (isTheaterFull ? 'fixed inset-0 z-40 rounded-none overflow-y-auto' : 'rounded-2xl')"
+        class="relative overflow-hidden rounded-2xl border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16"
       >
 
         <div :class="'relative z-10 max-w-6xl mx-auto p-3 sm:p-6 space-y-3 sm:space-y-5 ' + (isReveal() && activeMatch.lastRound ? 'max-lg:pb-56' : '')">
@@ -585,43 +631,6 @@ export function renderArena(): string {
                 x-text="activeMatch.opponent.cardCount"
               ></div>
 
-              <button
-                type="button"
-                @click="toggleTheaterFull()"
-                :title="isTheaterFull ? t.arena.exitFullscreen : t.arena.fullscreen"
-                class="max-md:hidden px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
-              >
-                <span x-show="isTheaterFull">${iconSvg('minimize', 'w-3.5 h-3.5')}</span>
-                <span x-show="!isTheaterFull">${iconSvg('maximize', 'w-3.5 h-3.5')}</span>
-                <span class="hidden md:inline" x-text="isTheaterFull ? t.arena.exitFullscreen : t.arena.fullscreen"></span>
-              </button>
-
-              <div x-show="activeMatch.status !== 'FINISHED'">
-                <button
-                  x-show="!confirmForfeit"
-                  type="button"
-                  @click="confirmForfeit = true"
-                  :aria-label="t.arena.leave"
-                  class="min-w-10 min-h-10 justify-center px-2.5 py-2 rounded-xl text-xs font-bold text-c-ink-2 hover:text-c-ink bg-c-paper hover:bg-c-sand border-2 border-c-ink/30 transition-colors inline-flex items-center gap-1.5 whitespace-nowrap"
-                >
-                  ${iconSvg('log-out', 'w-4 h-4')}
-                  <span class="hidden sm:inline" x-text="t.arena.leave"></span>
-                </button>
-                <div x-show="confirmForfeit" class="flex flex-wrap items-center gap-1.5">
-                  <button
-                    type="button"
-                    @click="confirmForfeit = false; forfeitMatch()"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-c-red hover:bg-c-red-hover text-white border border-c-ink whitespace-nowrap"
-                    x-text="t.arena.confirmForfeit"
-                  ></button>
-                  <button
-                    type="button"
-                    @click="confirmForfeit = false"
-                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-c-sand text-c-ink hover:bg-c-sand-hover border border-c-ink/35 whitespace-nowrap"
-                    x-text="t.arena.cancel"
-                  ></button>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -696,7 +705,7 @@ export function renderArena(): string {
               </button>
               <button
                 type="button"
-                @click="if (isTheaterFull) toggleTheaterFull(); returnToLobby()"
+                @click="returnToLobby()"
                 class="px-5 py-2.5 rounded-xl bg-c-paper hover:bg-c-sand text-c-ink border-2 border-c-ink font-bold text-sm transition-colors whitespace-nowrap"
                 x-text="t.arena.returnLobby"
               ></button>
