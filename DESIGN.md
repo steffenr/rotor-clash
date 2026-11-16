@@ -4,40 +4,65 @@
 
 ---
 
-## 1. Visual Identity & Color Tokens
+## 1. Colour Tokens, Shape & Depth
+
+Every colour is a CSS custom property `--c-*` in `src/index.css`. `:root` holds the light palette (the original "paper & ink" look) and the `.dark` class on `<html>` overrides the values (and switches `color-scheme`). A `@theme inline` block exposes each token to Tailwind as `bg-c-*`, `text-c-*` and `border-c-*`, so **templates never contain hex colours**; inline styles use `var(--c-*)`. There are 37 tokens. Since the theme system was introduced only one token has been added: `--c-back` (the card-back navy, for the deck chooser). The saved or system theme is applied before first paint by `public/theme-init.js` (storage key `rotor_clash_theme`, logic in `src/lib/theme.ts`).
 
 ### Surfaces & Paper Hierarchy
-- **Desk Background**: `#F5EFE0` (warm parchment canvas with radial `.paper-grain` texture and subtle coastal-sky horizon wash)
-- **Card / Panel Surface**: `#FFFDF7` (clean warm-ivory card stock with `.ink-panel` / `.ink-card` `2px`–`2.5px` `#173240` outlines and solid offset press shadows)
-- **Badge Plaque Cream / Stat Inset**: `#FAF4E4`
-- **Utility Strip & Mounted Accents**: `#EAE1CA` / `#DCEEF5` (Coastal Sky tint)
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `--c-canvas` | `#F5EFE0` | `#0F1D26` | Desk background: warm parchment with the `.paper-grain` dot texture (`--c-dot`) and a coastal-sky horizon wash (`--c-glow` → `--c-glow-end`) |
+| `--c-canvas-2` | `#EFE8D6` | `#14262F` | Arena table surface |
+| `--c-paper-hi` | `#FFFDF7` | `#25394A` | Card and panel stock (`.ink-panel`, `.ink-card`) |
+| `--c-paper` | `#FAF4E4` | `#1D2F3B` | Badge plaques, stat insets, secondary buttons |
+| `--c-sand` / `--c-sand-soft` / `--c-sand-hover` | `#EAE1CA` / `#EFE7D1` / `#DCD1B4` | `#2D4553` / `#263E4B` / `#36505F` | Utility strips, neutral buttons and their hover |
+| `--c-sky` / `--c-sky-soft` | `#DCEEF5` / `#E7F4F9` | `#193A4A` / `#1E4254` | Coastal-sky tint: searching panel, update banner, sky arch |
 
-### Primary Ink & Structural Outlines
-- **Harbor Navy Ink**: `#173240` (primary headings, body text, printed outlines, and solid offset shadows `0 4px 0 #173240` / `0 5px 0 #173240`)
-- **Secondary Ink**: `#3C5866` / `#4B6675`
-- **Muted Metadata**: `#667D8A`
+### Ink & Structural Outlines
+| Token | Light | Dark | Use |
+| --- | --- | --- | --- |
+| `--c-ink` | `#173240` | `#E8E2D0` | **Harbor Navy**: headings, body text, ink borders. Flips to cream in dark mode. |
+| `--c-ink-2` / `-3` / `-4` / `-5` | `#3C5866` / `#4B6675` / `#667D8A` / `#8CA0AB` | `#BCC9D1` / `#A6B6C0` / `#8BA0AC` / `#7A909C` | Secondary ink, muted metadata, disabled and hairline ink |
+| `--c-line` | `#173240` | `#070F14` | The hard outline and press-shadow colour (`0 4px 0 var(--c-line)`) |
+| `--c-back` | `#173240` | `#173240` | Card-back navy, identical in both themes (a real card back does not invert) |
 
-### Accent & Quartet Category Palette
-| Role | Hex | Usage |
-| --- | --- | --- |
-| **Coastal Sky Teal** | `#1E7898` | Offshore category crest/stamp, sky arch gradients, Online Match CTA, upper speed-stripe, links |
-| **Beacon Orange** | `#F15A24` | Private Room CTA, lower speed-stripe, active nav indicator, *Start Wind* (`Min` / `Kleiner`) highlights, Windbase category, coastal lighthouse |
-| **Coastal Meadow Green** | `#2F6F4E` | Header Quick Match CTA, Play vs Bot CTA, Onshore category crest/stamp, completed Quartets, win states |
-| **Harbor Navy** | `#173240` | Floating Offshore category crest/stamp, primary ink borders, card-back canvas |
+### Accent Palette
+| Token | Light | Dark | Role |
+| --- | --- | --- | --- |
+| `--c-teal` / `--c-teal-deep` | `#1E7898` / `#155B75` | `#2E96BC` / `#7CCBE6` | Offshore category crest, sky arch, Online Match CTA, upper speed-stripe, links, focus ring |
+| `--c-orange` / `--c-orange-deep` / `--c-peach` | `#F15A24` / `#C94213` / `#FFE8DC` | `#F26B3A` / `#FF8A5C` / `#3D2A20` | Play a Friend CTA, lower speed-stripe, active nav underline, **lower-wins markers** (*Start Wind*, *Switched On*: `Min` / `Kleiner`), Windbase category, lighthouse, selected-deck check |
+| `--c-green` / `--c-green-deep` | `#2F6F4E` / `#23553C` | `#4EAE80` / `#8FE0B4` | Quick Match and Play vs Robot CTAs, *Update now*, Onshore category crest, completed Quartets, win states |
+| `--c-mint` / `--c-mint-hover` | `#E7F4EC` / `#D1EBE0` | `#17382A` / `#1F4A38` | Friend-room panel, win fill |
+| `--c-ink` (navy) | `#173240` | n/a | Floating Offshore category crest, card-back canvas (`--c-back`) |
 
 ### Round & Status Semantics
-- **Win**: `#E7F4EC` fill / `#2F6F4E` border / `#173240` text
-- **Loss**: `#FEECEB` fill / `#DC2626` border / `#7F1D1D` text
-- **Tie / Pending Pot**: `#FEF3C7` fill / `#D97706` border / `#78350F` text
+| State | Fill | Border | Text |
+| --- | --- | --- | --- |
+| **Win** | `--c-mint` (`#E7F4EC` / dark `#17382A`) | `--c-green` | `--c-ink` |
+| **Loss / danger** (also the *Quit Game* button and dialog) | `--c-rose` (`#FEECEB` / dark `#3B1F22`) | `--c-red` (`#DC2626` / `#EF5350`) | `--c-red-deep` (`#7F1D1D` / `#F5A5A5`); button hover `--c-red-hover`; text on tint `--c-red-ink` |
+| **Tie / pending pot** | `--c-cream-amber` (`#FEF3C7` / dark `#3A3118`) | `--c-amber` (`#D97706` / `#E58A1F`) | `--c-amber-ink` (`#78350F` / `#F5C27A`); icons `--c-amber-deep` |
+
+### Dark Mode Rules
+- Hard ink borders (`.border-c-ink`) soften to `--c-ink-5` in dark mode so the outlines do not glare; `--c-line` (outlines and press shadows) becomes a near-black instead.
+- Accents get lighter and `-deep` variants become *lighter* (not darker) so text on dark surfaces keeps its contrast.
+- The card back (`--c-back`) and the deck-stack faces stay Harbor Navy in both themes.
+- Never hardcode a hex colour in a template. Add a token with a light **and** a dark value instead.
+
+### Shape & Depth
+- **Outline + press shadow**: `.ink-panel` = `2px solid var(--c-line)` + `0 4px 0 var(--c-line)`; `.ink-card` = `2.5px` + `0 5px 0`; buttons `0 3px 0` with `active:translate-y-0.5`; the arena table `0 6px 0`.
+- **Radii**: controls and chips `rounded-xl`, panels and cards `rounded-2xl`, the coastal-sky arch `rounded-t-[2.25rem]`, status pills fully round.
+- **Touch targets**: at least 40 px high (`min-h-10`), stat rows 44 px (`min-h-[44px]`).
+- **Safe areas**: the page respects `env(safe-area-inset-*)` for notches and the home indicator.
 
 ---
 
 ## 2. Typography
 
-Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/index.css`:
-- **Display (`--font-display`)**: **Fraunces** — expressive editorial serif for headings, turbine model titles, and card emblems.
-- **UI & Body (`--font-sans`)**: **Plus Jakarta Sans** — clean, open geometric sans-serif for navigation, explanations, and tactile buttons.
-- **Numbers & Codes (`--font-mono`)**: **JetBrains Mono** (`tabular-nums`) — aligned comparison metrics, Quartet IDs (`1A`–`8D`), countdowns, and room codes.
+Defined in `index.html` (loaded from Google Fonts, see the CSP in the README) and mapped as Tailwind CSS 4.x `@theme` tokens in `src/index.css`:
+- **Display (`--font-display`)**: **Fraunces**: expressive editorial serif for headings (`h1`–`h4`, `.font-display`), turbine model titles and card emblems.
+- **UI & Body (`--font-sans`)**: **Plus Jakarta Sans**: clean, open geometric sans-serif for navigation, explanations and tactile buttons.
+- **Numbers & Codes (`--font-mono`)**: **JetBrains Mono** (`tabular-nums`): aligned comparison metrics, Quartet IDs (`1A`–`16D`), countdowns and room codes.
+- **Base rules**: form fields are at least 16 px so iOS Safari does not zoom on focus; controls use `touch-action: manipulation` (no tap delay); every focusable element gets a `2px` `--c-teal` focus ring with `2px` offset.
 
 ---
 
@@ -100,6 +125,21 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 
 ## 5. Motion, Tactility & Accessibility
 
-- **Tactile Press Depth**: Action buttons and panels use `#173240` Harbor Navy ink borders with solid bottom press shadows (`shadow-[0_4px_0_#173240] active:translate-y-0.5`).
-- **Reduced Motion**: `src/index.css` includes `@media (prefers-reduced-motion: reduce)` resetting animations and transitions.
-- **Keyboard & Contrast**: High-contrast Harbor Navy ink (`#173240`) on ivory/cream surfaces, clear `2px` `#1E7898` focus-visible rings, and `Escape` dismissal for the full-detail card modal.
+- **Tactile Press Depth**: action buttons and panels use `var(--c-line)` ink borders with a solid bottom press shadow (`shadow-[0_4px_0_var(--c-line)] active:translate-y-0.5`).
+- **Motion set** (all in `src/index.css`; motion is limited to `transform`, `opacity` and shadow):
+
+  | Class / keyframes | Timing | Purpose |
+  | --- | --- | --- |
+  | `.anim-pop-in` (`popIn`) | `0.38s` cubic-bezier(0.2, 0.9, 0.3, 1.2) | Quit dialog and the end-of-match panel appearing with a small overshoot |
+  | `.anim-flip-in` (`flipIn`) | `0.45s` cubic-bezier(0.2, 0.8, 0.3, 1) | Opponent card revealed after a round |
+  | `.anim-shake` | `0.45s` | Round banner after a lost round |
+  | `.anim-win-glow` | `0.9s`, twice | Round banner after a won round |
+  | `.anim-droop` | `0.6s` | Drooping icon on the defeat screen |
+  | `.anim-trophy` (`trophyBounce`) | `0.7s` cubic-bezier(0.3, 1.3, 0.5, 1) | Trophy on the victory screen |
+  | `.anim-urgent` (`urgentPulse`) | `0.8s`, infinite | Turn timer at 10 s or less |
+  | `.animate-gentle-bob` | looping, 3 px | Turn cue |
+  | `.win-panel` (`.win-rays`, `.win-sparkles`, `.win-headline`) + canvas confetti (`src/lib/celebrate.ts`) | `~2.6s` loops | Victory celebration |
+  | `.deck-stack` / `.deck-layer` | `0.45s` cubic-bezier(0.2, 0.9, 0.3, 1.15) | Lift and fan of the selected deck |
+
+- **Reduced Motion**: `@media (prefers-reduced-motion: reduce)` shortens every animation and transition to `0.01ms` and hides the victory rays and sparkles.
+- **Keyboard & Contrast**: ink tokens on paper tokens keep body text well above 4.5:1 in both themes; a `2px` `--c-teal` focus-visible ring everywhere; `Escape` closes the card detail modal and the quit dialog; dialogs set `role="dialog"` and `aria-modal`, and the quit dialog traps Tab between its two buttons.

@@ -131,7 +131,7 @@ export class ConnectionLimiter {
 }
 
 /**
- * Client address for limits. Behind a reverse proxy (nginx / Passenger on hosting panel) the TCP peer is the
+ * Client address for limits. Behind a reverse proxy (for example nginx) the TCP peer is the
  * proxy, so the last `X-Forwarded-For` entry (the one the proxy appended) is used when present.
  * Set TRUST_PROXY=0 to ignore the header when the app is exposed directly.
  */
@@ -202,7 +202,7 @@ export function buildCsp(host: string | undefined): string {
 
 /**
  * The same policy for a `<meta http-equiv>` tag, injected into the built index.html. Static files are
- * often served by the web server (nginx on hosting panel) without ever reaching Node, so the document itself
+ * often served by the web server (for example nginx) without ever reaching Node, so the document itself
  * must carry the policy. Browsers ignore `frame-ancestors` in a meta tag (that one needs a response
  * header), and the host is unknown at build time, so secure WebSockets are allowed by scheme.
  */

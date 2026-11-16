@@ -49,7 +49,7 @@ Players battle across **64 real-world wind turbines** in two decks of **8 Quarte
 ```text
 ├── .github/workflows/
 │   ├── ci.yml                  # Lint, test & build checks on PRs to develop and pushes to main/develop
-│   └── release.yml             # Manual workflow_dispatch build & SCP/tar deploy to the target host
+│   └── release.yml             # Manual workflow_dispatch release: test, build, deploy, tag
 ├── server.ts                   # Express + WebSocket server (dev Vite middleware / prod dist/)
 ├── index.html                  # Alpine.js root mount & font imports
 ├── public/                     # Static files copied as-is (manifest, icons, theme-init.js)
@@ -86,10 +86,29 @@ npm run dev
 | `npm run lint` | Run TypeScript typechecking (`tsc --noEmit`) |
 | `npm test` | Run all unit & integration tests (`tsx --test tests/*.test.ts`) |
 | `npm run build` | Build production frontend assets into `dist/` |
-| `npm run build:server` | Bundle `server.ts` into CommonJS `dist-server/server.cjs` for production/hosting panel |
+| `npm run build:server` | Bundle `server.ts` into CommonJS `dist-server/server.cjs` for production |
 | `npm start` | Run `tsx server.ts` directly (set `NODE_ENV=production` to serve `dist/`) |
 
 ---
+
+## Production
+
+Rotor Clash needs a persistent **Node.js** process with **WebSocket (`/ws`)** support and writable disk storage at `./data` (single instance, since active rooms and matches live in memory). Build with `npm run build` and `npm run build:server`, then run `dist-server/server.cjs` with `NODE_ENV=production` (see [Configuration](#configuration)).
+
+### CI & releases
+- **`ci.yml`** runs `npm run lint`, `npm test`, `npm audit --omit=dev --audit-level=high` (fails on high-severity advisories in production dependencies), `npm run build` and `npm run build:server` on pushes to `main`/`develop` and on pull requests.
+- **`release.yml`** is started manually (**GitHub → Actions → Run workflow**): it bumps the version, runs the full verification suite, deploys over SSH and only after a successful deploy commits `chore(release): vX.Y.Z`, pushes the tag and creates a GitHub Release. If the build or deploy fails, no commit, tag or release is created. Production dependencies are installed from the lockfile, third-party actions are pinned by commit SHA (Dependabot proposes updates weekly), and the deploy target and credentials come from repository secrets, so no host-specific values live in this repository.
+
+### How players get updates (including the home-screen app)
+
+- **No service worker, no store.** The home-screen icon (`public/manifest.webmanifest`, `display: standalone`) simply opens the website, so the installed app updates exactly like the site does. Nothing has to be reinstalled.
+- **Hashed assets.** Builds are content-hashed (`/assets/index-<hash>.js`), so a release never changes a file that a cached page depends on. Only `index.html` can be out of date.
+- **Version handshake.** The release workflow bumps `package.json` before the build. The bundle contains that version (`__APP_VERSION__`), and the server reports its own in `GET /api/health` and in the WebSocket `auth:ack`. A page that finds the server running a newer version:
+  - reloads itself **once** when it is idle (lobby, no match, queue or room), or
+  - shows the banner *"A new version of Rotor Clash is available" → Update now* while a match is running, so nothing is lost.
+  It checks on every connect, whenever the app returns to the foreground (a phone app can stay in the background for days) and when the network comes back. The automatic reload happens at most once per version, so a stale cache can never cause a reload loop.
+- **Caching.** Send `Cache-Control: no-cache` from the web server (optional line under [Security headers](#security-headers)): browsers then ask the server on every visit whether `index.html` changed, which costs a tiny `304` response.
+- **Manifest changes** (icon, name, colours) are copied by iOS when the icon is added; after such a change the icon has to be removed and added again. Normal releases are not affected.
 
 ## Configuration
 
@@ -97,9 +116,9 @@ Environment variables (a local `.env` file is read through `dotenv`; see `.env.e
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `PORT` | `3000` | TCP port, or a Unix socket path (Phusion Passenger passes one) |
+| `PORT` | `3000` | TCP port, or a Unix socket path |
 | `NODE_ENV` | — | `production` serves the built `dist/` instead of the Vite dev server |
-| `TRUST_PROXY` | trusted | Set to `0` when the app is exposed directly: the client-supplied `X-Forwarded-For` header is then ignored for per-address limits. Behind nginx/Passenger leave it unset. |
+| `TRUST_PROXY` | trusted | Set to `0` when the app is exposed directly: the client-supplied `X-Forwarded-For` header is then ignored for per-address limits. Behind a reverse proxy leave it unset. |
 | `ALLOWED_ORIGINS` | — | Comma-separated extra origins that may open the WebSocket (the app's own origin is always allowed) |
 | `SECURITY_HEADERS` | off | Set to `app` to let the app send the security headers itself (for example when it runs without a configured web server). Leave it unset when the web server already sets them, otherwise every header is sent twice. |
 
@@ -109,9 +128,34 @@ Environment variables (a local `.env` file is read through `dotenv`; see `.env.e
 - **Server-side validation**: every WebSocket message is parsed strictly, IDs and strings are bounded, and every game move is checked against the match (for example only the stats of the chosen deck can be played).
 - **Limits**: 4 KB per WebSocket message, a burst of 30 messages then 10 per second per socket, 30 sockets per address (2,000 overall), 60 API requests per minute and address, a rename cooldown, merged lobby/leaderboard broadcasts, debounced disk writes and a cap on profiles without a finished game. WebSocket handshakes from other websites are refused.
 - **Rooms**: friend rooms are private (code or invite link) unless the host ticks *Show in open rooms*. Room codes, shuffles and the starting player use `crypto` randomness.
-- **Data**: `data/leaderboard.json` holds ranked players, their hashed login secrets and recent matches. Keep it outside the web root (the Document Root is `dist/`) and out of backups you share.
-- **Supply chain**: production dependencies are installed from the lockfile and audited in CI, GitHub Actions are pinned by commit SHA, and deployments verify the pinned SSH host key.
+- **Data**: `data/leaderboard.json` holds ranked players, their hashed login secrets and recent matches. Keep it outside the web root (only `dist/` is served) and out of backups you share.
+- **Supply chain**: production dependencies are installed from the lockfile and audited in CI, GitHub Actions are pinned by commit SHA, and deployments verify a pinned SSH host key.
 - Contributor rules live in [`AGENTS.md`](AGENTS.md) (section 2, item 8). Please report vulnerabilities privately to the repository owner rather than in a public issue.
+
+### Security headers
+
+The page and its static files are normally served by a web server or reverse proxy that never forwards them to Node, so these headers are configured there (one `Name: value` per line, no quotes). Replace `your-domain.example` with the real host name:
+
+```text
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss://your-domain.example; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+```
+
+Optional, so that browsers always revalidate the page and a release reaches players quickly (see *How players get updates*):
+
+```text
+Cache-Control: no-cache
+```
+
+Notes:
+
+- The built `index.html` also carries the same policy (without `frame-ancestors`, which only works as a header) in a `<meta>` tag, so the CSP applies even if the web server configuration is lost.
+- `'unsafe-eval'` is required by the standard Alpine.js build, which compiles template expressions at runtime. External scripts, plugins, framing and foreign form targets are still blocked. Keep scripts external (`public/theme-init.js`); never add inline scripts.
+- The app does not send these headers itself unless `SECURITY_HEADERS=app` is set (see Configuration).
+- Check with `curl -sI https://your-domain.example/`: all five headers should appear exactly once. If the host name changes, update the `connect-src` entry.
 
 ## License
 
