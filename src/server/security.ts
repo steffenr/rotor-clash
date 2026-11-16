@@ -179,21 +179,37 @@ const HOST_PATTERN = /^[A-Za-z0-9.-]+(:\d{1,5})?$/;
  * `'unsafe-eval'` is required by the standard Alpine.js build (it compiles x-* expressions with
  * `new Function`); the policy still blocks every external script, plugin, framing and form target.
  */
-export function buildCsp(host: string | undefined): string {
-  const ws = host && HOST_PATTERN.test(host) ? ` wss://${host} ws://${host}` : '';
+function cspDirectives(connectSrc: string): string[] {
   return [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob:",
-    `connect-src 'self'${ws}`,
+    `connect-src ${connectSrc}`,
     "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-  ].join('; ');
+  ];
+}
+
+export function buildCsp(host: string | undefined): string {
+  const ws = host && HOST_PATTERN.test(host) ? ` wss://${host} ws://${host}` : '';
+  return cspDirectives(`'self'${ws}`).join('; ');
+}
+
+/**
+ * The same policy for a `<meta http-equiv>` tag, injected into the built index.html. Static files are
+ * often served by the web server (nginx on hosting panel) without ever reaching Node, so the document itself
+ * must carry the policy. Browsers ignore `frame-ancestors` in a meta tag (that one needs a response
+ * header), and the host is unknown at build time, so secure WebSockets are allowed by scheme.
+ */
+export function buildMetaCsp(): string {
+  return cspDirectives("'self' wss:")
+    .filter((directive) => !directive.startsWith('frame-ancestors'))
+    .join('; ');
 }
 
 export function securityHeaders(isProd: boolean): RequestHandler {
