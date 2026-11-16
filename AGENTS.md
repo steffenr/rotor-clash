@@ -16,9 +16,9 @@ This file defines the architectural rules, conventions, and verification steps f
 - **Browser Loaders (`src/lib/`)**:
   - `turbineDeck.ts` uses Vite `?raw` + `import.meta.glob` to load `src/data/*.md`.
   - `botEngine.ts` wraps `src/shared/botRules.ts` with Vite-loaded cards.
-  - `playerIdentity.ts` & `soundFx.ts` manage `localStorage` (`rotor_clash_*` with one-time migration from `aeolian_*`); `playerIdentity.ts` also holds the player id and the private login secret (`rotor_clash_secret_v1`).
+  - `playerIdentity.ts` & `soundFx.ts` manage `localStorage` (`rotor_clash_*` with one-time migration from `aeolian_*`); `playerIdentity.ts` also holds the player id; `deviceKey.ts` keeps the non-extractable login key in IndexedDB.
 - **Backend (`server.ts`, `src/server/`)**:
-  - Authoritative game engine (`MatchEngine` in `src/server/matchEngine.ts`), disk deck loader (`turbineRepository.ts`), atomic and debounced JSON persistence (`store.ts` → `data/leaderboard.json`, which also holds the hashed login secrets), and the security helpers in `security.ts` (validation, secrets, rate and connection limits, origin check, headers/CSP builders). `server.ts` wires them to Express and `ws`.
+  - Authoritative game engine (`MatchEngine` in `src/server/matchEngine.ts`), disk deck loader (`turbineRepository.ts`), atomic and debounced JSON persistence (`store.ts` → `data/leaderboard.json`, which also holds the public device keys), and the security helpers in `security.ts` (validation, challenge-response proofs, rate and connection limits, origin check, headers/CSP builders). `server.ts` wires them to Express and `ws`.
 
 ---
 
@@ -71,7 +71,7 @@ This file defines the architectural rules, conventions, and verification steps f
    - Do **not** rename `"name"` inside `metadata.json` (required by AI Studio's applet manifest). All user-facing branding, `<title>`, OpenGraph metadata, storage keys, and UI copy must use **Rotor Clash**.
 
 8. **Security Rules (server is the trust boundary)**:
-   - **Identity**: the player id is a *public handle* (it appears in `/api/leaderboard` and in opponents' match state). The credential is the client **secret** (`rotor_clash_secret_v1`, 64 hex chars), stored server-side only as a SHA-256 hash (`LeaderboardStore.authenticate()`); the first secret presented for an id is bound to it. Never send a secret or hash to a client, never treat a player id as proof of identity, and never log either.
+   - **Identity**: the player id is a *public handle* (it appears in `/api/leaderboard` and in opponents' match state). The credential is a per-browser ECDSA P-256 **device key**, created non-extractable in `src/lib/deviceKey.ts`; login is `auth:hello` (public key) → `auth:challenge` → `auth:proof` (signature, checked by `verifyChallengeProof()`), and the first key proven for an id is bound to it (`LeaderboardStore.bindPublicKey()`, which refuses ranked profiles without a key so nobody can take over a public id). Never store a login secret as text on the client, never treat a player id as proof of identity, and never log keys or signatures.
    - **Client input is hostile**: parse every WebSocket message with `parseClientMessage()`, validate ids with `isValidPlayerId()`, bound string lengths before using them, and validate game moves against the match (e.g. `playStat` only accepts `statKeysForMode(match.deckMode)`). Keys that come from clients must never index a plain `{}`: use `Map`, or the prototype-less dictionaries in `store.ts`; `__proto__`, `constructor` and `prototype` are refused outright.
    - **Limits**: `maxPayload` 4 KB, 30-message burst then 10/s per socket (sustained abuse closes the socket), 30 sockets per address, 60 REST requests per minute and address, rename cooldown, coalesced lobby and leaderboard broadcasts, debounced disk writes, and a cap on unranked profiles. Do not remove a limit without replacing it. Every `ws` socket needs an `'error'` listener, otherwise one oversized frame stops the process.
    - **Rooms** are private (code or invite link) unless the host ticks *Show in open rooms*; room codes, shuffles and the starting player use `crypto`, never `Math.random()`.
