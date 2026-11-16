@@ -10,6 +10,7 @@ export const DE_UI: Translations = {
     resumeMatch: 'Zum Spiel',
     updateAvailable: 'Es gibt eine neue Version von Rotor Clash.',
     updateReload: 'Jetzt aktualisieren',
+    quitGame: 'Spiel beenden',
     searching: 'Suche...',
   },
   lobby: {
@@ -128,8 +129,9 @@ export const DE_UI: Translations = {
     you: 'Du',
     round: 'Runde',
     tiePot: 'Stich-Stapel',
-    leave: 'Verlassen',
-    confirmForfeit: 'Ja, verlassen',
+    quitTitle: 'Spiel beenden?',
+    quitDescBot: 'Dein Spiel gegen den Roboter endet hier und wird nicht gespeichert.',
+    quitDescPvp: 'Dein Gegner erfährt, dass du gegangen bist. Das Spiel zählt nicht: Es gibt keine Punkte, Siege oder Niederlagen.',
     cancel: 'Weiterspielen',
     disconnectedMsg: 'hat die Verbindung verloren. Das Spiel wartet 25 Sekunden...',
     matchDrawn: 'Unentschieden!',
@@ -170,8 +172,6 @@ export const DE_UI: Translations = {
     quartetStripLabel: 'Quartette',
     showMatrix: 'Übersicht zeigen',
     hideMatrix: 'Übersicht ausblenden',
-    fullscreen: 'Vollbild',
-    exitFullscreen: 'Vollbild beenden',
   },
   compendium: {
     title: 'Windkraft-Kartenalbum',
