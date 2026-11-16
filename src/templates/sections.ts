@@ -1064,7 +1064,7 @@ export function renderTutorial(): string {
       <!-- Step 1 -->
       <div x-show="tutorialStep === 0" class="rounded-2xl bg-c-paper-hi ink-panel p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         <div class="lg:col-span-5 flex flex-col items-center gap-3">
-          <!-- Both decks have their own fifth stat: Start Wind (Modern Giants) or First Power (Records & Firsts) -->
+          <!-- Both decks have their own fifth stat: Start Wind (Modern Giants) or Switched On (Records & Firsts) -->
           <div
             x-show="deckModes.includes('records')"
             class="flex items-center gap-1.5 bg-c-paper p-1.5 rounded-xl border-2 border-c-ink"
@@ -1106,7 +1106,7 @@ export function renderTutorial(): string {
             <div class="flex flex-wrap items-center justify-between gap-2">
               <span
                 class="font-display text-lg font-bold text-c-ink"
-                x-text="t.stats[tutorialInspectedStat].label + ' (' + statDef(tutorialInspectedStat).unit + ')'"
+                x-text="t.stats[tutorialInspectedStat].label + (statDef(tutorialInspectedStat).unit ? ' (' + statDef(tutorialInspectedStat).unit + ')' : '')"
               ></span>
               <span
                 :class="'text-xs font-bold px-2.5 py-1 rounded-lg border-2 whitespace-nowrap ' + (statDef(tutorialInspectedStat).higherWins ? 'bg-c-mint text-c-ink border-c-green' : 'bg-c-peach text-c-orange-deep border-c-orange')"

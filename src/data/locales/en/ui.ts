@@ -119,9 +119,9 @@ export const EN_UI: Translations = {
       description: 'Total power of the whole wind farm where this turbine works.',
     },
     firstPowerYear: {
-      label: 'First Power',
-      shortLabel: 'Since',
-      description: 'Year this turbine first fed electricity into the grid (oldest wins!).',
+      label: 'Switched On',
+      shortLabel: 'Year',
+      description: 'Year this turbine was first switched on and made electricity (oldest wins!).',
     },
   },
   arena: {
@@ -137,11 +137,11 @@ export const EN_UI: Translations = {
     matchDefeat: 'Good Game!',
     reasonAllCardsWin: 'Amazing! You collected every wind turbine card.',
     reasonAllCardsLoss: 'collected every card this time.',
-    reasonRoundLimit: 'All 24 rounds played — winner decided by most cards!',
+    reasonRoundLimit: 'All {rounds} rounds played — winner decided by most cards!',
     reasonForfeitWin: 'left the match. No points were awarded or lost.',
     reasonForfeitLoss: 'You left the match. No points were awarded or lost.',
     matchAbandoned: 'Match not counted',
-    reasonDraw: 'Same number of cards and same completed Quartets after 24 rounds.',
+    reasonDraw: 'Same number of cards and same completed Quartets after {rounds} rounds.',
     finalCards: 'Cards Won',
     quartetsBuilt: 'Quartets Built',
     practiceMode: 'Bot Game',
@@ -213,9 +213,9 @@ export const EN_UI: Translations = {
     step1TipCutIn:
       'Secret Trick: Smaller inland turbines start spinning in gentle 2.0–2.5 m/s breezes and beat giant offshore turbines that need stronger wind!',
     step1TipHub:
-      'Did you know? Modern land turbines reach 175–179 m tall—almost four times taller than a coastal lighthouse!',
+      'Did you know? Modern land turbines can have hubs up to 179 m high—almost four times taller than a coastal lighthouse!',
     step1TipFirstPower:
-      'Secret Trick: Age wins here. A turbine that fed the grid in 1957 beats every machine from the 2000s, so pioneers can beat giants!',
+      'Secret Trick: Age wins here. A turbine that was switched on in 1957 beats every machine from the 2000s, so pioneers can beat giants!',
     step1TipDefault: 'Try tapping the other rows on the card to explore all 5 stats.',
     nextStep2: 'Try a Practice Round',
     step2Tag: 'Step 2 of 4 · Practice Battle',
@@ -246,7 +246,7 @@ export const EN_UI: Translations = {
     nextStep4: 'Next: Play With Friends',
     mpTitle: 'Play Solo or With a Friend',
     mpDesc:
-      'Warm up anytime against our Robot players, or click "Play a Friend" to get a 6-letter room code anyone can join.',
+      'Warm up anytime against our Robot players, or click "Play a Friend" to get a 6-character room code you can share.',
     eloTitle: 'Earn Explorer Ranks',
     eloDesc:
       'Online duels award Explorer Points starting at 1200, unlocking fun badges all the way up to Rotor Clash Grandmaster!',

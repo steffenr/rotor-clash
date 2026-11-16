@@ -204,11 +204,11 @@ export const STAT_DEFINITIONS: StatDefinition[] = [
   },
   {
     key: 'firstPowerYear',
-    label: 'First Power',
-    shortLabel: 'Since',
+    label: 'Switched On',
+    shortLabel: 'Year',
     unit: '',
     higherWins: false,
-    description: 'Year the turbine first fed power to the grid (oldest wins!).',
+    description: 'Year the turbine was first switched on and made electricity (oldest wins!).',
   },
 ];
 
