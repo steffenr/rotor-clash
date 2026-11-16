@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import {defineConfig, type Plugin} from 'vite';
 import {buildMetaCsp} from './src/server/security.ts';
+import {readAppVersion} from './src/server/version.ts';
 
 /** Puts the Content-Security-Policy into the built index.html (production build only, not the dev server). */
 function cspMeta(): Plugin {
@@ -23,6 +24,10 @@ function cspMeta(): Plugin {
 export default defineConfig(() => {
   return {
     plugins: [tailwindcss(), cspMeta()],
+    // Lets the running client compare its own version with the server's (update banner / reload).
+    define: {
+      __APP_VERSION__: JSON.stringify(readAppVersion()),
+    },
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),

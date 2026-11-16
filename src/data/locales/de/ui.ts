@@ -8,6 +8,8 @@ export const DE_UI: Translations = {
     tutorial: 'Spielregeln',
     quickMatch: 'Gegner suchen',
     resumeMatch: 'Zum Spiel',
+    updateAvailable: 'Es gibt eine neue Version von Rotor Clash.',
+    updateReload: 'Jetzt aktualisieren',
     searching: 'Suche...',
   },
   lobby: {

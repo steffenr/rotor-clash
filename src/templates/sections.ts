@@ -183,6 +183,19 @@ export function renderHeader(): string {
       </div>
     </div>
 
+    <!-- New version available (home-screen apps can stay open for days) -->
+    <div x-show="updateAvailable" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 w-full">
+      <div class="rounded-xl bg-c-sky border-2 border-c-ink px-4 py-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs font-semibold text-c-ink">
+        <span x-text="t.nav.updateAvailable"></span>
+        <button
+          type="button"
+          @click="reloadForUpdate()"
+          class="px-3 py-1.5 rounded-lg bg-c-green hover:bg-c-green-deep text-c-paper-hi border-2 border-c-ink font-bold whitespace-nowrap"
+          x-text="t.nav.updateReload"
+        ></button>
+      </div>
+    </div>
+
     <!-- Error Toast -->
     <div x-show="toastError" class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 w-full">
       <div class="rounded-xl bg-c-rose border-2 border-c-red px-4 py-2.5 flex items-center justify-between gap-3 text-xs font-semibold text-c-red-deep">
