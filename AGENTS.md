@@ -11,14 +11,14 @@ This file defines the architectural rules, conventions, and verification steps f
   - State & actions: `src/app/rotorClashStore.ts` (`createRotorClashApp()`).
   - UI markup: String-returning template functions in `src/templates/sections.ts`, `src/templates/cardMarkup.ts`, and `src/templates/icons.ts` injected into `#app` before `Alpine.start()`.
 - **Shared Logic (`src/shared/`)**:
-  - `gameTypes.ts`, `turbines.ts`, `botRules.ts`, `markdownParser.ts`.
+  - `gameTypes.ts`, `turbines.ts`, `decks.ts`, `botRules.ts`, `markdownParser.ts`, `photoCredits.ts`.
   - **Rule**: Keep `src/shared/` 100% free of Vite-only imports (`?raw`, `import.meta.glob`) and browser globals (`window`, `localStorage`) so Node (`tsx --test`, `server.ts`, `esbuild`) can import them directly.
 - **Browser Loaders (`src/lib/`)**:
   - `turbineDeck.ts` uses Vite `?raw` + `import.meta.glob` to load `src/data/*.md`.
   - `botEngine.ts` wraps `src/shared/botRules.ts` with Vite-loaded cards.
-  - `playerIdentity.ts` & `soundFx.ts` manage `localStorage` (`rotor_clash_*` with one-time migration from `aeolian_*`).
+  - `playerIdentity.ts` & `soundFx.ts` manage `localStorage` (`rotor_clash_*` with one-time migration from `aeolian_*`); `playerIdentity.ts` also holds the player id and the private login secret (`rotor_clash_secret_v1`).
 - **Backend (`server.ts`, `src/server/`)**:
-  - Authoritative game engine (`MatchEngine` in `src/server/matchEngine.ts`), disk deck loader (`turbineRepository.ts`), and atomic JSON persistence (`store.ts` → `data/leaderboard.json`).
+  - Authoritative game engine (`MatchEngine` in `src/server/matchEngine.ts`), disk deck loader (`turbineRepository.ts`), atomic and debounced JSON persistence (`store.ts` → `data/leaderboard.json`, which also holds the hashed login secrets), and the security helpers in `security.ts` (validation, secrets, rate and connection limits, origin check, headers/CSP builders). `server.ts` wires them to Express and `ws`.
 
 ---
 
@@ -32,7 +32,7 @@ This file defines the architectural rules, conventions, and verification steps f
 2. **Tailwind CSS 4.x**:
    - Configured via `@tailwindcss/vite` in `vite.config.ts` and `@import "tailwindcss";` + `@theme` in `src/index.css`.
    - **Colours are theme tokens** (`bg-c-paper`, `text-c-ink`, `border-c-ink`, …) defined as CSS variables in `src/index.css` with a `.dark` override on `<html>`. Never hardcode hex colours in templates (use `var(--c-*)` in inline styles); otherwise dark mode breaks. Theme logic lives in `src/lib/theme.ts` (key `rotor_clash_theme`).
-   - PWA/home-screen assets live in `public/` (`manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`); the app name there must stay "Rotor Clash".
+   - PWA/home-screen assets live in `public/` (`manifest.webmanifest`, `icon-*.png`, `apple-touch-icon.png`); the app name there must stay "Rotor Clash". `public/theme-init.js` applies the saved theme before first paint and must stay an external file (no inline scripts, see the CSP rule in item 8).
    - Avoid inline `style="..."` except for dynamic computed bindings (e.g., category hex colors or progress bar widths).
 
 3. **Data & Translations Separation**:
@@ -51,7 +51,8 @@ This file defines the architectural rules, conventions, and verification steps f
    - There are two decks of 8 quartets (32 cards) each, told apart by group id: groups 1–8 are `modern` (cards `1A`–`8D`), groups 9–16 are `records` (cards `9A`–`16D`). The rules live in `src/shared/decks.ts` (keep it free of Vite/browser imports).
    - A match uses one **deck mode**: `modern`, `records`, `mixed` (8 random whole quartets of 16) or `grand` (all 64 cards, 16 quartets, 48 rounds). The stat set belongs to the **match**, not the card: `modern` compares cut-in speed, every other mode compares first-power year (older wins). Always use `statKeysForMode(match.deckMode)` / `statDefsFor(card, activeMatch.deckMode)`; never infer stats from a single card inside a match.
    - Deck-2 cards have no `cutInWindMs` (leave it out of the markdown); `firstPowerYear` is taken from the card's `year`.
-   - Quick-match queues are separate per deck mode, rooms carry their deck mode, and clients may send any string: the server normalises unknown or unavailable modes to `modern`.
+   - Quick-match queues are separate per deck mode, rooms carry their deck mode and a `listed` flag (private by default, see item 8), and clients may send any string: the server normalises unknown or unavailable modes to `modern`.
+   - The tutorial (step 1) has a deck switch that shows a Modern card (Start Wind) and a Records card (First Power, German label "Am Netz seit"); keep both fifth stats explained when you touch it.
    - New cards need EN **and** DE text in `src/data/locales/*/turbines.md`, a source URL, and a photo credit (see below). Research notes and confidence per figure live in `docs/research/second-deck-verification.md`.
 
 6. **Card Photography, Licences & Detail View (Two-Column Field-Guide Dossier)**:
@@ -68,9 +69,14 @@ This file defines the architectural rules, conventions, and verification steps f
    - **Client input is hostile**: parse every WebSocket message with `parseClientMessage()`, validate ids with `isValidPlayerId()`, bound string lengths before using them, and validate game moves against the match (e.g. `playStat` only accepts `statKeysForMode(match.deckMode)`). Keys that come from clients must never index a plain `{}`: use `Map`, or the prototype-less dictionaries in `store.ts`; `__proto__`, `constructor` and `prototype` are refused outright.
    - **Limits**: `maxPayload` 4 KB, 30-message burst then 10/s per socket (sustained abuse closes the socket), 30 sockets per address, 60 REST requests per minute and address, rename cooldown, coalesced lobby and leaderboard broadcasts, debounced disk writes, and a cap on unranked profiles. Do not remove a limit without replacing it. Every `ws` socket needs an `'error'` listener, otherwise one oversized frame stops the process.
    - **Rooms** are private (code or invite link) unless the host ticks *Show in open rooms*; room codes, shuffles and the starting player use `crypto`, never `Math.random()`.
-   - **Headers**: `securityHeaders()` sets nosniff, frame denial, referrer and permissions policies, and (production only) a CSP. The CSP needs `'unsafe-eval'` because the standard Alpine build compiles expressions; keep scripts external (`public/theme-init.js`), never inline.
-   - **Deploys**: pin GitHub Actions by commit SHA, install production dependencies with `npm ci` from the lockfile, and set the `SSH_KNOWN_HOSTS` secret/variable so the host key is pinned.
-   - Optional environment variables: `TRUST_PROXY=0` (ignore `X-Forwarded-For` when the app is exposed directly) and `ALLOWED_ORIGINS` (comma-separated extra origins allowed to open the WebSocket).
+   - **Headers**: on the target host/hosting panel nginx serves `index.html` and `/assets/*` itself, so the security headers (nosniff, `X-Frame-Options`, referrer and permissions policies, CSP) are configured in hosting panel (*Apache & nginx Settings → Additional headers*, plain `Name: value` lines, exact text in the README). The app therefore does **not** send them unless `SECURITY_HEADERS=app` is set (`securityHeaders()` in `security.ts`); setting them in both places sends every header twice. The built `index.html` also carries the CSP as a `<meta>` tag (`cspMeta()` plugin in `vite.config.ts`, `buildMetaCsp()`), so the policy survives a lost web-server config. If you change the CSP, update `security.ts` **and** the README/hosting panel text. The CSP needs `'unsafe-eval'` because the standard Alpine build compiles expressions; keep scripts external, never inline.
+   - **Deploys**: pin GitHub Actions by commit SHA, install production dependencies with `npm ci` from the lockfile, and keep the `SSH_KNOWN_HOSTS` secret/variable current. Its host name must equal `SSH_HOST`; the release uses strict host-key checking and fails (before uploading anything) if the key is unknown.
+   - Optional environment variables: `TRUST_PROXY=0` (ignore `X-Forwarded-For` when the app is exposed directly), `ALLOWED_ORIGINS` (comma-separated extra origins allowed to open the WebSocket) and `SECURITY_HEADERS=app` (send the security headers from the app). Tests for all of this live in `tests/security.test.ts`.
+
+9. **Releases, Versions & Updating Clients**:
+   - The app has **no service worker** (the home-screen icon only opens the site). Do not add one without a complete update flow, because a service worker that serves a stale shell is the classic way to strand players on an old version.
+   - The release workflow bumps `package.json` *before* building. The bundle receives that number as `__APP_VERSION__` (`define` in `vite.config.ts`, declared in `src/globals.d.ts`), and the server reports it via `readAppVersion()` (`src/server/version.ts`) in `GET /api/health` and in the WebSocket `auth:ack` (`serverVersion`). The client (`handleServerVersion()` in the store) reloads once when idle and otherwise shows the *Update now* banner. Keep that handshake working; never remove `version` from `/api/health` or `serverVersion` from `auth:ack`.
+   - A page can be one version behind the server for a while (an app resumed from the background, a cached `index.html`). Keep WebSocket messages backward compatible for at least one release, or make sure an old client fails in a way that the banner/reload fixes. Build output is content-hashed and old files stay on the server after a deploy (the archive is extracted over `dist/`), so an old page keeps working until it reloads.
 
 ---
 
@@ -80,7 +86,7 @@ Run all four checks locally before pushing or merging into `develop`:
 
 ```bash
 npm run lint          # TypeScript strict check (tsc --noEmit)
-npm test              # 15+ unit/integration tests (tsx --test tests/*.test.ts)
+npm test              # unit/integration tests incl. security tests (tsx --test tests/*.test.ts)
 npm run build         # Vite + Tailwind 4 production client bundle (dist/)
 npm run build:server  # esbuild CommonJS server bundle (dist-server/server.cjs)
 ```

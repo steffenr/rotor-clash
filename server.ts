@@ -10,6 +10,7 @@ import {
 } from './src/server/turbineRepository.ts';
 import { MatchEngine } from './src/server/matchEngine.ts';
 import { leaderboardStore } from './src/server/store.ts';
+import { readAppVersion } from './src/server/version.ts';
 import {
   ConnectionLimiter,
   MAX_MESSAGE_BYTES,
@@ -24,6 +25,15 @@ import {
 
 const RAW_PORT = process.env.PORT || '3000';
 const IS_PROD = process.env.NODE_ENV === 'production';
+/**
+ * Security headers (nosniff, framing, referrer, permissions, CSP) are normally set by the web server
+ * configuration in front of the app (hosting panel: "Additional headers"), which also covers the static files
+ * that never reach Node. Setting them here as well would send every header twice, so the app only does
+ * it when SECURITY_HEADERS=app, for example when it is exposed directly without a configured proxy.
+ */
+const APP_SENDS_SECURITY_HEADERS = process.env.SECURITY_HEADERS === 'app';
+/** Reported to clients, which reload themselves when their own bundle is older. */
+const APP_VERSION = readAppVersion();
 
 /** Sockets per client address (several players can share one school / home network) and overall. */
 const MAX_SOCKETS_PER_IP = 30;
@@ -45,7 +55,11 @@ const trimString = (value: unknown, max: number): string =>
 async function bootstrap() {
   const app = express();
   app.disable('x-powered-by');
-  app.use(securityHeaders(IS_PROD));
+  if (APP_SENDS_SECURITY_HEADERS) {
+    app.use(securityHeaders(IS_PROD));
+  } else {
+    console.log('Security headers are expected from the web server configuration (SECURITY_HEADERS=app sends them from the app).');
+  }
 
   // Small per-address limit on the REST API.
   const apiLimiters = new Map<string, { limiter: RateLimiter; lastSeen: number }>();
@@ -75,7 +89,7 @@ async function bootstrap() {
 
   // REST API endpoints
   app.get('/api/health', (_req, res) => {
-    res.json({ ok: true, timestamp: Date.now() });
+    res.json({ ok: true, version: APP_VERSION, timestamp: Date.now() });
   });
 
   app.get('/api/deck', (_req, res) => {
@@ -226,7 +240,7 @@ async function bootstrap() {
           playerSockets.get(playerId)!.add(ws);
 
           const profile = leaderboardStore.getOrCreatePlayer(playerId, callsign);
-          sendJson(ws, 'auth:ack', { profile });
+          sendJson(ws, 'auth:ack', { profile, serverVersion: APP_VERSION });
           sendJson(ws, 'lobby:state', engine.getLobbySnapshot(playerSockets.size));
           sendJson(ws, 'leaderboard:updated', {
             leaderboard: leaderboardStore.getLeaderboard(),

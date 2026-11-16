@@ -46,7 +46,10 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 - **3-Zone Sticky Header**:
   1. Left: Illustrated **Rotor Clash** logo emblem (`/assets/aistudio/logo_rotor_clash_3a6e5dcc.png`) with `sr-only` text fallback, topped by a Coastal Teal / Harbor Navy / Beacon Orange accent hairline.
   2. Center: 4 single-line links (`Play`, `Card Album`, `Leaderboard`, `How to Play`) with Beacon Orange `#F15A24` active underline.
-  3. Right: Single primary CTA (`Quick Match` / `Back to Game`) styled with Meadow Green + `#173240` ink border & press lip.
+  3. Right: light/dark theme toggle plus a single primary CTA (`Quick Match` / `Back to Game`) styled with Meadow Green + `#173240` ink border & press lip.
+- **Update banner**: when the server runs a newer version than the open page, a Coastal Sky strip below the utility bar reads *"A new version of Rotor Clash is available."* with a Meadow Green **Update now** button (`t.nav.updateAvailable` / `t.nav.updateReload`). An idle page reloads itself once; during a match only the banner appears, so no game is interrupted. It sits above the red error toast.
+- **Phone layout (below `md`)**: the centre links move to a fixed bottom tab bar, a match shows its round counter next to the logo in the header, the scoreboard is compact (card counts only, names truncate) and the round result slides up as a bottom sheet.
+- **Themes**: every colour is a `--c-*` token with a `.dark` override on `<html>` (`src/lib/theme.ts`, storage key `rotor_clash_theme`; the saved or system theme is applied before first paint by `public/theme-init.js`). Never hardcode hex colours in templates. Card backs keep their Harbor Navy in dark mode (`--c-back`).
 - **Workspace Utility Strip**: Secondary bar directly beneath the header showing current Explorer callsign + points, audio mute toggle, and `EN` / `DE` language switcher.
 - **Collector Emblem Banner (Lobby Hero)**: Features the Rotor Clash emblem centered inside a `#FAF4E4` cream plaque flanked by the logo's signature **dual Coastal Teal & Beacon Orange speed-stripes**, paired with a coastal-sky card preview showcase on the right.
 
@@ -55,13 +58,14 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 ## 4. Card & Component Anatomy
 
 ### Turbine Card (`src/templates/cardMarkup.ts`)
-1. **Category Crest Band & Explorer Header**: Top `6px` category bar, circular Harbor-ink Quartet seal (`1A`–`8D`) on `#FAF4E4` badge cream, group name, build year, full-view inspect button, model heading, manufacturer & country.
+1. **Category Crest Band & Explorer Header**: Top `6px` category bar, circular Harbor-ink Quartet seal (`1A`–`16D`) on `#FAF4E4` badge cream, group name, build year, full-view inspect button, model heading, manufacturer & country.
 2. **Mounted Photo + Coastal Sky Arch Lighthouse Diagram**:
    - 8/12 columns: Framed field photograph (`referrerpolicy="no-referrer"` with clean SVG wind fallback) and overlaid plant/location caption.
    - 4/12 columns: Rounded-top **Coastal Sky Arch Window** (`rounded-t-[2.25rem]`) with sky gradient (`#2A86A8` → `#B4DFEF` → `#EDF6F9`), green coastal headland, cream ink-stroked turbine, and Beacon Orange striped **45 m coastal lighthouse** (`hubHeightM / 45m`).
 3. **5 Tactile Stat Rows (`min-h-[44px]`)**:
-   - Icon badge, localized kid-friendly label (*Power*, *Rotor Size*, *Tower Height*, *Start Wind*, *Wind Farm*), tabular metric + unit, and proportional strength bar.
-   - *Start Wind* (`cutInWindMs`) displays an explicit Beacon Orange `Min` / `Kleiner` indicator so younger players immediately spot that lower values win.
+   - Icon badge, localized kid-friendly label (*Power*, *Rotor Size*, *Tower Height*, *Wind Farm* and a fifth stat that depends on the deck), tabular metric + unit, and proportional strength bar.
+   - The fifth stat belongs to the match's deck mode: *Modern Giants* compares *Start Wind* (`cutInWindMs`, German *Anlaufwind*); *Records & Firsts*, *Mixed* and *Grand Tour* compare *First Power* (`firstPowerYear`, German *Am Netz seit*), where the oldest machine wins.
+   - Both lower-wins stats display an explicit Beacon Orange `Min` / `Kleiner` indicator so younger players immediately spot that the lower value wins. A value flagged as approximate (`approximateStats` in the card file) is shown with a `≈` and a tooltip.
 4. **Field Guide Footer**: Swept area (`m²`), rule reminder, and verified external technical source link.
 
 ### Card Detail Modal (`renderCardDetailModal`)
@@ -81,8 +85,15 @@ Defined in `index.html` and mapped as Tailwind CSS 4.x `@theme` tokens in `src/i
 
 ### Arena Table & Collector Strip (`renderArena`)
 - Plays on the plain `--c-canvas-2` desk colour: no background illustration, so nothing competes with the two cards.
+- Match scoreboard: from `sm` up a three-column grid (`minmax(0,1fr) auto minmax(0,1fr)`), so the round counter sits exactly in the middle whatever the player names or ratings are; on phones it wraps and the counter moves to the header.
 - 3-column battle table: **Your Card** | **Center Duel Feedback / Turn Cue** (`animate-gentle-bob` on active turn) | **Opponent Card / Card Back**.
-- Compact bottom Quartet collector bar (`1..8` with `0/4`–`4/4` progress) expandable into the full 32-slot Quartet Matrix (`renderQuartetMatrix`).
+- Compact bottom Quartet collector bar (one chip per quartet of the deck mode, `0/4`–`4/4` progress) expandable into the full Quartet Matrix (`renderQuartetMatrix`: 32 slots, or 64 in *Grand Tour*).
+
+### Lobby: Friend Rooms
+- Creating a friend room shows a mint panel with the 6-character code, a *Copy Invite Link* button and a **Show in open rooms** checkbox. Rooms are private by default; ticking the box lists the room under *Open rooms* for everyone, unticking hides it again.
+
+### How to Play (Tutorial)
+- Step 1 shows an interactive example card. A **Modern Giants / Records & Firsts** switch above it swaps between the Vestas V236 (Start Wind) and the Gedser Wind Turbine (First Power), and the explanation tip follows the stat the learner taps.
 
 ---
 
