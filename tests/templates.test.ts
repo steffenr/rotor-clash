@@ -30,3 +30,21 @@ test('index.html loads Alpine entry point without React mount', () => {
   assert.ok(indexHtml.includes('x-data="rotorClashApp()"'));
   assert.equal(indexHtml.includes('/src/main.tsx'), false);
 });
+
+test('templates use only Tailwind default font sizes (no text-[..px] arbitrary values)', () => {
+  const dir = path.resolve(import.meta.dirname, '../src/templates');
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.ts'))) {
+    const source = fs.readFileSync(path.join(dir, file), 'utf-8');
+    assert.equal(/text-\[[0-9.]+(px|rem|em)\]/.test(source), false, `${file} has a custom font size`);
+  }
+});
+
+test('own card in a match shows a phone hero with the name over the photo; the opponent card does not', () => {
+  const own = renderTurbineCard('c()', { hideMediaOnMobile: true, mobileHero: true });
+  const opp = renderTurbineCard('c()', { hideMediaOnMobile: true });
+  assert.ok(own.includes('sm:hidden relative block w-full h-64'));
+  assert.ok(!opp.includes('sm:hidden relative block w-full h-64'));
+  // phones get the full width; the caps start at sm
+  assert.ok(own.includes('w-full sm:max-w-[356px]'));
+  assert.equal(own.includes('w-full max-w-[356px]'), false);
+});
