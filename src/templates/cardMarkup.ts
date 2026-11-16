@@ -9,6 +9,11 @@ export interface CardRenderOptions {
   onSelectStatHandler?: string;
   /** In-match phone layout: hide photo, lighthouse diagram and source link so the stats are the first thing visible. */
   hideMediaOnMobile?: boolean;
+  /**
+   * With `hideMediaOnMobile`: show the photo as a large hero (name and plant over its lower edge) on phones
+   * instead of a thumbnail. Used for the player's own card so the photo stays readable.
+   */
+  mobileHero?: boolean;
   /** Alpine expression for the match's deck mode; in a match all cards are compared on one stat set. */
   statModeExpr?: string;
 }
@@ -22,11 +27,14 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
     highlightOutcomeExpr = 'null',
     onSelectStatHandler = '',
     hideMediaOnMobile = false,
+    mobileHero = false,
     statModeExpr = 'null',
   } = opts;
   const mobileHide = hideMediaOnMobile ? 'max-sm:hidden' : '';
+  // The hero already shows the name and plant on phones, so the header text would repeat them.
+  const heroHide = mobileHero ? 'max-sm:hidden' : '';
 
-  const widthClass = compact ? 'w-full max-w-[308px]' : 'w-full max-w-[356px]';
+  const widthClass = compact ? 'w-full sm:max-w-[308px]' : 'w-full sm:max-w-[356px]';
   const photoHeightClass = compact ? 'h-28' : 'h-32';
   const hoverClass = playfulHover ? 'hover:-translate-y-1' : '';
 
@@ -48,10 +56,10 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             <span x-show="stat.key === 'firstPowerYear'">${iconSvg('clock', 'w-3.5 h-3.5')}</span>
             <span x-show="stat.key === 'plantCapacityMw'">${iconSvg('factory', 'w-3.5 h-3.5')}</span>
           </span>
-          <span class="text-xs font-bold truncate" x-text="t.stats[stat.key].label"></span>
+          <span class="text-sm font-bold truncate" x-text="t.stats[stat.key].label"></span>
           <span
             x-show="!stat.higherWins"
-            class="text-[10px] font-bold text-c-orange-deep inline-flex items-center gap-0.5 shrink-0"
+            class="text-xs font-bold text-c-orange-deep inline-flex items-center gap-0.5 shrink-0"
           >
             ${iconSvg('arrow-down', 'w-2.5 h-2.5')}
             <span x-text="lang === 'de' ? 'Niedriger' : 'Min'"></span>
@@ -59,12 +67,12 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         </div>
         <div class="flex items-baseline gap-1 shrink-0">
           <span
-            class="font-mono tabular-nums text-sm font-bold text-c-ink"
+            class="font-mono tabular-nums text-base font-bold text-c-ink"
             :title="isApproxStat(${cardExpr}, stat.key) ? t.card.approximate : null"
             x-text="(isApproxStat(${cardExpr}, stat.key) ? '≈ ' : '') + formatStatValue(stat.key, ${cardExpr}.stats[stat.key])"
           ></span>
           <span
-            class="text-[11px] font-semibold text-c-ink-2 min-w-[1.5rem] text-right"
+            class="text-xs font-semibold text-c-ink-2 min-w-6 text-right"
             x-text="stat.unit"
           ></span>
         </div>
@@ -98,12 +106,12 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-1.5">
             <span
-              class="text-[11px] font-bold truncate"
+              class="text-xs font-bold truncate"
               :style="'color:' + cardTheme(${cardExpr}).border"
               x-text="groupName(${cardExpr}.groupId)"
             ></span>
             <div class="flex items-center gap-1.5 shrink-0">
-              <span class="font-mono tabular-nums text-[11px] font-semibold text-c-ink-3" x-text="${cardExpr}.year"></span>
+              <span class="font-mono tabular-nums text-xs font-semibold text-c-ink-3" x-text="${cardExpr}.year"></span>
               <button
                 type="button"
                 @click="inspectCard(${cardExpr})"
@@ -117,19 +125,19 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
           </div>
 
           <h3
-            class="font-display text-base sm:text-lg font-extrabold leading-snug text-c-ink truncate"
+            class="${heroHide} font-display text-lg font-extrabold leading-snug text-c-ink truncate"
             :title="${cardExpr}.modelName"
             x-text="${cardExpr}.modelName"
           ></h3>
 
-          <div class="text-[11px] text-c-ink-2 truncate">
+          <div class="${heroHide} text-xs text-c-ink-2 truncate">
             <span class="font-bold text-c-ink" x-text="${cardExpr}.manufacturer"></span>
             <span aria-hidden="true"> · </span>
             <span x-text="cardLocale(${cardExpr}).country"></span>
           </div>
         </div>
         ${
-          hideMediaOnMobile
+          hideMediaOnMobile && !mobileHero
             ? `<!-- Phone-only thumbnail: keeps the field photo without pushing the stats down -->
         <button
           type="button"
@@ -153,6 +161,34 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
         }
       </div>
 
+      ${
+        mobileHero
+          ? `<!-- Phone hero: the field photo as large as the card allows; tap for the full view -->
+      <button
+        type="button"
+        @click="inspectCard(${cardExpr})"
+        :aria-label="t.card.fullView + ': ' + ${cardExpr}.modelName"
+        class="sm:hidden relative block w-full h-64 shrink-0 overflow-hidden bg-c-sand-soft text-left"
+        x-data="{ imgFailed: false }"
+        x-effect="void (${cardExpr}?.id); imgFailed = false"
+      >
+        <img
+          x-show="!imgFailed"
+          :src="photoUrl(${cardExpr})"
+          :alt="${cardExpr}.modelName + ' (' + ${cardExpr}.flagshipPlant + ')'"
+          referrerpolicy="no-referrer"
+          @error="imgFailed = true"
+          class="h-full w-full object-cover"
+        />
+        <span x-show="imgFailed" class="h-full w-full flex items-center justify-center bg-gradient-to-br from-c-sky to-c-paper text-c-teal">${iconSvg('wind', 'w-12 h-12')}</span>
+        <span class="absolute inset-x-0 bottom-0 block bg-gradient-to-t from-c-ink/90 via-c-ink/50 to-transparent px-3.5 pt-10 pb-3 text-white">
+          <span class="block font-display text-xl font-extrabold leading-snug" x-text="${cardExpr}.modelName"></span>
+          <span class="block text-sm font-semibold text-white/90" x-text="${cardExpr}.flagshipPlant + ' · ' + ${cardExpr}.flagshipLocation"></span>
+        </span>
+      </button>`
+          : ''
+      }
+
       <!-- Mounted Field Photo + Coastal Sky Arch Lighthouse Scale Diagram -->
       <div class="px-3.5 pt-3 pb-2 grid grid-cols-12 gap-2.5 items-stretch bg-c-paper-hi ${mobileHide}">
         <div
@@ -174,11 +210,11 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
               class="h-full w-full bg-gradient-to-br from-c-sky to-c-paper flex flex-col items-center justify-center text-c-teal p-2 text-center"
             >
               ${iconSvg('wind', 'w-7 h-7 mb-1')}
-              <span class="text-[11px] font-semibold leading-tight" x-text="${cardExpr}.modelName"></span>
+              <span class="text-xs font-semibold leading-tight" x-text="${cardExpr}.modelName"></span>
             </div>
             <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-c-ink/85 via-c-ink/40 to-transparent px-2 py-1.5 text-white">
-              <div class="text-[10px] font-semibold leading-tight truncate" x-text="${cardExpr}.flagshipPlant"></div>
-              <div class="text-[9px] text-white/85 truncate" x-text="${cardExpr}.flagshipLocation"></div>
+              <div class="text-xs font-semibold leading-tight truncate" x-text="${cardExpr}.flagshipPlant"></div>
+              <div class="text-xs text-white/85 truncate" x-text="${cardExpr}.flagshipLocation"></div>
             </div>
           </div>
         </div>
@@ -244,7 +280,7 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
             </g>
           </svg>
           <span
-            class="font-mono tabular-nums text-[9px] font-bold text-c-ink bg-c-paper/95 px-1.5 py-0.5 rounded border border-c-ink/35 leading-none"
+            class="font-mono tabular-nums text-xs font-bold text-c-ink bg-c-paper/95 px-1.5 py-0.5 rounded border border-c-ink/35 leading-none"
             x-text="${cardExpr}.stats.hubHeightM + 'm / 45m'"
           ></span>
         </div>
@@ -260,18 +296,18 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
                     x-show="${selectableExpr}"
                     type="button"
                     @click="${onSelectStatHandler}"
-                    :class="'w-full min-h-[44px] px-2.5 py-1.5 rounded-xl border text-left transition-all duration-150 ' + ${rowClassExpr}"
+                    :class="'w-full min-h-12 px-2.5 py-1.5 rounded-xl border text-left transition-all duration-150 ' + ${rowClassExpr}"
                   >
                     ${statInner}
                   </button>
                   <div
                     x-show="!(${selectableExpr})"
-                    :class="'w-full min-h-[42px] px-2.5 py-1.5 rounded-xl border flex items-center transition-colors ' + ${rowClassExpr}"
+                    :class="'w-full min-h-12 px-2.5 py-1.5 rounded-xl border flex items-center transition-colors ' + ${rowClassExpr}"
                   >
                     ${statInner}
                   </div>`
                 : `<div
-                    :class="'w-full min-h-[42px] px-2.5 py-1.5 rounded-xl border flex items-center transition-colors ' + ${rowClassExpr}"
+                    :class="'w-full min-h-12 px-2.5 py-1.5 rounded-xl border flex items-center transition-colors ' + ${rowClassExpr}"
                   >
                     ${statInner}
                   </div>`
@@ -281,13 +317,13 @@ export function renderTurbineCard(cardExpr: string, opts: CardRenderOptions = {}
       </div>
 
       <!-- Field Guide Footer -->
-      <div class="px-3.5 py-2 bg-c-paper border-t-2 border-c-ink/15 text-[11px] text-c-ink-2 flex items-center justify-between gap-2">
+      <div class="px-3.5 py-2 bg-c-paper border-t-2 border-c-ink/15 text-xs text-c-ink-2 flex items-center justify-between gap-2">
         <span
           class="font-mono tabular-nums font-semibold truncate"
           x-text="formatNumber(${cardExpr}.sweptAreaM2) + ' m²'"
         ></span>
         <div class="flex items-center gap-3 shrink-0">
-          <span class="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-semibold text-c-ink-3">
+          <span class="hidden sm:inline-flex items-center gap-0.5 text-xs font-semibold text-c-ink-3">
             ${iconSvg('arrow-up', 'w-2.5 h-2.5')}
             <span x-text="t.card.higherWins"></span>
           </span>
@@ -314,8 +350,8 @@ export function renderTurbineCardBack(
   compact = false
 ): string {
   const sizeClass = compact
-    ? 'w-full max-w-[308px] h-[440px]'
-    : 'w-full max-w-[356px] h-[476px]';
+    ? 'w-full sm:max-w-[308px] h-[440px]'
+    : 'w-full sm:max-w-[356px] h-[476px]';
 
   return `
     <div

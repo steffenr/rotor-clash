@@ -26,7 +26,7 @@ export function renderQuartetMatrix(
           >
             <div class="flex items-center justify-between gap-1 mb-1.5">
               <span
-                class="text-[11px] font-bold text-c-ink truncate"
+                class="text-xs font-bold text-c-ink truncate"
                 :title="groupName(group.id)"
                 x-text="group.code + '. ' + groupName(group.id)"
               ></span>
@@ -38,7 +38,7 @@ export function renderQuartetMatrix(
               <template x-for="slot in ['A', 'B', 'C', 'D']" :key="slot">
                 <div
                   :title="cardTitleById(group.id + slot)"
-                  :class="'h-6 rounded flex items-center justify-center font-mono text-[11px] font-bold border ' + ((${ownedIdsExpr}).includes(group.id + slot) ? ((${completedExpr}).includes(group.id) ? 'bg-c-green border-c-ink text-white' : 'bg-c-teal border-c-ink text-white') : 'bg-c-sand-soft border-c-ink/20 text-c-ink-4')"
+                  :class="'h-6 rounded flex items-center justify-center font-mono text-xs font-bold border ' + ((${ownedIdsExpr}).includes(group.id + slot) ? ((${completedExpr}).includes(group.id) ? 'bg-c-green border-c-ink text-white' : 'bg-c-teal border-c-ink text-white') : 'bg-c-sand-soft border-c-ink/20 text-c-ink-4')"
                   x-text="slot"
                 ></div>
               </template>
@@ -79,7 +79,7 @@ export function renderHeader(): string {
         <!-- Phone-only: current round next to the brand while a match is running -->
         <template x-if="activeMatch && activeTab === 'arena'">
           <div class="md:hidden flex flex-col items-center justify-center leading-none px-2.5 h-10 rounded-xl bg-c-paper border-2 border-c-ink/25">
-            <span class="text-[9px] font-bold uppercase tracking-wide text-c-ink-3" x-text="t.arena.round"></span>
+            <span class="text-xs font-bold uppercase tracking-wide text-c-ink-3" x-text="t.arena.round"></span>
             <span class="mt-0.5 font-mono tabular-nums text-sm font-bold text-c-ink" x-text="activeMatch.roundNumber + '/' + activeMatch.maxRounds"></span>
           </div>
         </template>
@@ -135,7 +135,7 @@ export function renderHeader(): string {
             type="button"
             @click="setTab(item.id)"
             :aria-current="activeTab === item.id ? 'page' : null"
-            :class="'min-h-14 px-1 py-2 text-[11px] leading-tight font-bold flex items-center justify-center text-center border-t-[3px] -mt-0.5 transition-colors ' + (activeTab === item.id ? 'border-c-orange text-c-ink bg-c-sand/60' : 'border-transparent text-c-ink-3')"
+            :class="'min-h-14 px-1 py-2 text-xs leading-tight font-bold flex items-center justify-center text-center border-t-[3px] -mt-0.5 transition-colors ' + (activeTab === item.id ? 'border-c-orange text-c-ink bg-c-sand/60' : 'border-transparent text-c-ink-3')"
             x-text="item.label"
           ></button>
         </template>
@@ -459,7 +459,7 @@ export function renderLobby(): string {
                 <button
                   type="button"
                   @click="selectPreviewCard(opt.id)"
-                  :class="'px-2 py-1 rounded-lg text-[11px] font-bold transition-colors whitespace-nowrap ' + (previewCardId === opt.id ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
+                  :class="'px-2 py-1 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ' + (previewCardId === opt.id ? 'bg-c-teal text-white' : 'text-c-ink-3 hover:text-c-ink')"
                   x-text="opt.label"
                 ></button>
               </template>
@@ -556,10 +556,10 @@ export function renderArena(): string {
     <template x-if="activeTab === 'arena' && activeMatch">
       <div
         id="arena-root"
-        class="relative overflow-hidden rounded-2xl border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16"
+        class="relative overflow-hidden rounded-2xl max-sm:-mx-2 max-sm:rounded-none max-sm:border-x-0 border-2 border-c-ink bg-c-canvas-2 shadow-[0_6px_0_var(--c-line)] transition-all scroll-mt-16"
       >
 
-        <div :class="'relative z-10 max-w-6xl mx-auto p-3 sm:p-6 space-y-3 sm:space-y-5 ' + (isReveal() && activeMatch.lastRound ? 'max-lg:pb-56' : '')">
+        <div :class="'relative z-10 max-w-6xl mx-auto p-1.5 sm:p-6 space-y-3 sm:space-y-5 ' + (isReveal() && activeMatch.lastRound ? 'max-lg:pb-56' : '')">
           <!-- Field Guide Match Scoreboard -->
           <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] rounded-2xl bg-c-paper-hi/95 border-2 border-c-ink shadow-[0_3px_0_var(--c-line)] px-3 sm:px-4 py-2 sm:py-2.5">
             <div class="order-1 flex flex-1 items-center gap-3 min-w-0">
@@ -573,7 +573,7 @@ export function renderArena(): string {
                   <span class="text-xs font-sans font-bold text-c-teal" x-text="' (' + t.arena.you + ')'"></span>
                 </div>
                 <div
-                  class="hidden sm:block text-[11px] text-c-ink-2 font-mono tabular-nums"
+                  class="hidden sm:block text-xs text-c-ink-2 font-mono tabular-nums"
                   x-text="tierForElo(activeMatch.you.elo).name + ' · ' + activeMatch.you.elo + ' pts'"
                 ></div>
               </div>
@@ -583,7 +583,7 @@ export function renderArena(): string {
               :class="'order-3 w-full justify-center sm:w-auto sm:order-2 flex flex-wrap items-center gap-2 sm:gap-2.5 ' + ((activeMatch.tiePotCount > 0 || (secondsLeft !== null && activeMatch.status === 'PLAYING')) ? '' : 'max-sm:hidden')"
             >
               <div class="max-sm:hidden px-3 py-1.5 rounded-xl bg-c-paper border-2 border-c-ink/25 text-center whitespace-nowrap">
-                <span class="text-[11px] font-bold text-c-ink-2 mr-1.5" x-text="t.arena.round"></span>
+                <span class="text-xs font-bold text-c-ink-2 mr-1.5" x-text="t.arena.round"></span>
                 <span
                   class="font-mono tabular-nums text-sm font-bold text-c-ink"
                   x-text="activeMatch.roundNumber + '/' + activeMatch.maxRounds"
@@ -623,7 +623,7 @@ export function renderArena(): string {
                   </span>
                   <span class="font-display font-bold text-sm text-c-ink truncate" x-text="activeMatch.opponent.callsign"></span>
                 </div>
-                <div class="text-[11px] text-c-ink-2 font-mono tabular-nums" x-text="activeMatch.opponent.elo + ' pts'"></div>
+                <div class="text-xs text-c-ink-2 font-mono tabular-nums" x-text="activeMatch.opponent.elo + ' pts'"></div>
               </div>
 
               <div
@@ -729,18 +729,19 @@ export function renderArena(): string {
                     highlightOutcomeExpr: 'arenaYourOutcome()',
                     onSelectStatHandler: 'selectStat(stat.key)',
                     hideMediaOnMobile: true,
+                    mobileHero: true,
                     statModeExpr: 'activeMatch.deckMode',
                   })}
                 </div>
               </div>
 
               <!-- Center Duel Feedback -->
-              <div class="max-lg:order-first lg:col-span-3 w-full max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
+              <div class="max-lg:order-first lg:col-span-3 w-full sm:max-w-[356px] lg:max-w-none flex flex-col items-center justify-center text-center px-1 sm:px-2">
                 <div
                   x-show="isReveal() && activeMatch.lastRound"
                   class="w-full rounded-2xl bg-c-paper-hi ink-panel p-4 space-y-3 anim-pop-in max-lg:fixed max-lg:inset-x-3 max-lg:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] max-lg:z-40 max-lg:w-auto max-lg:max-w-md max-lg:mx-auto max-lg:p-3 max-lg:space-y-2 max-lg:shadow-[0_-6px_24px_rgba(0,0,0,0.25)]"
                 >
-                  <div class="max-lg:hidden text-[11px] font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
+                  <div class="max-lg:hidden text-xs font-bold text-c-ink-2" x-text="t.arena.statCompared"></div>
                   <div
                     class="font-display text-lg font-extrabold text-c-ink max-lg:text-base max-lg:leading-tight"
                     x-text="activeMatch.lastRound ? t.stats[activeMatch.lastRound.chosenStat].label : ''"
@@ -833,10 +834,10 @@ export function renderArena(): string {
                     <template x-for="g in matchGroups()" :key="g.id">
                       <div
                         :title="g.code + '. ' + groupName(g.id) + ' (' + ownedGroupCount(g.id) + '/4)'"
-                        :class="'px-2 py-1 rounded-lg border font-mono text-[11px] font-bold flex items-center gap-1 ' + (activeMatch.you.completedQuartets.includes(g.id) ? 'bg-c-green border-c-ink text-white' : (ownedGroupCount(g.id) > 0 ? 'bg-c-sky border-c-teal text-c-ink' : 'bg-c-paper border-c-ink/20 text-c-ink-4'))"
+                        :class="'px-2 py-1 rounded-lg border font-mono text-xs font-bold flex items-center gap-1 ' + (activeMatch.you.completedQuartets.includes(g.id) ? 'bg-c-green border-c-ink text-white' : (ownedGroupCount(g.id) > 0 ? 'bg-c-sky border-c-teal text-c-ink' : 'bg-c-paper border-c-ink/20 text-c-ink-4'))"
                       >
                         <span x-text="g.code"></span>
-                        <span class="text-[10px] opacity-85" x-text="ownedGroupCount(g.id) + '/4'"></span>
+                        <span class="text-xs opacity-85" x-text="ownedGroupCount(g.id) + '/4'"></span>
                       </div>
                     </template>
                   </div>
@@ -1416,18 +1417,18 @@ export function renderCardDetailModal(): string {
                 <div class="flex items-center justify-between gap-2">
                   <span class="font-bold text-c-ink truncate" x-text="inspectedCard.flagshipPlant"></span>
                   <span
-                    class="px-2 py-0.5 rounded text-[10px] font-bold border border-c-ink/25 whitespace-nowrap"
+                    class="px-2 py-0.5 rounded text-xs font-bold border border-c-ink/25 whitespace-nowrap"
                     :class="inspectedCard.isRealPhoto ? 'bg-c-mint text-c-green' : 'bg-c-paper text-c-amber-ink'"
                     x-text="inspectedCard.isRealPhoto ? t.card.photoReal : t.card.photoConcept"
                   ></span>
                 </div>
-                <div class="text-c-ink-2 text-[11px] flex items-center justify-between gap-2">
+                <div class="text-c-ink-2 text-xs flex items-center justify-between gap-2">
                   <span class="truncate" x-text="inspectedCard.flagshipLocation"></span>
                   <span class="font-mono tabular-nums font-semibold shrink-0" x-text="formatNumber(inspectedCard.turbineCountInPlant) + ' ' + (lang === 'de' ? 'Anlagen' : 'turbines')"></span>
                 </div>
                 <!-- Photo credit: author, licence and source for every real photograph -->
                 <template x-if="photoCredit(inspectedCard)">
-                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-[10px] leading-snug text-c-ink-3">
+                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-xs leading-snug text-c-ink-3">
                     <span x-text="t.decks.photoBy + ' '"></span>
                     <span class="font-semibold text-c-ink-2" x-text="photoCredit(inspectedCard).author"></span>
                     <span aria-hidden="true"> · </span>
@@ -1449,7 +1450,7 @@ export function renderCardDetailModal(): string {
                   </div>
                 </template>
                 <template x-if="!photoCredit(inspectedCard)">
-                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-[10px] leading-snug text-c-ink-3" x-text="t.decks.photoConcept"></div>
+                  <div class="pt-1.5 mt-1 border-t border-c-ink/15 text-xs leading-snug text-c-ink-3" x-text="t.decks.photoConcept"></div>
                 </template>
               </div>
 
@@ -1523,16 +1524,16 @@ export function renderCardDetailModal(): string {
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   <template x-for="stat in statDefsFor(inspectedCard)" :key="stat.key">
                     <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 p-2 sm:p-2.5 flex flex-col justify-between">
-                      <div class="text-[10px] font-bold text-c-ink-2 truncate" x-text="t.stats[stat.key].shortLabel"></div>
+                      <div class="text-xs font-bold text-c-ink-2 truncate" x-text="t.stats[stat.key].shortLabel"></div>
                       <div class="my-0.5 font-mono tabular-nums text-base sm:text-lg font-bold text-c-ink leading-tight">
                         <span
                           :title="isApproxStat(inspectedCard, stat.key) ? t.card.approximate : null"
                           x-text="(isApproxStat(inspectedCard, stat.key) ? '≈ ' : '') + formatStatValue(stat.key, inspectedCard.stats[stat.key])"
                         ></span>
-                        <span class="text-[10px] font-medium text-c-ink-2" x-text="stat.unit"></span>
+                        <span class="text-xs font-medium text-c-ink-2" x-text="stat.unit"></span>
                       </div>
                       <div
-                        class="text-[9px] font-bold truncate flex items-center gap-0.5"
+                        class="text-xs font-bold truncate flex items-center gap-0.5"
                         :style="'color:' + (stat.higherWins ? 'var(--c-green)' : 'var(--c-orange-deep)')"
                       >
                         <span x-show="stat.higherWins">${iconSvg('arrow-up', 'w-2 h-2')}</span>
@@ -1577,7 +1578,7 @@ export function renderCardDetailModal(): string {
                 </div>
 
                 <div class="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-c-ink/15">
-                  <span class="text-[11px] text-c-ink-3 truncate max-w-[240px]" :title="inspectedCard.sourceLabel" x-text="inspectedCard.sourceLabel"></span>
+                  <span class="text-xs text-c-ink-3 truncate max-w-[240px]" :title="inspectedCard.sourceLabel" x-text="inspectedCard.sourceLabel"></span>
                   <a
                     :href="inspectedCard.sourceUrl"
                     target="_blank"
@@ -1606,7 +1607,7 @@ export function renderAppShell(): string {
       class="min-h-screen flex flex-col bg-c-canvas text-c-ink paper-grain"
     >
       ${renderHeader()}
-      <main class="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8 pb-24 md:pb-8">
+      <main class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 py-4 sm:py-8 pb-24 md:pb-8">
         ${renderLobby()}
         ${renderArena()}
         ${renderCompendium()}
