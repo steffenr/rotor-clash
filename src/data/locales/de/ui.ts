@@ -119,9 +119,9 @@ export const DE_UI: Translations = {
       description: 'Gesamtleistung des Windparks, in dem diese Anlage steht.',
     },
     firstPowerYear: {
-      label: 'Am Netz seit',
-      shortLabel: 'Seit',
-      description: 'Jahr, in dem die Anlage zum ersten Mal Strom ins Netz einspeiste. Die älteste gewinnt!',
+      label: 'Eingeschaltet',
+      shortLabel: 'Jahr',
+      description: 'Jahr, in dem die Anlage zum ersten Mal eingeschaltet wurde und Strom erzeugte. Die älteste gewinnt!',
     },
   },
   arena: {
@@ -137,11 +137,11 @@ export const DE_UI: Translations = {
     matchDefeat: 'Diesmal verloren',
     reasonAllCardsWin: 'Du hast alle Karten gewonnen.',
     reasonAllCardsLoss: 'hat diesmal alle Karten gewonnen.',
-    reasonRoundLimit: 'Alle 24 Runden sind gespielt. Wer die meisten Karten hat, gewinnt.',
+    reasonRoundLimit: 'Alle {rounds} Runden sind gespielt. Wer die meisten Karten hat, gewinnt.',
     reasonForfeitWin: 'hat das Spiel verlassen. Es wurden keine Punkte vergeben oder abgezogen.',
     reasonForfeitLoss: 'Du hast das Spiel verlassen. Es wurden keine Punkte vergeben oder abgezogen.',
     matchAbandoned: 'Spiel nicht gewertet',
-    reasonDraw: 'Nach 24 Runden gleich viele Karten und gleich viele Quartette.',
+    reasonDraw: 'Nach {rounds} Runden gleich viele Karten und gleich viele Quartette.',
     finalCards: 'Kartenstand',
     quartetsBuilt: 'Quartette',
     practiceMode: 'Gegen den Computer',
@@ -213,9 +213,9 @@ export const DE_UI: Translations = {
     step1TipCutIn:
       'Tipp: Kleine Anlagen an Land laufen schon bei 2,0–2,5 m/s an. Bei der Anlaufwindgeschwindigkeit schlagen sie damit große Anlagen auf dem Meer, die mehr Wind brauchen.',
     step1TipHub:
-      'Wusstest du schon? Moderne Turbinen an Land haben 175–179 m Nabenhöhe. Das ist fast viermal so hoch wie ein Leuchtturm.',
+      'Wusstest du schon? Moderne Turbinen an Land haben bis zu 179 m Nabenhöhe. Das ist fast viermal so hoch wie ein Leuchtturm.',
     step1TipFirstPower:
-      'Tipp: Hier gewinnt das Alter. Eine Anlage, die schon 1957 Strom ins Netz brachte, schlägt jede Anlage aus den 2000ern. So können Pioniere die Riesen schlagen!',
+      'Tipp: Hier gewinnt das Alter. Eine Anlage, die schon 1957 eingeschaltet wurde, schlägt jede Anlage aus den 2000ern. So können Pioniere die Riesen schlagen!',
     step1TipDefault: 'Tippe auch auf die anderen Zeilen der Karte und sieh dir alle 5 Werte an.',
     nextStep2: 'Testrunde spielen',
     step2Tag: 'Schritt 2 von 4 · Testrunde',

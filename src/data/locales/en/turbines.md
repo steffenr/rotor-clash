@@ -88,7 +88,7 @@
 - id: 4C
 - country: UK (Scotland)
 - drivetrain: Medium-Speed Planetary Semi-Sub
-- engineeringNote: Anchored on Principle Power WindFloat semi-submersible hulls in 60–80 m Atlantic swells.
+- engineeringNote: Anchored on Principle Power WindFloat semi-submersible hulls in 60–80 m of water off the Scottish coast.
 
 ## 4D — V164-8.4 MW (WindFloat Atlantic)
 - id: 4D

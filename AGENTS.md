@@ -39,6 +39,7 @@ This file defines the architectural rules, conventions, and verification steps f
    - Keep **technical specs only** in `src/data/groups.md` and `src/data/turbines/*.md`.
    - Keep **all human-readable translations** in `src/data/locales/en/` and `src/data/locales/de/` (`groups.md`, `turbines.md`, `ui.ts`).
    - Any new key added to `EN_UI` must also be added to `DE_UI` and `Translations` (`src/lib/i18n.ts`). `tests/deckIntegrity.test.ts` enforces strict key parity.
+   - `tests/strings.test.ts` scans every UI, card and group text (EN and DE) and fails on empty brackets like `()`, stray or double spaces, `undefined`/`NaN` text, unbalanced parentheses and mismatched `{placeholders}` (the only one the app fills in is `{rounds}`). When a template combines a label and a value (for example `label (unit)`), handle empty values explicitly, as stats without a unit exist.
 
 4. **Server, Node.js & Plesk Production Compatibility**:
    - Requires Node.js `>=26.0.0`; CI and the release workflow read the version from `.nvmrc`.
@@ -52,7 +53,7 @@ This file defines the architectural rules, conventions, and verification steps f
    - A match uses one **deck mode**: `modern`, `records`, `mixed` (8 random whole quartets of 16) or `grand` (all 64 cards, 16 quartets, 48 rounds). The stat set belongs to the **match**, not the card: `modern` compares cut-in speed, every other mode compares first-power year (older wins). Always use `statKeysForMode(match.deckMode)` / `statDefsFor(card, activeMatch.deckMode)`; never infer stats from a single card inside a match.
    - Deck-2 cards have no `cutInWindMs` (leave it out of the markdown); `firstPowerYear` is taken from the card's `year`.
    - Quick-match queues are separate per deck mode, rooms carry their deck mode and a `listed` flag (private by default, see item 8), and clients may send any string: the server normalises unknown or unavailable modes to `modern`.
-   - The tutorial (step 1) has a deck switch that shows a Modern card (Start Wind) and a Records card (First Power, German label "Am Netz seit"); keep both fifth stats explained when you touch it.
+   - The tutorial (step 1) has a deck switch that shows a Modern card (Start Wind) and a Records card (Switched On, German label "Eingeschaltet"); keep both fifth stats explained when you touch it.
    - New cards need EN **and** DE text in `src/data/locales/*/turbines.md`, a source URL, and a photo credit (see below). Research notes and confidence per figure live in `docs/research/second-deck-verification.md`.
 
 6. **Card Photography, Licences & Detail View (Two-Column Field-Guide Dossier)**:

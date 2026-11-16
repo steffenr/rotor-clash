@@ -153,7 +153,7 @@ export function createRotorClashApp() {
     compendiumSearch: '',
     tutorialStep: 0,
     tutorialInspectedStat: 'ratedPowerMw' as StatKey,
-    /** Which deck's example card step 1 of the tutorial shows (Start Wind vs. First Power). */
+    /** Which deck's example card step 1 of the tutorial shows (Start Wind vs. Switched On). */
     tutorialDeck: 'modern' as 'modern' | 'records',
     tutorialPracticeStat: null as StatKey | null,
 
@@ -787,8 +787,8 @@ export function createRotorClashApp() {
       if (!lr || !rev) return { yourValText: '', oppValText: '' };
       const unit = this.statDef(lr.chosenStat).unit;
       return {
-        yourValText: `${rev.yourVal} ${unit}`,
-        oppValText: `${rev.oppVal} ${unit}`,
+        yourValText: `${rev.yourVal} ${unit}`.trim(),
+        oppValText: `${rev.oppVal} ${unit}`.trim(),
       };
     },
 
@@ -832,13 +832,13 @@ export function createRotorClashApp() {
           ? this.t.arena.reasonAllCardsWin
           : `${m.opponent.callsign} ${this.t.arena.reasonAllCardsLoss}`;
       }
-      if (m.winReason === 'ROUND_LIMIT') return this.t.arena.reasonRoundLimit;
+      if (m.winReason === 'ROUND_LIMIT') return this.t.arena.reasonRoundLimit.replace('{rounds}', String(m.maxRounds));
       if (m.winReason === 'FORFEIT') {
         return m.abandonedBy === 'you'
           ? this.t.arena.reasonForfeitLoss
           : `${m.opponent.callsign} ${this.t.arena.reasonForfeitWin}`;
       }
-      if (m.winReason === 'DRAW') return this.t.arena.reasonDraw;
+      if (m.winReason === 'DRAW') return this.t.arena.reasonDraw.replace('{rounds}', String(m.maxRounds));
       return '';
     },
 
