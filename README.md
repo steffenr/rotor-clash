@@ -108,3 +108,9 @@ Environment variables (a local `.env` file is read through `dotenv`; see `.env.e
 - **Data**: `data/leaderboard.json` holds ranked players, their hashed login secrets and recent matches. Keep it outside the web root (the Document Root is `dist/`) and out of backups you share.
 - **Supply chain**: production dependencies are installed from the lockfile and audited in CI, GitHub Actions are pinned by commit SHA, and deployments verify the pinned SSH host key.
 - Contributor rules live in [`AGENTS.md`](AGENTS.md) (section 2, item 8). Please report vulnerabilities privately to the repository owner rather than in a public issue.
+
+## License
+
+Copyright (C) 2026 Steffen Rühlmann. The code, texts and data are licensed under the **[GNU Affero General Public License v3.0](LICENSE)** (`AGPL-3.0-only`): modified versions that are distributed or offered over a network must publish their source under the same licence.
+
+The name **Rotor Clash** and the logo are **not** part of that licence (all rights reserved), photographs keep their own Wikimedia Commons licences, and AI-generated images are not claimed. Details: [`NOTICE.md`](NOTICE.md) and [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md).

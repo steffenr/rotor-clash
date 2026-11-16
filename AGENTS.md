@@ -63,6 +63,10 @@ This file defines the architectural rules, conventions, and verification steps f
    - The lighthouse comparison on every card (`cardMarkup.ts`) must keep turbine and lighthouse on **one** scale: use `lighthouseDiagram()` from `src/shared/lighthouse.ts` and never size them separately (an earlier version drew an 18 m and a 100 m hub almost alike next to the lighthouse). `tests/lighthouse.test.ts` guards the proportions for all cards.
    - The card detail modal (`renderCardDetailModal()`) uses an uncropped (`object-contain`) mounted specimen gallery on the left and technical dossier on the right, with deck flip navigation (`inspectPrevCard()`, `inspectNextCard()`) bound to buttons and <kbd>←</kbd> / <kbd>→</kbd> arrow keys.
 
+6a. **Licences & Copyright**:
+   - The project is **AGPL-3.0-only** (`LICENSE`, `"license"` in `package.json`), Copyright (C) 2026 Steffen Rühlmann. The name "Rotor Clash" and the logo/app icons are **all rights reserved** and explicitly outside the AGPL (`NOTICE.md`); photographs keep their Wikimedia licences (`docs/PHOTO_CREDITS.md`); AI-generated images carry no copyright claim. Keep `NOTICE.md` in sync when you add a new kind of asset.
+   - Only add code and dependencies whose licences are compatible with the AGPL-3.0 (MIT, BSD, Apache-2.0, LGPL, GPL-3.0 are fine; "non-commercial", "no-derivatives" and proprietary terms are not).
+   - AGPL section 13: once the repository is public, the app must show a visible link to its source code (the `repository` field in `package.json` is set to https://github.com/steffenr/rotor-clash). The in-app link is deliberately not added while the repository is private (players would land on a 404): add it in the same change that makes the repository public.
 7. **Platform Manifest Constraint**:
    - Do **not** rename `"name"` inside `metadata.json` (required by AI Studio's applet manifest). All user-facing branding, `<title>`, OpenGraph metadata, storage keys, and UI copy must use **Rotor Clash**.
 
