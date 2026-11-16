@@ -30,9 +30,9 @@ Players battle across **64 real-world wind turbines** in two decks of **8 Quarte
   - Features 100% uncropped full-length turbine photography (`object-contain`) from blade tip to foundation, technical specs, provenance tags, and seamless deck flip browsing (<kbd>←</kbd> / <kbd>→</kbd> arrow keys or Prev/Next buttons).
   - 4-step interactive onboarding guide teaching card reading (with a switch between a *Modern Giants* card and a *Records & Firsts* card, so both fifth stats are shown), lower-wins strategy, tie piles, and multiplayer modes.
 - **Zero-Signup Browser Identity (`localStorage`)**:
-  - Player ID, a private login secret, callsign, cached stats, sound mute preference, and selected language persist automatically in browser `localStorage` (`rotor_clash_*`). The player ID is a public handle; the secret proves that the browser owns it (see [Security](#security)).
+  - Player ID, callsign, cached stats, sound mute preference, and selected language persist automatically in browser `localStorage` (`rotor_clash_*`). The player ID is a public handle; a non-extractable device key in IndexedDB proves that the browser owns it (see [Security](#security)).
 - **Photo credits**: every real photograph comes from Wikimedia Commons under a free licence; the author and licence are shown in the card detail and listed in [`docs/PHOTO_CREDITS.md`](docs/PHOTO_CREDITS.md). Cards without a free photo show an AI-generated concept image, labelled as such.
-- **Leaderboard**: ranked players, hashed login secrets and the recent match history persist on the server in `data/leaderboard.json` (players without a finished game are not written to disk).
+- **Leaderboard**: ranked players, public device keys and the recent match history persist on the server in `data/leaderboard.json` (players without a finished game are not written to disk).
 
 ---
 
@@ -124,11 +124,11 @@ Environment variables (a local `.env` file is read through `dotenv`; see `.env.e
 
 ## Security
 
-- **Identity**: a player ID is only a public handle (it appears in rankings and match data). Logging in needs a per-browser **secret** that the server stores only as a SHA-256 hash; the first secret presented for an ID is bound to it, and any other secret is refused. A browser whose pair is refused starts again with a fresh ID.
+- **Identity**: a player ID is only a public handle (it appears in rankings and match data). Logging in is a challenge-response: the browser holds a non-extractable ECDSA P-256 key (WebCrypto, IndexedDB) and signs a one-time server challenge, so there is no secret to steal from storage. The server stores only the public key; the first key proven for an ID is bound to it, and any other key is refused. A ranked profile from before device keys has no key and cannot be claimed; its former owner continues with a fresh ID. A browser whose pair is refused also starts again with a fresh ID.
 - **Server-side validation**: every WebSocket message is parsed strictly, IDs and strings are bounded, and every game move is checked against the match (for example only the stats of the chosen deck can be played).
 - **Limits**: 4 KB per WebSocket message, a burst of 30 messages then 10 per second per socket, 30 sockets per address (2,000 overall), 60 API requests per minute and address, a rename cooldown, merged lobby/leaderboard broadcasts, debounced disk writes and a cap on profiles without a finished game. WebSocket handshakes from other websites are refused.
 - **Rooms**: friend rooms are private (code or invite link) unless the host ticks *Show in open rooms*. Room codes, shuffles and the starting player use `crypto` randomness.
-- **Data**: `data/leaderboard.json` holds ranked players, their hashed login secrets and recent matches. Keep it outside the web root (only `dist/` is served) and out of backups you share.
+- **Data**: `data/leaderboard.json` holds ranked players, their public device keys and recent matches. Keep it outside the web root (only `dist/` is served) and out of backups you share.
 - **Supply chain**: production dependencies are installed from the lockfile and audited in CI, GitHub Actions are pinned by commit SHA, and deployments verify a pinned SSH host key.
 - Contributor rules live in [`AGENTS.md`](AGENTS.md) (section 2, item 8). Please report vulnerabilities privately to the repository owner rather than in a public issue.
 

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import http from 'node:http';
 import path from 'node:path';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -18,9 +19,12 @@ import {
   clientIp,
   isAllowedOrigin,
   isValidPlayerId,
-  isValidSecret,
+  isValidPublicKey,
+  isValidSignature,
+  newChallengeNonce,
   parseClientMessage,
   securityHeaders,
+  verifyChallengeProof,
 } from './src/server/security.ts';
 
 const RAW_PORT = process.env.PORT || '3000';
@@ -187,6 +191,45 @@ async function bootstrap() {
   // socket and closes it. Without a listener that event would be thrown and stop the whole server.
   wss.on('error', (err) => console.error('WS server error:', err.message));
 
+  /** Logins that got a challenge and wait for the signed proof. One per socket, gone after one attempt. */
+  const pendingAuth = new WeakMap<
+    WebSocket,
+    { playerId: string; publicKey: string; nonce: string; callsign: string | undefined }
+  >();
+
+  /** The browser proved who it is: register the socket and send the first state. */
+  function completeLogin(ws: WebSocket, playerId: string, callsign: string | undefined) {
+    const authedAs = socketToPlayer.get(ws);
+    if (authedAs && authedAs !== playerId) return; // one identity per connection
+
+    socketToPlayer.set(ws, playerId);
+    if (!playerSockets.has(playerId)) {
+      playerSockets.set(playerId, new Set());
+    }
+    playerSockets.get(playerId)!.add(ws);
+
+    const profile = leaderboardStore.getOrCreatePlayer(playerId, callsign);
+    sendJson(ws, 'auth:ack', { profile, serverVersion: APP_VERSION });
+    sendJson(ws, 'lobby:state', engine.getLobbySnapshot(playerSockets.size));
+    sendJson(ws, 'leaderboard:updated', {
+      leaderboard: leaderboardStore.getLeaderboard(),
+      recentMatches: leaderboardStore.getRecentMatches(),
+    });
+
+    const activeRoom = engine.getWaitingRoomForPlayer(playerId);
+    if (activeRoom) {
+      sendJson(ws, 'room:created', { room: activeRoom });
+    }
+
+    engine.handlePlayerConnected(playerId);
+    const currentMatch = engine.getMatchForPlayer(playerId);
+    if (currentMatch) {
+      sendJson(ws, 'match:state', currentMatch);
+    }
+
+    broadcastLobby();
+  }
+
   wss.on('connection', (ws, req) => {
     ws.on('error', () => {
       /* the socket is closed by ws itself; nothing to clean up here */
@@ -214,51 +257,53 @@ async function bootstrap() {
         if (!msg) return;
         const { event, payload } = msg;
 
+        // The id is a public handle (it appears in rankings); the credential is a device key.
+        // Login is challenge-response: hello -> challenge -> proof (a signature over the challenge).
         if (event === 'auth:hello') {
           const playerId = payload.playerId;
-          const secret = payload.secret;
-          if (!isValidPlayerId(playerId) || !isValidSecret(secret)) {
+          const publicKey = payload.publicKey;
+          if (!isValidPlayerId(playerId) || !isValidPublicKey(publicKey)) {
             sendJson(ws, 'auth:rejected', { reason: 'invalid' });
             return;
           }
-
           const authedAs = socketToPlayer.get(ws);
           if (authedAs && authedAs !== playerId) return; // one identity per connection
 
-          // The id is a public handle (it appears in rankings); the secret is the credential.
-          if (leaderboardStore.authenticate(playerId, secret) === 'mismatch') {
-            sendJson(ws, 'auth:rejected', { reason: 'secret' });
+          const boundKey = leaderboardStore.getPublicKey(playerId);
+          if (boundKey && boundKey !== publicKey) {
+            sendJson(ws, 'auth:rejected', { reason: 'key' });
             return;
           }
 
-          const callsign = trimString(payload.callsign, 64) || undefined;
-
-          socketToPlayer.set(ws, playerId);
-          if (!playerSockets.has(playerId)) {
-            playerSockets.set(playerId, new Set());
-          }
-          playerSockets.get(playerId)!.add(ws);
-
-          const profile = leaderboardStore.getOrCreatePlayer(playerId, callsign);
-          sendJson(ws, 'auth:ack', { profile, serverVersion: APP_VERSION });
-          sendJson(ws, 'lobby:state', engine.getLobbySnapshot(playerSockets.size));
-          sendJson(ws, 'leaderboard:updated', {
-            leaderboard: leaderboardStore.getLeaderboard(),
-            recentMatches: leaderboardStore.getRecentMatches(),
+          const nonce = newChallengeNonce();
+          pendingAuth.set(ws, {
+            playerId,
+            publicKey,
+            nonce,
+            callsign: trimString(payload.callsign, 64) || undefined,
           });
+          sendJson(ws, 'auth:challenge', { nonce });
+          return;
+        }
 
-          const activeRoom = engine.getWaitingRoomForPlayer(playerId);
-          if (activeRoom) {
-            sendJson(ws, 'room:created', { room: activeRoom });
+        if (event === 'auth:proof') {
+          const pending = pendingAuth.get(ws);
+          pendingAuth.delete(ws); // a challenge is good for one attempt
+          if (!pending || !isValidSignature(payload.signature)) {
+            sendJson(ws, 'auth:rejected', { reason: 'invalid' });
+            return;
           }
-
-          engine.handlePlayerConnected(playerId);
-          const currentMatch = engine.getMatchForPlayer(playerId);
-          if (currentMatch) {
-            sendJson(ws, 'match:state', currentMatch);
+          const { playerId, publicKey, nonce, callsign } = pending;
+          if (!verifyChallengeProof(publicKey, playerId, nonce, payload.signature)) {
+            sendJson(ws, 'auth:rejected', { reason: 'key' });
+            return;
           }
-
-          broadcastLobby();
+          // The proof shows the browser holds the private key; the first key bound to an id wins.
+          if (!leaderboardStore.bindPublicKey(playerId, publicKey)) {
+            sendJson(ws, 'auth:rejected', { reason: 'key' });
+            return;
+          }
+          completeLogin(ws, playerId, callsign);
           return;
         }
 
@@ -385,6 +430,16 @@ async function bootstrap() {
     app.use(vite.middlewares);
   } else {
     const distDir = path.resolve(process.cwd(), 'dist');
+    // Per-address limit on static files and the SPA fallback (they touch the file system).
+    const staticLimiter = rateLimit({
+      windowMs: 60 * 1000,
+      limit: 300,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req) => clientIp(req),
+      validate: { keyGeneratorIpFallback: false },
+    });
+    app.use(staticLimiter);
     app.use(express.static(distDir));
     app.use((req, res, next) => {
       if (req.method !== 'GET' && req.method !== 'HEAD') return next();

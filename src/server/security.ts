@@ -1,5 +1,5 @@
 /**
- * Server-side security helpers: input validation, secrets, rate limiting, connection limits and
+ * Server-side security helpers: input validation, login proofs, rate limiting, connection limits and
  * HTTP security headers. Pure Node (no Express types at runtime) so tests can import it directly.
  */
 import crypto from 'node:crypto';
@@ -24,22 +24,57 @@ export function isValidPlayerId(value: unknown): value is string {
   return typeof value === 'string' && PLAYER_ID_PATTERN.test(value) && !isForbiddenKey(value);
 }
 
-/** The client-held secret: 32 random bytes as lowercase hex. It never leaves the server again. */
-export const SECRET_PATTERN = /^[a-f0-9]{64}$/;
+// ---------------------------------------------------------------------------------------------
+// Device keys (challenge-response login)
+// ---------------------------------------------------------------------------------------------
 
-export function isValidSecret(value: unknown): value is string {
-  return typeof value === 'string' && SECRET_PATTERN.test(value);
+/** Raw uncompressed P-256 public key (0x04 || X || Y, 65 bytes) as base64url: 87 characters. */
+export const PUBLIC_KEY_PATTERN = /^[A-Za-z0-9_-]{87}$/;
+/** ECDSA P-256 signature as raw r || s (64 bytes) as base64url: 86 characters. */
+export const SIGNATURE_PATTERN = /^[A-Za-z0-9_-]{86}$/;
+
+export function isValidPublicKey(value: unknown): value is string {
+  if (typeof value !== 'string' || !PUBLIC_KEY_PATTERN.test(value)) return false;
+  return Buffer.from(value, 'base64url')[0] === 0x04;
 }
 
-export function hashSecret(secret: string): string {
-  return crypto.createHash('sha256').update(secret).digest('hex');
+export function isValidSignature(value: unknown): value is string {
+  return typeof value === 'string' && SIGNATURE_PATTERN.test(value);
 }
 
-/** Constant-time comparison of a presented secret against a stored hash. */
-export function secretMatchesHash(secret: string, storedHash: string): boolean {
-  const presented = Buffer.from(hashSecret(secret), 'hex');
-  const stored = Buffer.from(storedHash, 'hex');
-  return presented.length === stored.length && crypto.timingSafeEqual(presented, stored);
+/** Fresh single-use login challenge. */
+export function newChallengeNonce(): string {
+  return crypto.randomBytes(24).toString('base64url');
+}
+
+/** The exact text the browser signs. Binding the player id stops a proof being replayed for another id. */
+export function challengeMessage(playerId: string, nonce: string): string {
+  return `rotor-clash-auth:v1:${playerId}:${nonce}`;
+}
+
+/** Verifies the browser's signature over the challenge with its public key. Never throws. */
+export function verifyChallengeProof(publicKey: string, playerId: string, nonce: string, signature: string): boolean {
+  if (!isValidPublicKey(publicKey) || !isValidSignature(signature)) return false;
+  try {
+    const raw = Buffer.from(publicKey, 'base64url');
+    const key = crypto.createPublicKey({
+      key: {
+        kty: 'EC',
+        crv: 'P-256',
+        x: raw.subarray(1, 33).toString('base64url'),
+        y: raw.subarray(33, 65).toString('base64url'),
+      },
+      format: 'jwk',
+    });
+    return crypto.verify(
+      'sha256',
+      Buffer.from(challengeMessage(playerId, nonce)),
+      { key, dsaEncoding: 'ieee-p1363' },
+      Buffer.from(signature, 'base64url')
+    );
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
