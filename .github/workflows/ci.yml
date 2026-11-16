@@ -45,5 +45,5 @@ jobs:
       - name: Build frontend (Vite + Tailwind 4 + Alpine.js)
         run: npm run build
 
-      - name: Build server bundle (Node / hosting panel CJS)
+      - name: Build server bundle (Node CJS)
         run: npm run build:server

@@ -1,4 +1,4 @@
-name: Release — Deploy to the target host
+name: Release — Deploy
 
 on:
   workflow_dispatch:
@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Test, Build & Deploy to the target host
+    name: Test, Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -96,7 +96,7 @@ jobs:
             fi
           done
 
-      - name: Deploy files via SSH & restart hosting panel Passenger
+      - name: Deploy files via SSH & restart the app
         env:
           SSH_HOST: ${{ secrets.SSH_HOST || vars.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER || vars.SSH_USER }}
@@ -122,7 +122,7 @@ jobs:
           ssh -p "$SSH_PORT" $SSH_OPTS "$SSH_USER@$SSH_HOST" \
             "mkdir -p '$DEPLOY_PATH' '$DEPLOY_PATH/tmp' '$DEPLOY_PATH/data'"
 
-          # The the target host SSH shell has no Node.js / npm, so production dependencies are installed here
+          # The SSH shell on the target has no Node.js / npm, so production dependencies are installed here
           # (express, ws and dotenv are pure JavaScript) and shipped inside the archive.
           # `npm ci` with the lockfile installs exactly the versions that were tested above.
           PROD_DIR="$(mktemp -d)"
@@ -143,7 +143,7 @@ jobs:
           # Upload archive via SCP (universally supported on all SSH hosts, no remote rsync dependency)
           scp -P "$SSH_PORT" $SSH_OPTS /tmp/rotor-clash-release.tar.gz "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/rotor-clash-release.tar.gz"
 
-          # Replace node_modules, extract the release, remove the archive and reload Passenger.
+          # Replace node_modules, extract the release, remove the archive and reload the app (restart file).
           # data/ and tmp/ are left untouched.
           ssh -p "$SSH_PORT" $SSH_OPTS "$SSH_USER@$SSH_HOST" \
             "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE'
@@ -153,7 +153,7 @@ jobs:
           tar -xzf rotor-clash-release.tar.gz
           rm -f rotor-clash-release.tar.gz
           touch tmp/restart.txt
-          echo "Deployed to $DEPLOY_PATH; Passenger restart requested."
+          echo "Deployed to $DEPLOY_PATH; restart requested."
           REMOTE
 
       - name: Commit version, create tag & push to main
@@ -186,7 +186,7 @@ jobs:
           RELEASE_NOTE: ${{ inputs.release_note }}
         run: |
           {
-            echo "### Rotor Clash ${TAG} deployed to the target host"
+            echo "### Rotor Clash ${TAG} deployed"
             echo "- **Bump:** \`${BUMP}\`"
             echo "- **Tag:** \`${TAG}\`"
             echo "- **Commit:** \`$(git rev-parse HEAD)\`"

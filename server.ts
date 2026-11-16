@@ -27,7 +27,7 @@ const RAW_PORT = process.env.PORT || '3000';
 const IS_PROD = process.env.NODE_ENV === 'production';
 /**
  * Security headers (nosniff, framing, referrer, permissions, CSP) are normally set by the web server
- * configuration in front of the app (hosting panel: "Additional headers"), which also covers the static files
+ * configuration in front of the app (for example nginx), which also covers the static files
  * that never reach Node. Setting them here as well would send every header twice, so the app only does
  * it when SECURITY_HEADERS=app, for example when it is exposed directly without a configured proxy.
  */
@@ -398,7 +398,7 @@ async function bootstrap() {
       console.log(`Rotor Clash server listening on http://0.0.0.0:${portNum}`);
     });
   } else {
-    // Phusion Passenger (e.g. the target host hosting panel) passes a Unix socket/pipe path in PORT
+    // A process manager (e.g. Phusion Passenger) may pass a Unix socket/pipe path in PORT
     server.listen(RAW_PORT, () => {
       console.log(`Rotor Clash server listening on socket ${RAW_PORT}`);
     });
