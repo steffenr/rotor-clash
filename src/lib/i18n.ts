@@ -61,6 +61,23 @@ export interface Translations {
     audioOn: string;
     soloWarmup: string;
   };
+  legal: {
+    version: string;
+    sourceCode: string;
+    license: string;
+    photoCredits: string;
+    imprint: string;
+    imprintLaw: string;
+    operator: string;
+    email: string;
+    disclaimerTitle: string;
+    contentTitle: string;
+    contentText: string;
+    linksTitle: string;
+    linksText: string;
+    copyrightTitle: string;
+    copyrightText: string;
+  };
   card: {
     flagshipPlant: string;
     fullView: string;
