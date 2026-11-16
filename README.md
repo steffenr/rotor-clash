@@ -114,3 +114,17 @@ Rotor Clash requires a persistent **Node.js** process with **WebSocket (`/ws`)**
 - Friend rooms are private (code or link) unless the host chooses *Show in open rooms*.
 - Production responses carry a Content-Security-Policy and the usual hardening headers; dependencies are installed from the lockfile and audited in CI.
 - Contributor rules live in `AGENTS.md` (section 2, item 8). Please report vulnerabilities privately to the repository owner rather than in a public issue.
+
+### Plesk / nginx: headers for static files
+
+On Plesk, nginx serves `index.html` and the other static files itself, so Node never sees those requests. The built `index.html` carries the Content-Security-Policy as a `<meta>` tag, but `frame-ancestors`, `X-Frame-Options` and `nosniff` only work as response headers. Add them once under *Domains → rotor-clash.port11.de → Apache & nginx Settings → Additional nginx directives*:
+
+```nginx
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-Frame-Options "DENY" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss://rotor-clash.port11.de; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+```
+
+Check with `curl -sI https://rotor-clash.port11.de/`.

@@ -373,7 +373,7 @@ async function bootstrap() {
     const distDir = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distDir));
     app.use((req, res, next) => {
-      if (req.method !== 'GET') return next();
+      if (req.method !== 'GET' && req.method !== 'HEAD') return next();
       res.sendFile(path.join(distDir, 'index.html'));
     });
   }

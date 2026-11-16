@@ -1,10 +1,28 @@
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig, type Plugin} from 'vite';
+import {buildMetaCsp} from './src/server/security.ts';
+
+/** Puts the Content-Security-Policy into the built index.html (production build only, not the dev server). */
+function cspMeta(): Plugin {
+  return {
+    name: 'rotor-clash-csp-meta',
+    apply: 'build',
+    transformIndexHtml() {
+      return [
+        {
+          tag: 'meta',
+          attrs: {'http-equiv': 'Content-Security-Policy', content: buildMetaCsp()},
+          injectTo: 'head-prepend',
+        },
+      ];
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), cspMeta()],
     resolve: {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
