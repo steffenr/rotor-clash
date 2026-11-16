@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { MatchRecord, PlayerProfile } from '../shared/gameTypes.ts';
-import { SECRET_PATTERN, hashSecret, isForbiddenKey, secretMatchesHash } from './security.ts';
+import { isForbiddenKey, isValidPublicKey } from './security.ts';
 
 interface StoreData {
   players: Record<string, PlayerProfile>;
-  /** sha256 of each player's client secret. Never sent to clients. */
-  secrets: Record<string, string>;
+  /** Public device keys (ECDSA P-256) that prove a login. Public by nature, still never sent to clients. */
+  keys: Record<string, string>;
   matches: MatchRecord[];
 }
 
@@ -31,7 +31,7 @@ function dictionary<T>(): Record<string, T> {
 }
 
 export class LeaderboardStore {
-  private data: StoreData = { players: dictionary(), secrets: dictionary(), matches: [] };
+  private data: StoreData = { players: dictionary(), keys: dictionary(), matches: [] };
   private writeQueue: Promise<void> = Promise.resolve();
   private readonly dataDir: string;
   /** All ranked players (>= 1 game), best first. Rebuilt lazily after any ranking change. */
@@ -64,7 +64,7 @@ export class LeaderboardStore {
 
   private deletePlayer(id: string) {
     delete this.data.players[id];
-    delete this.data.secrets[id];
+    delete this.data.keys[id];
   }
 
   private load() {
@@ -76,38 +76,38 @@ export class LeaderboardStore {
         const raw = fs.readFileSync(this.dataFile, 'utf-8');
         const parsed = JSON.parse(raw) as {
           players?: Record<string, PlayerProfile>;
-          secrets?: Record<string, unknown>;
+          keys?: Record<string, unknown>;
           matches?: MatchRecord[];
         };
-        const data: StoreData = { players: dictionary(), secrets: dictionary(), matches: [] };
+        const data: StoreData = { players: dictionary(), keys: dictionary(), matches: [] };
         for (const [id, profile] of Object.entries(parsed.players ?? {})) {
           if (isForbiddenKey(id) || !profile || typeof profile !== 'object') continue;
           data.players[id] = profile;
         }
-        for (const [id, hash] of Object.entries(parsed.secrets ?? {})) {
-          if (isForbiddenKey(id) || typeof hash !== 'string' || !SECRET_PATTERN.test(hash)) continue;
-          data.secrets[id] = hash;
+        for (const [id, key] of Object.entries(parsed.keys ?? {})) {
+          if (isForbiddenKey(id) || !isValidPublicKey(key)) continue;
+          data.keys[id] = key;
         }
         data.matches = Array.isArray(parsed.matches) ? parsed.matches : [];
         this.data = data;
       }
     } catch (err) {
       console.error('Failed to load leaderboard store:', err);
-      this.data = { players: dictionary(), secrets: dictionary(), matches: [] };
+      this.data = { players: dictionary(), keys: dictionary(), matches: [] };
     }
   }
 
   /** Only ranked players are worth keeping across restarts; visitors without a game are cheap to recreate. */
   private serialize(): string {
     const players: Record<string, PlayerProfile> = {};
-    const secrets: Record<string, string> = {};
+    const keys: Record<string, string> = {};
     for (const [id, profile] of Object.entries(this.data.players)) {
       if (profile.gamesPlayed <= 0) continue;
       players[id] = profile;
-      const hash = this.data.secrets[id];
-      if (hash) secrets[id] = hash;
+      const key = this.data.keys[id];
+      if (key) keys[id] = key;
     }
-    return JSON.stringify({ players, secrets, matches: this.data.matches }, null, 2);
+    return JSON.stringify({ players, keys, matches: this.data.matches }, null, 2);
   }
 
   /** Marks the data as changed and schedules one coalesced write. */
@@ -149,19 +149,25 @@ export class LeaderboardStore {
     return Object.hasOwn(this.data.players, id) ? this.data.players[id] : undefined;
   }
 
+  /** The device public key bound to this id, if any. */
+  public getPublicKey(id: string): string | undefined {
+    if (isForbiddenKey(id)) return undefined;
+    return Object.hasOwn(this.data.keys, id) ? this.data.keys[id] : undefined;
+  }
+
   /**
-   * Checks the client's secret for this player id. The first secret presented for an id is bound to it
-   * ('bound'); every later login must present the same secret ('ok'), otherwise it is a 'mismatch'.
+   * Binds a device key to an id after the browser proved it holds the private key. The first key wins.
+   * A ranked profile without a key (from before device keys) cannot be claimed: the id is public, so
+   * handing it to whoever asks first would let anyone take over that ranking.
    */
-  public authenticate(id: string, secret: string): 'ok' | 'bound' | 'mismatch' {
-    if (isForbiddenKey(id)) return 'mismatch';
-    const stored = Object.hasOwn(this.data.secrets, id) ? this.data.secrets[id] : undefined;
-    if (!stored) {
-      this.data.secrets[id] = hashSecret(secret);
-      this.persist();
-      return 'bound';
-    }
-    return secretMatchesHash(secret, stored) ? 'ok' : 'mismatch';
+  public bindPublicKey(id: string, publicKey: string): boolean {
+    if (isForbiddenKey(id) || !isValidPublicKey(publicKey)) return false;
+    const existing = this.getPublicKey(id);
+    if (existing) return existing === publicKey;
+    if ((this.findPlayer(id)?.gamesPlayed ?? 0) > 0) return false;
+    this.data.keys[id] = publicKey;
+    this.persist();
+    return true;
   }
 
   public getOrCreatePlayer(id: string, callsign?: string): PlayerProfile {

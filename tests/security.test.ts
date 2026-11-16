@@ -12,17 +12,12 @@ import {
   RateLimiter,
   buildCsp,
   clientIp,
-  hashSecret,
   isAllowedOrigin,
   isValidPlayerId,
-  isValidSecret,
   parseClientMessage,
-  secretMatchesHash,
   securityHeaders,
 } from '../src/server/security.ts';
 
-const SECRET_A = 'a'.repeat(64);
-const SECRET_B = 'b'.repeat(64);
 
 function tempStoreFile(): string {
   return path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'rotor-clash-sec-')), 'leaderboard.json');
@@ -38,16 +33,6 @@ test('player ids: UUIDs and legacy ids pass, prototype keys and odd input are re
   for (const bad of ['__proto__', 'constructor', 'prototype', 'abc', '', 'a b c d', 'x'.repeat(65), '../etc', 42, null, {}]) {
     assert.equal(isValidPlayerId(bad), false, `${String(bad)} must be refused`);
   }
-});
-
-test('secrets: only 64 lowercase hex characters are accepted and compared in constant time', () => {
-  assert.equal(isValidSecret(SECRET_A), true);
-  for (const bad of ['', 'abc', 'A'.repeat(64), 'g'.repeat(64), SECRET_A + 'a', 7, undefined]) {
-    assert.equal(isValidSecret(bad), false);
-  }
-  const hash = hashSecret(SECRET_A);
-  assert.equal(secretMatchesHash(SECRET_A, hash), true);
-  assert.equal(secretMatchesHash(SECRET_B, hash), false);
 });
 
 test('client messages: only well-formed, size-bounded JSON objects are parsed', () => {
@@ -149,7 +134,6 @@ test('csp: a hostile Host header cannot inject extra directives', () => {
 test('store: a player id of "__proto__" cannot pollute Object.prototype', () => {
   const store = new LeaderboardStore(tempStoreFile());
   assert.throws(() => store.getOrCreatePlayer('__proto__', 'Hax'));
-  assert.equal(store.authenticate('__proto__', SECRET_A), 'mismatch');
   assert.equal(store.getPlayer('__proto__'), null);
   assert.equal(store.getPlayer('constructor'), null);
   assert.equal(({} as Record<string, unknown>).callsign, undefined);
@@ -160,47 +144,13 @@ test('store: a poisoned data file cannot smuggle prototype keys in', () => {
   const file = tempStoreFile();
   fs.writeFileSync(
     file,
-    '{"players":{"__proto__":{"callsign":"Hax","gamesPlayed":9},"constructor":{"id":"x","gamesPlayed":1}},"secrets":{"__proto__":"' +
+    '{"players":{"__proto__":{"callsign":"Hax","gamesPlayed":9},"constructor":{"id":"x","gamesPlayed":1}},"keys":{"__proto__":"' +
       'c'.repeat(64) +
       '"},"matches":[]}'
   );
   const store = new LeaderboardStore(file);
   assert.equal(store.getLeaderboard().length, 0);
   assert.equal(({} as Record<string, unknown>).callsign, undefined);
-});
-
-test('store: the first secret is bound to an id; a different secret is refused', () => {
-  const store = new LeaderboardStore(tempStoreFile());
-  assert.equal(store.authenticate('player-one', SECRET_A), 'bound');
-  assert.equal(store.authenticate('player-one', SECRET_A), 'ok');
-  assert.equal(store.authenticate('player-one', SECRET_B), 'mismatch', 'knowing the public id is not enough');
-  assert.equal(store.authenticate('player-two', SECRET_B), 'bound', 'other ids are independent');
-});
-
-test('store: secrets survive a restart for ranked players and never appear in profiles', async () => {
-  const file = tempStoreFile();
-  const store = new LeaderboardStore(file);
-  store.authenticate('winner-01', SECRET_A);
-  store.authenticate('loser-001', SECRET_B);
-  store.recordPvpMatch({
-    matchId: 'm1',
-    mode: 'room',
-    p1Id: 'winner-01',
-    p2Id: 'loser-001',
-    p1Cards: 32,
-    p2Cards: 0,
-    p1Quartets: 8,
-    p2Quartets: 0,
-    winnerId: 'winner-01',
-    roundsPlayed: 20,
-  });
-  await store.flush();
-
-  const reloaded = new LeaderboardStore(file);
-  assert.equal(reloaded.authenticate('winner-01', SECRET_B), 'mismatch');
-  assert.equal(reloaded.authenticate('winner-01', SECRET_A), 'ok');
-  assert.equal(JSON.stringify(reloaded.getLeaderboard()).includes(hashSecret(SECRET_A)), false);
-  assert.equal(JSON.stringify(reloaded.getLeaderboard()).toLowerCase().includes('secret'), false);
 });
 
 test('store: renaming to the same name does not write, and oversized names are bounded', async () => {
