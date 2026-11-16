@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import http from 'node:http';
 import path from 'node:path';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -385,6 +386,16 @@ async function bootstrap() {
     app.use(vite.middlewares);
   } else {
     const distDir = path.resolve(process.cwd(), 'dist');
+    // Per-address limit on static files and the SPA fallback (they touch the file system).
+    const staticLimiter = rateLimit({
+      windowMs: 60 * 1000,
+      limit: 300,
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req) => clientIp(req),
+      validate: { keyGeneratorIpFallback: false },
+    });
+    app.use(staticLimiter);
     app.use(express.static(distDir));
     app.use((req, res, next) => {
       if (req.method !== 'GET' && req.method !== 'HEAD') return next();
