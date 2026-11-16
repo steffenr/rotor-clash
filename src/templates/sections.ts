@@ -1600,23 +1600,96 @@ export function renderCardDetailModal(): string {
   `;
 }
 
+const REPO_URL = 'https://github.com/steffenr/rotor-clash';
+
+export function renderFooter(): string {
+  const link =
+    'underline decoration-c-ink/30 underline-offset-2 hover:text-c-ink hover:decoration-c-ink';
+  return `
+    <footer class="w-full max-w-7xl mx-auto px-3 sm:px-6 pb-24 md:pb-6 text-xs text-c-ink-2">
+      <div class="border-t-2 border-c-ink/15 pt-3 flex flex-wrap items-center justify-center text-center gap-x-4 gap-y-1.5">
+        <span class="font-mono" x-text="t.legal.version + ' ' + appVersion"></span>
+        <a href="${REPO_URL}" target="_blank" rel="noopener noreferrer" class="${link}" x-text="t.legal.sourceCode"></a>
+        <a href="${REPO_URL}/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="${link}" x-text="t.legal.license"></a>
+        <a href="${REPO_URL}/blob/main/docs/PHOTO_CREDITS.md" target="_blank" rel="noopener noreferrer" class="${link}" x-text="t.legal.photoCredits"></a>
+        <button type="button" @click="showImprint = true" class="${link}" x-text="t.legal.imprint"></button>
+      </div>
+    </footer>
+  `;
+}
+
+export function renderImprintModal(): string {
+  return `
+    <template x-if="showImprint">
+      <div
+        @click="showImprint = false"
+        class="fixed inset-0 z-50 bg-[#0B1A22]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="t.legal.imprint"
+      >
+        <div
+          @click.stop
+          class="w-full max-w-2xl rounded-2xl bg-c-paper-hi text-c-ink border-[3px] border-c-ink shadow-[0_8px_0_var(--c-line)] my-auto max-h-[92vh] flex flex-col overflow-hidden"
+        >
+          <div class="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b-2 border-c-ink/15 shrink-0">
+            <h2 class="text-lg font-bold" x-text="t.legal.imprint"></h2>
+            <button
+              type="button"
+              @click="showImprint = false"
+              :aria-label="t.card.close"
+              class="w-8 h-8 rounded-lg bg-c-paper-hi hover:bg-c-sand border-2 border-c-ink text-c-ink flex items-center justify-center shrink-0 shadow-[0_1.5px_0_var(--c-line)] active:translate-y-0.5 transition-all"
+            >
+              ${iconSvg('x', 'w-4 h-4')}
+            </button>
+          </div>
+          <div class="overflow-y-auto px-4 sm:px-5 py-4 space-y-4 text-sm leading-relaxed">
+            <section class="space-y-1">
+              <p class="text-xs font-semibold uppercase tracking-wide text-c-ink-2" x-text="t.legal.imprintLaw"></p>
+              <p>Steffen Rühlmann<br />Uhlenkamp 8a<br />27777 Ganderkesee</p>
+              <p><span x-text="t.legal.email"></span>: <a href="mailto:rotor-clash@port11.de" class="underline">rotor-clash@port11.de</a></p>
+            </section>
+            <section class="space-y-3">
+              <h3 class="font-bold" x-text="t.legal.disclaimerTitle"></h3>
+              <div class="space-y-1">
+                <h4 class="font-semibold" x-text="t.legal.contentTitle"></h4>
+                <p class="text-c-ink-2" x-text="t.legal.contentText"></p>
+              </div>
+              <div class="space-y-1">
+                <h4 class="font-semibold" x-text="t.legal.linksTitle"></h4>
+                <p class="text-c-ink-2" x-text="t.legal.linksText"></p>
+              </div>
+              <div class="space-y-1">
+                <h4 class="font-semibold" x-text="t.legal.copyrightTitle"></h4>
+                <p class="text-c-ink-2" x-text="t.legal.copyrightText"></p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </template>
+  `;
+}
+
 export function renderAppShell(): string {
   return `
     <div
-      @keydown.escape.window="if (inspectedCard) closeModal()"
+      @keydown.escape.window="if (showImprint) showImprint = false; else if (inspectedCard) closeModal()"
       @keydown.arrow-left.window="if (inspectedCard) inspectPrevCard()"
       @keydown.arrow-right.window="if (inspectedCard) inspectNextCard()"
       class="min-h-screen flex flex-col bg-c-canvas text-c-ink paper-grain"
     >
       ${renderHeader()}
-      <main class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 py-4 sm:py-8 pb-24 md:pb-8">
+      <main class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 py-4 sm:py-8 pb-4 md:pb-8">
         ${renderLobby()}
         ${renderArena()}
         ${renderCompendium()}
         ${renderLeaderboard()}
         ${renderTutorial()}
       </main>
+      ${renderFooter()}
       ${renderCardDetailModal()}
+      ${renderImprintModal()}
     </div>
   `;
 }

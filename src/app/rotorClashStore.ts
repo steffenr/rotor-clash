@@ -119,6 +119,8 @@ export function createRotorClashApp() {
     muted: soundFx.isMuted(),
     theme: resolveInitialTheme() as Theme,
     inspectedCard: null as TurbineCard | null,
+    showImprint: false,
+    appVersion: __APP_VERSION__,
 
     // Lobby & WS
     wsConnected: false,

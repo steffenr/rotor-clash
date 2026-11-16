@@ -59,6 +59,26 @@ export const EN_UI: Translations = {
     audioOn: 'Sound On',
     soloWarmup: 'Quick Bot Game',
   },
+  legal: {
+    version: 'Version',
+    sourceCode: 'Source code',
+    license: 'Licence (AGPL-3.0)',
+    photoCredits: 'Photo credits',
+    imprint: 'Imprint',
+    imprintLaw: 'Information pursuant to § 5 DDG',
+    operator: 'Operator',
+    email: 'Email',
+    disclaimerTitle: 'Disclaimer',
+    contentTitle: 'Liability for content',
+    contentText:
+      'The content of our pages has been created with the greatest care. However, we cannot guarantee that it is correct, complete or up to date. As a service provider we are responsible for our own content on these pages under the general laws pursuant to § 7 (1) DDG. Under §§ 8 to 10 DDG, however, we are not obliged to monitor transmitted or stored third-party information or to investigate circumstances that indicate unlawful activity. Obligations to remove or block the use of information under the general laws remain unaffected. Liability in this respect is only possible from the point in time at which we become aware of a specific infringement. As soon as we become aware of such infringements, we will remove the content immediately.',
+    linksTitle: 'Liability for links',
+    linksText:
+      'Our offer contains links to external third-party websites over whose content we have no influence. We therefore cannot accept any liability for this external content. The respective provider or operator of the linked pages is always responsible for their content. The linked pages were checked for possible legal infringements at the time of linking. No unlawful content was recognisable at that time. However, permanent monitoring of the content of linked pages is not reasonable without concrete evidence of an infringement. As soon as we become aware of infringements, we will remove such links immediately.',
+    copyrightTitle: 'Copyright',
+    copyrightText:
+      'The content and works created by the site operator on these pages are subject to German copyright law. Reproduction, editing, distribution and any kind of use beyond the limits of copyright law require the written consent of the respective author or creator. Downloads and copies of this page are only permitted for private, non-commercial use. Where content on this page was not created by the operator, the copyrights of third parties are respected. In particular, third-party content is marked as such. Should you nevertheless become aware of a copyright infringement, please let us know. As soon as we become aware of infringements, we will remove such content immediately.',
+  },
   card: {
     flagshipPlant: 'Home Wind Farm',
     fullView: 'Full View',
