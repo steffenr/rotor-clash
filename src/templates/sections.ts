@@ -60,7 +60,7 @@ export function renderHeader(): string {
         <div class="flex-1 bg-c-orange"></div>
       </div>
 
-      <div class="max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-24 flex items-center justify-between gap-2 sm:gap-8">
+      <div class="relative max-w-7xl mx-auto px-3 sm:px-6 h-14 sm:h-24 flex items-center justify-between gap-2 sm:gap-8">
         <!-- Zone 1: Brand Emblem -->
         <a
           href="#arena"
@@ -78,7 +78,7 @@ export function renderHeader(): string {
 
         <!-- Phone-only: current round next to the brand while a match is running -->
         <template x-if="activeMatch && activeTab === 'arena'">
-          <div class="md:hidden flex flex-col items-center justify-center leading-none px-2.5 h-10 rounded-xl bg-c-paper border-2 border-c-ink/25">
+          <div class="md:hidden absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center leading-none px-2.5 h-10 rounded-xl bg-c-paper border-2 border-c-ink/25">
             <span class="text-xs font-bold uppercase tracking-wide text-c-ink-3" x-text="t.arena.round"></span>
             <span class="mt-0.5 font-mono tabular-nums text-sm font-bold text-c-ink" x-text="activeMatch.roundNumber + '/' + activeMatch.maxRounds"></span>
           </div>
@@ -112,11 +112,12 @@ export function renderHeader(): string {
           <button
             type="button"
             @click="handleHeaderAction()"
-            :class="headerAction() === 'quit' ? 'bg-c-red hover:bg-c-red-hover' : 'bg-c-green hover:bg-c-green-deep'"
+            :aria-label="headerLabel()"
+            :class="headerAction() === 'quit' ? 'bg-c-red hover:bg-c-red-hover max-sm:w-10 max-sm:px-0' : 'bg-c-green hover:bg-c-green-deep'"
             class="px-3 sm:px-4 h-10 sm:h-auto sm:py-2 rounded-xl text-c-paper-hi border-2 border-c-ink font-bold text-xs sm:text-sm shadow-[0_3px_0_var(--c-line)] active:translate-y-0.5 transition-all whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5"
           >
             <span x-show="headerAction() === 'quit'">${iconSvg('log-out', 'w-4 h-4')}</span>
-            <span x-text="headerLabel()"></span>
+            <span :class="headerAction() === 'quit' ? 'max-sm:hidden' : ''" x-text="headerLabel()"></span>
           </button>
         </div>
       </div>
