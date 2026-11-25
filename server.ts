@@ -14,6 +14,7 @@ import { leaderboardStore } from './src/server/store.ts';
 import { readAppVersion } from './src/server/version.ts';
 import {
   ConnectionLimiter,
+  KeyedRateLimiter,
   MAX_MESSAGE_BYTES,
   RateLimiter,
   clientIp,
@@ -65,25 +66,16 @@ async function bootstrap() {
     console.log('Security headers are expected from the web server configuration (SECURITY_HEADERS=app sends them from the app).');
   }
 
-  // Small per-address limit on the REST API.
-  const apiLimiters = new Map<string, { limiter: RateLimiter; lastSeen: number }>();
+  // Small per-address limit on the REST API, with a bounded table so forged client addresses
+  // cannot grow memory.
+  const apiLimiter = new KeyedRateLimiter(API_BURST, API_REFILL_PER_SECOND);
   const apiCleanup = setInterval(() => {
-    const cutoff = Date.now() - 10 * 60 * 1000;
-    for (const [ip, entry] of apiLimiters) {
-      if (entry.lastSeen < cutoff) apiLimiters.delete(ip);
-    }
+    apiLimiter.prune();
   }, 5 * 60 * 1000);
   apiCleanup.unref();
 
   app.use('/api', (req, res, next) => {
-    const ip = clientIp(req);
-    let entry = apiLimiters.get(ip);
-    if (!entry) {
-      entry = { limiter: new RateLimiter(API_BURST, API_REFILL_PER_SECOND), lastSeen: Date.now() };
-      apiLimiters.set(ip, entry);
-    }
-    entry.lastSeen = Date.now();
-    if (!entry.limiter.take()) {
+    if (!apiLimiter.take(clientIp(req))) {
       res.status(429).json({ error: 'Too many requests' });
       return;
     }
