@@ -41,6 +41,12 @@ export const DE_UI: Translations = {
     listRoomHint: 'Aus: Nur wer deinen Code oder Link hat, kann beitreten.',
     authReset: 'Dein gespeichertes Spielerprofil konnte nicht bestätigt werden. Du spielst mit einem neuen weiter.',
     authFailed: 'Dein Spielerprofil konnte nicht bestätigt werden. Bitte lade die Seite neu.',
+    identityLostTitle: 'Dieser Browser kann dein Profil nicht bestätigen',
+    identityLostBody:
+      'Der Anmeldeschlüssel für diesen Browser fehlt (Websitedaten gelöscht oder anderes Gerät). Das gespeicherte Profil lässt sich deshalb nicht wieder öffnen. Der alte Eintrag bleibt in der Rangliste; du kannst mit einem neuen Profil weiterspielen.',
+    identityLostSaved: 'Gespeichertes Profil',
+    identityLostFresh: 'Neu anfangen',
+    identityLostReload: 'Seite neu laden',
     roomLimitReached: 'Alle Freundesräume sind gerade belegt. Versuch es gleich noch einmal.',
     joinThrottled: 'Zu viele Beitrittsversuche. Bitte warte einen Moment und versuch es erneut.',
     joinDuel: 'Mitspielen',

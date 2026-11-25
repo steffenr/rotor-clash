@@ -41,6 +41,12 @@ export const EN_UI: Translations = {
     listRoomHint: 'Off: only people with your code or link can join.',
     authReset: 'Your saved player profile could not be verified, so you continue with a fresh one.',
     authFailed: 'Could not verify your player profile. Please reload the page.',
+    identityLostTitle: 'This browser cannot verify your profile',
+    identityLostBody:
+      'The login key for this browser is gone (site data cleared, or this is another device), so the saved ranking cannot be reopened. The old entry keeps its place in the leaderboard; you can continue with a fresh profile.',
+    identityLostSaved: 'Saved profile',
+    identityLostFresh: 'Start fresh',
+    identityLostReload: 'Reload page',
     roomLimitReached: 'All friend rooms are in use right now. Try again in a moment.',
     joinThrottled: 'Too many join attempts. Please wait a moment and try again.',
     joinDuel: 'Join Game',
