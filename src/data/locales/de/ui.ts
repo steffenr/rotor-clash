@@ -41,6 +41,7 @@ export const DE_UI: Translations = {
     listRoomHint: 'Aus: Nur wer deinen Code oder Link hat, kann beitreten.',
     authReset: 'Dein gespeichertes Spielerprofil konnte nicht bestätigt werden. Du spielst mit einem neuen weiter.',
     authFailed: 'Dein Spielerprofil konnte nicht bestätigt werden. Bitte lade die Seite neu.',
+    roomLimitReached: 'Alle Freundesräume sind gerade belegt. Versuch es gleich noch einmal.',
     joinDuel: 'Mitspielen',
     tutorialPrompt: 'Neu bei Rotor Clash? In einer Minute kennst du die Regeln.',
     launchTutorial: 'Spielanleitung öffnen',

@@ -348,7 +348,7 @@ async function bootstrap() {
           case 'room:create': {
             const res = engine.createRoom(playerId, payload.deckMode);
             if (!res.ok) {
-              sendJson(ws, 'error:toast', { message: res.error });
+              sendJson(ws, 'error:toast', { message: res.error, code: res.code });
             } else {
               sendJson(ws, 'room:created', { room: res.room });
             }
