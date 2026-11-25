@@ -325,6 +325,65 @@ export class LeaderboardStore {
     return { p1Delta, p2Delta };
   }
 
+  /**
+   * A match is rated as a loss for the player who left once a round had been decided. Only the leaver
+   * is changed: the opponent gets no win, no rating and no game count, so leaving cannot farm points
+   * and cannot dodge a defeat either. Returns the leaver's rating change (negative).
+   */
+  public recordForfeit(params: {
+    matchId: string;
+    mode: 'ranked' | 'room';
+    player1Id: string;
+    player2Id: string;
+    leaverId: string;
+    p1Cards: number;
+    p2Cards: number;
+    roundsPlayed: number;
+  }): number {
+    if (params.leaverId !== params.player1Id && params.leaverId !== params.player2Id) return 0;
+
+    const p1 = this.getOrCreatePlayer(params.player1Id);
+    const p2 = this.getOrCreatePlayer(params.player2Id);
+    const leaver = params.leaverId === p1.id ? p1 : p2;
+    const opponent = params.leaverId === p1.id ? p2 : p1;
+
+    const expected = 1 / (1 + Math.pow(10, (opponent.elo - leaver.elo) / 400));
+    const K = 32;
+    // At least one point, however strong the favourite was.
+    const wanted = Math.min(-1, Math.round(K * (0 - expected)));
+    const before = leaver.elo;
+    leaver.elo = Math.max(400, before + wanted);
+    const delta = leaver.elo - before;
+    leaver.gamesPlayed += 1;
+    leaver.losses += 1;
+    leaver.winStreak = 0;
+    leaver.updatedAt = Date.now();
+
+    const record: MatchRecord = {
+      id: params.matchId,
+      mode: params.mode,
+      winnerId: opponent.id,
+      winnerCallsign: opponent.callsign,
+      loserCallsign: leaver.callsign,
+      player1Callsign: p1.callsign,
+      player2Callsign: p2.callsign,
+      player1Cards: params.p1Cards,
+      player2Cards: params.p2Cards,
+      roundsPlayed: params.roundsPlayed,
+      eloDelta: Math.abs(delta),
+      isDraw: false,
+      finishedAt: Date.now(),
+    };
+    this.data.matches.unshift(record);
+    if (this.data.matches.length > 50) {
+      this.data.matches = this.data.matches.slice(0, 50);
+    }
+
+    this.rankedCache = null;
+    this.persist();
+    return delta;
+  }
+
   /** Ranking is only recomputed after a result or rename; connects and broadcasts reuse it. */
   public getLeaderboard(limit = DEFAULT_LEADERBOARD_LIMIT): PlayerProfile[] {
     if (!this.rankedCache) {
