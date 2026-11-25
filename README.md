@@ -118,7 +118,7 @@ Environment variables (a local `.env` file is read through `dotenv`; see `.env.e
 | --- | --- | --- |
 | `PORT` | `3000` | TCP port, or a Unix socket path |
 | `NODE_ENV` | — | `production` serves the built `dist/` instead of the Vite dev server |
-| `TRUST_PROXY` | trusted | Set to `0` when the app is exposed directly: the client-supplied `X-Forwarded-For` header is then ignored for per-address limits. Behind a reverse proxy leave it unset. |
+| `TRUST_PROXY` | auto | `auto` believes `X-Forwarded-For` only when the connection comes from the same host (loopback or a Unix socket), which is the normal reverse-proxy setup. Set `1` when the proxy runs on another host, `0` when the app is exposed directly (the header is then always ignored for per-address limits). |
 | `ALLOWED_ORIGINS` | — | Comma-separated extra origins that may open the WebSocket (the app's own origin is always allowed) |
 | `SECURITY_HEADERS` | off | Set to `app` to let the app send the security headers itself (for example when it runs without a configured web server). Leave it unset when the web server already sets them, otherwise every header is sent twice. |
 

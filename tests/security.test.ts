@@ -8,6 +8,7 @@ import { LeaderboardStore } from '../src/server/store.ts';
 import { MatchEngine } from '../src/server/matchEngine.ts';
 import {
   ConnectionLimiter,
+  KeyedRateLimiter,
   MAX_MESSAGE_BYTES,
   RateLimiter,
   buildCsp,
@@ -16,6 +17,7 @@ import {
   isValidPlayerId,
   parseClientMessage,
   securityHeaders,
+  trustForwardedHeader,
 } from '../src/server/security.ts';
 
 
@@ -88,6 +90,56 @@ test('client address: the proxy-appended X-Forwarded-For entry wins only when pr
   } as unknown as IncomingMessage;
   assert.equal(clientIp(req, true), '203.0.113.9', 'the last entry is the one our proxy added');
   assert.equal(clientIp(req, false), '127.0.0.1');
+});
+
+test('client address: a client-supplied X-Forwarded-For is ignored unless the peer is local', () => {
+  const withEnv = (value: string | undefined, run: () => void) => {
+    const before = process.env.TRUST_PROXY;
+    if (value === undefined) delete process.env.TRUST_PROXY;
+    else process.env.TRUST_PROXY = value;
+    try {
+      run();
+    } finally {
+      if (before === undefined) delete process.env.TRUST_PROXY;
+      else process.env.TRUST_PROXY = before;
+    }
+  };
+  const reqFrom = (remoteAddress: string | undefined) =>
+    ({
+      headers: { 'x-forwarded-for': '203.0.113.9' },
+      socket: { remoteAddress },
+    }) as unknown as IncomingMessage;
+
+  withEnv(undefined, () => {
+    assert.equal(trustForwardedHeader(reqFrom('198.51.100.7')), false, 'a remote peer cannot spoof the header');
+    assert.equal(clientIp(reqFrom('198.51.100.7')), '198.51.100.7');
+    assert.equal(trustForwardedHeader(reqFrom('127.0.0.1')), true, 'a proxy on this host is trusted');
+    assert.equal(trustForwardedHeader(reqFrom('::1')), true);
+    assert.equal(trustForwardedHeader(reqFrom(undefined)), true, 'a unix socket has no remote client');
+    assert.equal(clientIp(reqFrom('127.0.0.1')), '203.0.113.9');
+  });
+  withEnv('0', () => {
+    assert.equal(clientIp(reqFrom('127.0.0.1')), '127.0.0.1', 'TRUST_PROXY=0 always ignores the header');
+  });
+  withEnv('1', () => {
+    assert.equal(clientIp(reqFrom('198.51.100.7')), '203.0.113.9', 'a proxy on another host can be declared');
+  });
+});
+
+test('keyed rate limiter: bounds its table and drops idle keys', () => {
+  let now = 0;
+  const limiter = new KeyedRateLimiter(1, 1, 3, 1000, () => now);
+  assert.equal(limiter.take('a'), true);
+  assert.equal(limiter.take('a'), false, 'one token per key');
+  limiter.take('b');
+  limiter.take('c');
+  assert.equal(limiter.size, 3);
+  limiter.take('d');
+  assert.equal(limiter.size, 3, 'a fourth key evicts the oldest instead of growing');
+  assert.equal(limiter.take('a'), true, 'the evicted key starts with a full bucket again');
+  now += 5000;
+  assert.equal(limiter.prune(), 3, 'idle keys are removed');
+  assert.equal(limiter.size, 0);
 });
 
 test('websocket origin: same-origin, allow-listed and header-less clients pass; other sites do not', () => {

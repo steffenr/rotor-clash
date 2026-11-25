@@ -166,11 +166,88 @@ export class ConnectionLimiter {
 }
 
 /**
- * Client address for limits. Behind a reverse proxy (for example nginx) the TCP peer is the
- * proxy, so the last `X-Forwarded-For` entry (the one the proxy appended) is used when present.
- * Set TRUST_PROXY=0 to ignore the header when the app is exposed directly.
+ * Token buckets keyed by a client-controlled string (an address), with a hard bound on the table.
+ * Without the bound, rotating the key (for example one forged `X-Forwarded-For` value per request)
+ * would grow this map for as long as the attacker keeps sending.
  */
-export function clientIp(req: IncomingMessage, trustProxy = process.env.TRUST_PROXY !== '0'): string {
+export class KeyedRateLimiter {
+  private readonly buckets = new Map<string, { limiter: RateLimiter; lastSeen: number }>();
+
+  constructor(
+    private readonly capacity: number,
+    private readonly refillPerSecond: number,
+    private readonly maxKeys = 10_000,
+    private readonly ttlMs = 10 * 60_000,
+    private readonly now: () => number = Date.now
+  ) {}
+
+  /** `true` when the action is allowed for this key. */
+  public take(key: string): boolean {
+    const at = this.now();
+    let bucket = this.buckets.get(key);
+    if (!bucket) {
+      if (this.buckets.size >= this.maxKeys) this.evictOldest();
+      bucket = { limiter: new RateLimiter(this.capacity, this.refillPerSecond, this.now), lastSeen: at };
+      this.buckets.set(key, bucket);
+    }
+    bucket.lastSeen = at;
+    return bucket.limiter.take();
+  }
+
+  /** Drops buckets that have been idle for longer than the TTL. Returns how many were removed. */
+  public prune(): number {
+    const cutoff = this.now() - this.ttlMs;
+    let removed = 0;
+    for (const [key, bucket] of this.buckets) {
+      if (bucket.lastSeen < cutoff) {
+        this.buckets.delete(key);
+        removed += 1;
+      }
+    }
+    return removed;
+  }
+
+  public get size(): number {
+    return this.buckets.size;
+  }
+
+  /** Oldest insertion first: a full table loses the key that has been around longest. */
+  private evictOldest() {
+    const oldest = this.buckets.keys().next().value;
+    if (oldest !== undefined) this.buckets.delete(oldest);
+  }
+}
+
+/** `TRUST_PROXY` overrides the automatic decision; unset means "decide from the peer address". */
+function trustProxySetting(): boolean | null {
+  const raw = (process.env.TRUST_PROXY ?? '').trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(raw)) return true;
+  if (['0', 'false', 'no', 'off'].includes(raw)) return false;
+  return null;
+}
+
+/** Peer addresses that can only be a reverse proxy on the same host. */
+const LOCAL_PEER_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+/**
+ * Whether `X-Forwarded-For` may be believed for this request. The header is client-controlled when the
+ * app is exposed directly, so it is only trusted when the TCP peer cannot be a remote client: loopback
+ * or no peer address at all (a unix socket, as process managers such as Phusion Passenger pass one).
+ * A proxy on another host must be declared with TRUST_PROXY=1; TRUST_PROXY=0 always ignores the header.
+ */
+export function trustForwardedHeader(req: IncomingMessage): boolean {
+  const setting = trustProxySetting();
+  if (setting !== null) return setting;
+  const peer = req.socket?.remoteAddress;
+  return peer === undefined || LOCAL_PEER_ADDRESSES.has(peer);
+}
+
+/**
+ * Client address for limits. Behind a reverse proxy (for example nginx) the TCP peer is the
+ * proxy, so the last `X-Forwarded-For` entry (the one the proxy appended) is used when trusted
+ * (see `trustForwardedHeader()`); otherwise the socket address is the client address.
+ */
+export function clientIp(req: IncomingMessage, trustProxy = trustForwardedHeader(req)): string {
   if (trustProxy) {
     const forwarded = req.headers['x-forwarded-for'];
     const value = Array.isArray(forwarded) ? forwarded.join(',') : forwarded;
