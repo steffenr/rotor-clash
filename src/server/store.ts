@@ -21,6 +21,9 @@ const MAX_PROFILES = 5000;
 /** Disk writes are coalesced, so a burst of changes costs one write. */
 const PERSIST_DELAY_MS = 500;
 const MAX_CALLSIGN_INPUT = 64;
+/** Two players who keep meeting in this window get damped rating, which stops collusion farming. */
+const REPEAT_PAIR_WINDOW_MS = 60 * 60 * 1000;
+const MAX_TRACKED_PAIRS = 5000;
 
 /**
  * Prototype-less dictionary: keys such as `__proto__` or `constructor` are plain data, never the
@@ -36,6 +39,8 @@ export class LeaderboardStore {
   private readonly dataDir: string;
   /** All ranked players (>= 1 game), best first. Rebuilt lazily after any ranking change. */
   private rankedCache: PlayerProfile[] | null = null;
+  /** Unordered player pairs and how often they met recently; memory only, capped. */
+  private readonly recentPairs = new Map<string, { count: number; lastAt: number }>();
   private lastPruneAt = Date.now();
   private dirty = false;
   private persistTimer: NodeJS.Timeout | undefined;
@@ -248,6 +253,9 @@ export class LeaderboardStore {
     const expected1 = 1 / (1 + Math.pow(10, (p2.elo - p1.elo) / 400));
     const expected2 = 1 - expected1;
     const K = 32;
+    // Familiar opponents are worth less: the third meeting within an hour counts half, the fourth
+    // and later ones nothing. Real duels are unaffected; a two-account farm stops earning.
+    const repeatMultiplier = this.notePairing(p1.id, p2.id);
 
     let score1 = 0.5;
     let score2 = 0.5;
@@ -259,8 +267,9 @@ export class LeaderboardStore {
       score2 = 1;
     }
 
-    const p1Delta = Math.round(K * (score1 - expected1));
-    const p2Delta = Math.round(K * (score2 - expected2));
+    // `|| 0` turns a damped -0 into 0 so no UI ever renders "-0".
+    const p1Delta = Math.round(K * (score1 - expected1) * repeatMultiplier) || 0;
+    const p2Delta = Math.round(K * (score2 - expected2) * repeatMultiplier) || 0;
 
     p1.elo = Math.max(400, p1.elo + p1Delta);
     p2.elo = Math.max(400, p2.elo + p2Delta);
@@ -378,6 +387,26 @@ export class LeaderboardStore {
     this.rankedCache = null;
     this.persist();
     return delta;
+  }
+
+  /**
+   * Records that two players met and returns the rating factor for this match: 1 for a fresh or
+   * second opponent, 0.5 for the third meeting within the window, 0 after that.
+   */
+  private notePairing(p1Id: string, p2Id: string): number {
+    const now = Date.now();
+    const key = p1Id < p2Id ? `${p1Id}:${p2Id}` : `${p2Id}:${p1Id}`;
+    const previous = this.recentPairs.get(key);
+    const repeats = previous && now - previous.lastAt <= REPEAT_PAIR_WINDOW_MS ? previous.count : 0;
+    // Re-insert so the insertion order stays least-recently-used for eviction.
+    if (previous) this.recentPairs.delete(key);
+    if (this.recentPairs.size >= MAX_TRACKED_PAIRS) {
+      const oldest = this.recentPairs.keys().next().value;
+      if (oldest !== undefined) this.recentPairs.delete(oldest);
+    }
+    this.recentPairs.set(key, { count: repeats + 1, lastAt: now });
+    if (repeats < 2) return 1;
+    return repeats === 2 ? 0.5 : 0;
   }
 
   /** Ranking is only recomputed after a result or rename; connects and broadcasts reuse it. */
