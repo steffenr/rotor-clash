@@ -134,7 +134,9 @@ export interface Translations {
     reasonAllCardsLoss: string;
     reasonRoundLimit: string;
     reasonForfeitWin: string;
+    reasonForfeitWinRated: string;
     reasonForfeitLoss: string;
+    reasonForfeitLossRated: string;
     matchAbandoned: string;
     reasonDraw: string;
     finalCards: string;

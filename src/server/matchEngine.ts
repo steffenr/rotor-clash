@@ -46,7 +46,7 @@ export interface ActiveMatch {
   winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
   p1EloChange: number | null;
   p2EloChange: number | null;
-  /** Player who left / dropped out; the match is then not counted. */
+  /** Player who left / dropped out. A forfeit after the first round costs them the match. */
   abandonedById: string | null;
   deckMode: DeckMode;
   quartetGroupIds: number[];
@@ -92,6 +92,7 @@ export type IsPlayerConnectedFn = (playerId: string) => boolean;
 export interface MatchStoreLike {
   getOrCreatePlayer: typeof leaderboardStore.getOrCreatePlayer;
   recordPvpMatch: typeof leaderboardStore.recordPvpMatch;
+  recordForfeit: typeof leaderboardStore.recordForfeit;
   getLeaderboard: typeof leaderboardStore.getLeaderboard;
   getRecentMatches: typeof leaderboardStore.getRecentMatches;
 }
@@ -524,7 +525,8 @@ export class MatchEngine {
 
   /**
    * A player left (Leave button) or stayed disconnected past the grace window.
-   * Only matches played to the end count, so nobody gets a win, a loss, ELO or a history entry.
+   * Before the first round nothing is counted, so an accidental drop costs nothing. After that the
+   * leaver takes the loss and the opponent gets no points, so nobody can dodge a defeat by leaving.
    */
   private abandonMatch(match: ActiveMatch, leaverId: string) {
     match.abandonedById = leaverId;
@@ -554,6 +556,7 @@ export class MatchEngine {
     match.winReason = reason;
     match.turnDeadlineAt = null;
 
+    let rated = true;
     if (reason !== 'FORFEIT') {
       const p1Quartets = computeCompletedQuartets(match.p1Deck, SERVER_CARD_BY_ID).length;
       const p2Quartets = computeCompletedQuartets(match.p2Deck, SERVER_CARD_BY_ID).length;
@@ -573,10 +576,28 @@ export class MatchEngine {
 
       match.p1EloChange = p1Delta;
       match.p2EloChange = p2Delta;
+    } else if (match.abandonedById && match.lastRound) {
+      // A round was already decided: the leaver takes the loss, the opponent gets nothing.
+      const leaverId = match.abandonedById;
+      const delta = this.store.recordForfeit({
+        matchId: match.id,
+        mode: match.mode,
+        player1Id: match.p1Id,
+        player2Id: match.p2Id,
+        leaverId,
+        p1Cards: match.p1Deck.length,
+        p2Cards: match.p2Deck.length,
+        roundsPlayed: match.roundNumber,
+      });
+      if (leaverId === match.p1Id) match.p1EloChange = delta;
+      else match.p2EloChange = delta;
+    } else {
+      // Left during the first round: an accidental drop is not punished.
+      rated = false;
     }
 
     this.broadcastMatchState(match);
-    if (reason !== 'FORFEIT') {
+    if (rated) {
       this.broadcastAll('leaderboard:updated', {
         leaderboard: this.store.getLeaderboard(),
         recentMatches: this.store.getRecentMatches(),
@@ -670,6 +691,7 @@ export class MatchEngine {
       winReason: match.winReason,
       eloChange: isP1 ? match.p1EloChange : match.p2EloChange,
       abandonedBy: match.abandonedById === null ? null : match.abandonedById === playerId ? 'you' : 'opponent',
+      forfeitRated: match.winReason === 'FORFEIT' && (match.p1EloChange !== null || match.p2EloChange !== null),
       deckMode: match.deckMode,
       quartetGroupIds: match.quartetGroupIds,
     };

@@ -900,9 +900,12 @@ export function createRotorClashApp() {
       }
       if (m.winReason === 'ROUND_LIMIT') return this.t.arena.reasonRoundLimit.replace('{rounds}', String(m.maxRounds));
       if (m.winReason === 'FORFEIT') {
-        return m.abandonedBy === 'you'
-          ? this.t.arena.reasonForfeitLoss
-          : `${m.opponent.callsign} ${this.t.arena.reasonForfeitWin}`;
+        if (m.abandonedBy === 'you') {
+          return m.forfeitRated ? this.t.arena.reasonForfeitLossRated : this.t.arena.reasonForfeitLoss;
+        }
+        return `${m.opponent.callsign} ${
+          m.forfeitRated ? this.t.arena.reasonForfeitWinRated : this.t.arena.reasonForfeitWin
+        }`;
       }
       if (m.winReason === 'DRAW') return this.t.arena.reasonDraw.replace('{rounds}', String(m.maxRounds));
       return '';

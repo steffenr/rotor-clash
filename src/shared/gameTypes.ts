@@ -153,8 +153,10 @@ export interface ClientMatchState {
   winnerId: string | null;
   winReason: 'ALL_CARDS' | 'ROUND_LIMIT' | 'FORFEIT' | 'DRAW' | null;
   eloChange: number | null;
-  /** Set when the match ended because someone left. Abandoned matches are not counted. */
+  /** Set when the match ended because someone left. */
   abandonedBy: 'you' | 'opponent' | null;
+  /** A forfeit after the first round is rated: the leaver takes the loss, the opponent gets nothing. */
+  forfeitRated?: boolean;
   /** Which cards and stats this match uses. */
   deckMode: DeckMode;
   /** Quartet groups in play (8, or 16 in the Grand Tour). */

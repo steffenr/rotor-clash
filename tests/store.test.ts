@@ -101,3 +101,66 @@ test('LeaderboardStore leaderboard only lists players who have played a game', (
   store.getOrCreatePlayer('lurker');
   assert.equal(store.getLeaderboard().length, 0);
 });
+
+test('LeaderboardStore.recordForfeit rates the leaver only and records the result', () => {
+  const store = new LeaderboardStore(tempFile());
+  const delta = store.recordForfeit({
+    matchId: 'forfeit-1',
+    mode: 'ranked',
+    player1Id: 'alice',
+    player2Id: 'bob',
+    leaverId: 'bob',
+    p1Cards: 20,
+    p2Cards: 12,
+    roundsPlayed: 5,
+  });
+
+  assert.ok(delta <= -1, `a loss costs at least one point, got ${delta}`);
+  const alice = store.getPlayer('alice')!;
+  const bob = store.getPlayer('bob')!;
+  assert.equal(alice.elo, 1200, 'the opponent is not rated');
+  assert.equal(alice.gamesPlayed, 0);
+  assert.equal(alice.wins, 0);
+  assert.equal(bob.elo, 1200 + delta);
+  assert.equal(bob.gamesPlayed, 1);
+  assert.equal(bob.losses, 1);
+  assert.equal(bob.winStreak, 0);
+
+  const [record] = store.getRecentMatches();
+  assert.equal(record.winnerId, 'alice');
+  assert.equal(record.loserCallsign, bob.callsign);
+  assert.equal(record.eloDelta, -delta);
+
+  assert.equal(
+    store.recordForfeit({
+      matchId: 'forfeit-2',
+      mode: 'ranked',
+      player1Id: 'alice',
+      player2Id: 'bob',
+      leaverId: 'nobody',
+      p1Cards: 1,
+      p2Cards: 1,
+      roundsPlayed: 1,
+    }),
+    0,
+    'a leaver who is not in the match changes nothing'
+  );
+  assert.equal(store.getRecentMatches().length, 1);
+});
+
+test('LeaderboardStore.recordForfeit never pushes a rating below the floor', () => {
+  const store = new LeaderboardStore(tempFile([profile('low', { elo: 400, gamesPlayed: 3, losses: 3 })]));
+  const delta = store.recordForfeit({
+    matchId: 'forfeit-3',
+    mode: 'room',
+    player1Id: 'low',
+    player2Id: 'high',
+    leaverId: 'low',
+    p1Cards: 4,
+    p2Cards: 18,
+    roundsPlayed: 9,
+  });
+  assert.equal(delta, 0);
+  assert.equal(store.getPlayer('low')!.elo, 400);
+  assert.equal(store.getPlayer('low')!.losses, 4);
+});

@@ -67,6 +67,31 @@ function createMemoryStore(): MatchStoreLike {
       });
       return { p1Delta, p2Delta };
     },
+    recordForfeit(params) {
+      const leaver = this.getOrCreatePlayer(params.leaverId);
+      const opponent = this.getOrCreatePlayer(
+        params.leaverId === params.player1Id ? params.player2Id : params.player1Id
+      );
+      leaver.gamesPlayed += 1;
+      leaver.losses += 1;
+      leaver.elo -= 16;
+      matches.unshift({
+        id: params.matchId,
+        mode: params.mode,
+        winnerId: opponent.id,
+        winnerCallsign: opponent.callsign,
+        loserCallsign: leaver.callsign,
+        player1Callsign: this.getOrCreatePlayer(params.player1Id).callsign,
+        player2Callsign: this.getOrCreatePlayer(params.player2Id).callsign,
+        player1Cards: params.p1Cards,
+        player2Cards: params.p2Cards,
+        roundsPlayed: params.roundsPlayed,
+        eloDelta: 16,
+        isDraw: false,
+        finishedAt: Date.now(),
+      });
+      return -16;
+    },
     getLeaderboard() {
       return Array.from(players.values());
     },
@@ -127,24 +152,28 @@ test('MatchEngine pairs private room players, enforces turns, resolves rounds, a
     assert.equal(revealState.status, 'ROUND_REVEAL');
     assert.equal(revealState.lastRound?.chosenStat, 'ratedPowerMw');
 
-    // Leaving ends the match but does NOT count: no winner, no ELO, no stats, no history entry.
+    // Leaving after a decided round is rated: the leaver takes the loss, the opponent gets nothing.
     engine.forfeitMatch('bob', aliceState.matchId);
     const finished = engine.getMatchForPlayer('alice') as ClientMatchState;
     const leaver = engine.getMatchForPlayer('bob') as ClientMatchState;
     assert.equal(finished.status, 'FINISHED');
     assert.equal(finished.winReason, 'FORFEIT');
     assert.equal(finished.winnerId, null);
-    assert.equal(finished.eloChange, null);
-    assert.equal(leaver.eloChange, null);
+    assert.equal(finished.forfeitRated, true);
+    assert.equal(finished.eloChange, null, 'the opponent gets no rating change');
+    assert.equal(leaver.eloChange, -16, 'the leaver takes the loss');
     assert.equal(finished.abandonedBy, 'opponent');
     assert.equal(leaver.abandonedBy, 'you');
-    assert.equal(store.getRecentMatches().length, 0);
-    for (const id of ['alice', 'bob']) {
-      const p = store.getOrCreatePlayer(id);
-      assert.equal(p.elo, 1200);
-      assert.equal(p.gamesPlayed, 0);
-      assert.equal(p.wins + p.losses + p.draws, 0);
-    }
+    assert.equal(store.getRecentMatches().length, 1);
+    assert.equal(store.getRecentMatches()[0].winnerId, 'alice');
+    const loserProfile = store.getOrCreatePlayer('bob');
+    assert.equal(loserProfile.elo, 1184);
+    assert.equal(loserProfile.gamesPlayed, 1);
+    assert.equal(loserProfile.losses, 1);
+    const winnerProfile = store.getOrCreatePlayer('alice');
+    assert.equal(winnerProfile.elo, 1200, 'the opponent is not credited');
+    assert.equal(winnerProfile.gamesPlayed, 0);
+    assert.equal(winnerProfile.wins, 0);
   } finally {
     engine.dispose();
   }
@@ -183,6 +212,33 @@ test('MatchEngine counts a match (ELO, stats, history) only when it is played to
     assert.equal(store.getRecentMatches().length, 1);
     assert.equal(store.getOrCreatePlayer('alice').gamesPlayed, 1);
     assert.equal(store.getOrCreatePlayer('bob').gamesPlayed, 1);
+  } finally {
+    engine.dispose();
+  }
+});
+
+test('MatchEngine leaves a forfeit before the first round unrated', () => {
+  const store = createMemoryStore();
+  const engine = new MatchEngine(
+    () => {},
+    () => {},
+    () => true,
+    store
+  );
+
+  try {
+    const code = engine.createRoom('carol').room!.roomCode;
+    engine.joinRoom('dave', code);
+    const matchId = (engine.getMatchForPlayer('carol') as ClientMatchState).matchId;
+
+    engine.forfeitMatch('carol', matchId);
+    const done = engine.getMatchForPlayer('carol') as ClientMatchState;
+    assert.equal(done.status, 'FINISHED');
+    assert.equal(done.winReason, 'FORFEIT');
+    assert.equal(done.forfeitRated, false, 'an early drop is not punished');
+    assert.equal(done.eloChange, null);
+    assert.equal(store.getRecentMatches().length, 0);
+    assert.equal(store.getOrCreatePlayer('carol').gamesPlayed, 0);
   } finally {
     engine.dispose();
   }
