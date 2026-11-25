@@ -41,6 +41,7 @@ export const EN_UI: Translations = {
     listRoomHint: 'Off: only people with your code or link can join.',
     authReset: 'Your saved player profile could not be verified, so you continue with a fresh one.',
     authFailed: 'Could not verify your player profile. Please reload the page.',
+    roomLimitReached: 'All friend rooms are in use right now. Try again in a moment.',
     joinDuel: 'Join Game',
     tutorialPrompt: 'First time playing Rotor Clash? Learn how cards battle in 1 minute.',
     launchTutorial: 'Open Kid-Friendly Guide',

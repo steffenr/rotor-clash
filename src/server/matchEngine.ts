@@ -66,6 +66,12 @@ interface WaitingRoom {
   listed: boolean;
 }
 
+/** Room creation is refused with this code once every room slot is taken. */
+export type RoomErrorCode = 'ROOM_LIMIT';
+
+/** Hard cap on waiting friend rooms, so the lobby ties stay bounded and the open list stays short. */
+export const MAX_WAITING_ROOMS = 25;
+
 /** Uniform float in [0, 1) from the OS random source, for shuffles and coin flips. */
 const secureRandom = () => crypto.randomInt(0, 2 ** 32) / 2 ** 32;
 
@@ -262,7 +268,7 @@ export class MatchEngine {
   public createRoom(
     playerId: string,
     rawDeckMode?: unknown
-  ): { ok: boolean; room?: OpenRoomSummary; error?: string } {
+  ): { ok: boolean; room?: OpenRoomSummary; error?: string; code?: RoomErrorCode } {
     const deckMode = normalizeDeckMode(rawDeckMode);
     if (this.playerToMatch.has(playerId)) {
       const existing = this.matches.get(this.playerToMatch.get(playerId)!);
@@ -274,6 +280,15 @@ export class MatchEngine {
 
     this.removeFromQueue(playerId);
     this.cancelHostedRooms(playerId);
+
+    // The player's own room (if any) was just freed, so replacing it always works at the cap.
+    if (this.rooms.size >= MAX_WAITING_ROOMS) {
+      return {
+        ok: false,
+        error: `All ${MAX_WAITING_ROOMS} friend rooms are in use right now. Try again in a moment.`,
+        code: 'ROOM_LIMIT',
+      };
+    }
 
     let code = '';
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

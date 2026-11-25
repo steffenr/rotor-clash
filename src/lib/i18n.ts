@@ -43,6 +43,7 @@ export interface Translations {
     listRoomHint: string;
     authReset: string;
     authFailed: string;
+    roomLimitReached: string;
     joinDuel: string;
     tutorialPrompt: string;
     launchTutorial: string;

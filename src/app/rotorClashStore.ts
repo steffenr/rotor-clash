@@ -89,6 +89,16 @@ function markReloadedFor(version: string): boolean {
   }
 }
 
+/**
+ * Server errors carry a code for the cases the UI knows how to phrase itself; everything else keeps
+ * the server's message. Codes are only trusted for display, never for logic.
+ */
+function serverErrorMessage(payload: unknown, t: Translations): string {
+  const { code, message } = (payload ?? {}) as { code?: unknown; message?: unknown };
+  if (code === 'ROOM_LIMIT') return t.lobby.roomLimitReached;
+  return typeof message === 'string' ? message : '';
+}
+
 export function createRotorClashApp() {
   let identity = getOrCreateIdentity();
   /** The server may refuse a saved id/secret pair once; a fresh identity is created then (never in a loop). */
@@ -367,8 +377,8 @@ export function createRotorClashApp() {
               this.syncActiveMatch();
               break;
             case 'error:toast':
-              if (msg.payload?.message) {
-                this.showToast(String(msg.payload.message));
+              if (msg.payload?.message || msg.payload?.code) {
+                this.showToast(serverErrorMessage(msg.payload, this.t));
               }
               break;
           }

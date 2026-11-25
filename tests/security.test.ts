@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { IncomingMessage } from 'node:http';
 import { LeaderboardStore } from '../src/server/store.ts';
-import { MatchEngine } from '../src/server/matchEngine.ts';
+import { MatchEngine, MAX_WAITING_ROOMS } from '../src/server/matchEngine.ts';
 import {
   ConnectionLimiter,
   KeyedRateLimiter,
@@ -251,17 +251,27 @@ test('match engine: a stat the deck does not compare is refused and changes noth
   }
 });
 
-test('match engine: friend rooms are private by default and use unpredictable codes', () => {
+test('match engine: friend rooms are private by default, use unpredictable codes and are capped', () => {
   const store = new LeaderboardStore(tempStoreFile());
   const engine = new MatchEngine(() => {}, () => {}, () => true, store);
   try {
     const codes = new Set<string>();
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < MAX_WAITING_ROOMS; i++) {
       const created = engine.createRoom(`host-${i}-xx`);
       assert.match(created.room!.roomCode, /^[A-HJ-NP-Z2-9]{6}$/);
       codes.add(created.room!.roomCode);
     }
-    assert.equal(codes.size, 40);
+    assert.equal(codes.size, MAX_WAITING_ROOMS);
+
+    const refused = engine.createRoom('one-too-many');
+    assert.equal(refused.ok, false, 'the lobby refuses room number 26');
+    assert.equal(refused.code, 'ROOM_LIMIT');
+    assert.match(refused.error ?? '', /friend rooms/);
+    assert.equal(engine.getWaitingRoomForPlayer('one-too-many'), null);
+
+    const replaced = engine.createRoom('host-3-xx');
+    assert.equal(replaced.ok, true, 'a host can replace their own room while the lobby is full');
+
     assert.equal(engine.getLobbySnapshot(40).openRooms.length, 0, 'nothing is listed unless the host opts in');
     engine.setRoomListed('host-3-xx', true);
     assert.equal(engine.getLobbySnapshot(40).openRooms.length, 1);
