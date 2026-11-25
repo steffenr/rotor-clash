@@ -167,10 +167,12 @@ test('security headers: nosniff, framing and referrer policy always; CSP only fo
   assert.equal(prod['X-Content-Type-Options'], 'nosniff');
   assert.equal(prod['X-Frame-Options'], 'DENY');
   assert.ok(prod['Referrer-Policy']);
+  assert.equal(prod['Strict-Transport-Security'], 'max-age=31536000');
   assert.match(prod['Content-Security-Policy'], /frame-ancestors 'none'/);
   assert.match(prod['Content-Security-Policy'], /object-src 'none'/);
   assert.match(prod['Content-Security-Policy'], /wss:\/\/rotor-clash\.example/);
   assert.equal(run(false)['Content-Security-Policy'], undefined);
+  assert.equal(run(false)['Strict-Transport-Security'], undefined, 'no HSTS over the dev server');
 });
 
 test('csp: a hostile Host header cannot inject extra directives', () => {

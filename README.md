@@ -142,6 +142,7 @@ X-Content-Type-Options: nosniff
 X-Frame-Options: DENY
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+Strict-Transport-Security: max-age=31536000
 Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss://your-domain.example; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
@@ -156,7 +157,8 @@ Notes:
 - The built `index.html` also carries the same policy (without `frame-ancestors`, which only works as a header) in a `<meta>` tag, so the CSP applies even if the web server configuration is lost.
 - `'unsafe-eval'` is required by the standard Alpine.js build, which compiles template expressions at runtime. External scripts, plugins, framing and foreign form targets are still blocked. Keep scripts external (`public/theme-init.js`); never add inline scripts.
 - The app does not send these headers itself unless `SECURITY_HEADERS=app` is set (see Configuration).
-- Check with `curl -sI https://your-domain.example/`: all five headers should appear exactly once. If the host name changes, update the `connect-src` entry.
+- Check with `curl -sI https://your-domain.example/`: all six headers should appear exactly once. If the host name changes, update the `connect-src` entry.
+- `Strict-Transport-Security` only takes effect on an HTTPS response and tells browsers to keep using HTTPS. Only send it once the domain works over HTTPS with a valid certificate; there is no way to withdraw it quickly (`max-age` counts down from the moment a browser last saw the header).
 
 ## License
 

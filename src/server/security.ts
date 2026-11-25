@@ -331,8 +331,12 @@ export function securityHeaders(isProd: boolean): RequestHandler {
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-    // The Vite dev server injects inline scripts and a HMR socket, so the CSP applies to production only.
-    if (isProd) res.setHeader('Content-Security-Policy', buildCsp(req.headers.host));
+    // Production only, like the CSP: a browser ignores HSTS on plain HTTP, and the dev server is HTTP.
+    if (isProd) {
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+      // The Vite dev server injects inline scripts and a HMR socket, so the CSP applies to production only.
+      res.setHeader('Content-Security-Policy', buildCsp(req.headers.host));
+    }
     next();
   };
 }
