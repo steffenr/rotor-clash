@@ -159,11 +159,13 @@ export class LeaderboardStore {
    * Binds a device key to an id after the browser proved it holds the private key. The first key wins.
    * A ranked profile without a key (from before device keys) cannot be claimed: the id is public, so
    * handing it to whoever asks first would let anyone take over that ranking.
+   * A key belongs to exactly one id, so one browser cannot farm a crowd of identities.
    */
   public bindPublicKey(id: string, publicKey: string): boolean {
     if (isForbiddenKey(id) || !isValidPublicKey(publicKey)) return false;
     const existing = this.getPublicKey(id);
     if (existing) return existing === publicKey;
+    if (Object.values(this.data.keys).includes(publicKey)) return false;
     if ((this.findPlayer(id)?.gamesPlayed ?? 0) > 0) return false;
     this.data.keys[id] = publicKey;
     this.persist();

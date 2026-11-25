@@ -205,6 +205,16 @@ test('store: a poisoned data file cannot smuggle prototype keys in', () => {
   assert.equal(({} as Record<string, unknown>).callsign, undefined);
 });
 
+test('store: a device key is bound to exactly one player id', () => {
+  const store = new LeaderboardStore(tempStoreFile());
+  const key = `B${'A'.repeat(86)}`; // 65 bytes starting with the uncompressed-point marker
+  assert.equal(store.bindPublicKey('player-a', key), true);
+  assert.equal(store.bindPublicKey('player-a', key), true, 'the same id keeps working');
+  assert.equal(store.bindPublicKey('player-b', key), false, 'another id cannot reuse the key');
+  assert.equal(store.getPublicKey('player-b'), undefined);
+  assert.equal(store.bindPublicKey('player-b', `B${'A'.repeat(85)}C`), true, 'a fresh key is fine');
+});
+
 test('store: renaming to the same name does not write, and oversized names are bounded', async () => {
   const file = tempStoreFile();
   const store = new LeaderboardStore(file);
