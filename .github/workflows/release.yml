@@ -166,8 +166,28 @@ jobs:
           git add package.json
           if [ -f package-lock.json ]; then git add package-lock.json; fi
           git commit -m "chore(release): ${TAG}"
-          git tag -a "${TAG}" -m "Release ${TAG}"
-          git push origin HEAD:main "${TAG}"
+
+          # main can move while the tests run and the app is deployed (for example a Dependabot
+          # merge), so replay the version commit on the current main and push the commit and its tag
+          # in one atomic push. A rejected push therefore never leaves a tag behind for a commit
+          # that is not on main (the failure mode of the v0.5.0 release).
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo "::error::main changed during the release and the version bump conflicts. Nothing was pushed; re-run the release." >&2
+              exit 1
+            fi
+            git tag -f -a "${TAG}" -m "Release ${TAG}"
+            if git push --atomic origin "HEAD:refs/heads/main" "refs/tags/${TAG}"; then
+              echo "Pushed ${TAG} and its version commit to main."
+              exit 0
+            fi
+            echo "::warning::push attempt ${attempt} was rejected because main moved again; retrying."
+            sleep 5
+          done
+          echo "::error::Could not push the release commit after three attempts. No tag was pushed; re-run the release." >&2
+          exit 1
 
       - name: Create GitHub Release
         env:
