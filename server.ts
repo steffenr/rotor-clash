@@ -125,9 +125,12 @@ async function bootstrap() {
   const socketToPlayer = new Map<WebSocket, string>();
   const lastRenameAt = new Map<string, number>();
 
+  /** One serialized frame is shared by all recipients; broadcasts carry the same payload everywhere. */
+  const frameOf = (event: string, payload: unknown) => JSON.stringify({ event, payload });
+
   const sendJson = (ws: WebSocket, event: string, payload: unknown) => {
     if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ event, payload }));
+      ws.send(frameOf(event, payload));
     }
   };
 
@@ -139,9 +142,16 @@ async function bootstrap() {
     }
   };
 
+  /**
+   * Lobby and leaderboard broadcasts are player state, so sockets that never finished the login
+   * handshake are skipped: they can neither use nor afford to receive them.
+   */
   const broadcastAll = (event: string, payload: unknown) => {
+    const frame = frameOf(event, payload);
     for (const sock of wss.clients) {
-      sendJson(sock, event, payload);
+      if (sock.readyState === WebSocket.OPEN && socketToPlayer.has(sock)) {
+        sock.send(frame);
+      }
     }
   };
 
