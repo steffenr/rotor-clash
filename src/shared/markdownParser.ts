@@ -8,6 +8,7 @@ import {
   TurbineCard,
   TurbineLocaleText,
 } from './gameTypes.ts';
+import { httpsUrlOrEmpty } from './externalUrl.ts';
 
 function parseMarkdownSections(raw: string): Record<string, string>[] {
   const sections = raw
@@ -117,7 +118,7 @@ export function parseTurbineMarkdown(
     flagshipPlant: kv.flagshipPlant,
     flagshipLocation: kv.flagshipLocation,
     turbineCountInPlant: Number(kv.turbineCountInPlant),
-    sourceUrl: kv.sourceUrl,
+    sourceUrl: httpsUrlOrEmpty(kv.sourceUrl),
     sourceLabel: kv.sourceLabel,
     stats: {
       ratedPowerMw: Number(kv.ratedPowerMw),

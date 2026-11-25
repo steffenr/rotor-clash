@@ -1,4 +1,5 @@
 import { PHOTO_CREDITS } from '../data/photoCredits.ts';
+import { httpsUrlOrEmpty } from './externalUrl.ts';
 
 /**
  * Credit for one card photo. Every photo in the game comes from Wikimedia Commons under a free
@@ -26,5 +27,8 @@ export function isFreeLicense(license: string): boolean {
 }
 
 export function getPhotoCredit(photoKey: string): PhotoCredit | null {
-  return PHOTO_CREDITS[photoKey] ?? null;
+  const credit = PHOTO_CREDITS[photoKey];
+  if (!credit) return null;
+  // Only https links reach the card detail (see externalUrl.ts).
+  return { ...credit, licenseUrl: httpsUrlOrEmpty(credit.licenseUrl), sourceUrl: httpsUrlOrEmpty(credit.sourceUrl) };
 }
