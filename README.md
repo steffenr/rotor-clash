@@ -51,8 +51,8 @@ Players battle across **64 real-world wind turbines** in two decks of **8 Quarte
 │   ├── ci.yml                  # Lint, test & build checks on PRs to develop and pushes to main/develop
 │   └── release.yml             # Manual workflow_dispatch release: test, build, deploy, tag
 ├── server.ts                   # Express + WebSocket server (dev Vite middleware / prod dist/)
-├── index.html                  # Alpine.js root mount & font imports
-├── public/                     # Static files copied as-is (manifest, icons, theme-init.js)
+├── index.html                  # Alpine.js root mount & page metadata
+├── public/                     # Static files copied as-is (manifest, icons, theme-init.js, fonts)
 ├── src/
 │   ├── app/rotorClashStore.ts  # Alpine.js reactive store, WS client, timers, UI helpers
 │   ├── templates/              # HTML template builders (header, lobby, arena, card, modal, icons)
@@ -143,7 +143,7 @@ X-Frame-Options: DENY
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 Strict-Transport-Security: max-age=31536000
-Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' wss://your-domain.example; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' wss://your-domain.example; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
 ```
 
 Optional, so that browsers always revalidate the page and a release reaches players quickly (see *How players get updates*):

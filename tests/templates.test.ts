@@ -31,6 +31,19 @@ test('index.html loads Alpine entry point without React mount', () => {
   assert.equal(indexHtml.includes('/src/main.tsx'), false);
 });
 
+test('the page loads nothing from a third party (fonts are self-hosted)', () => {
+  const indexHtml = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+  assert.doesNotMatch(indexHtml, /fonts\.(googleapis|gstatic)\.com/);
+  assert.doesNotMatch(indexHtml, /<link[^>]+href="https?:\/\//, 'no external stylesheets');
+  const css = fs.readFileSync(path.resolve(process.cwd(), 'src/index.css'), 'utf-8');
+  for (const file of ['fraunces', 'plus-jakarta-sans', 'jetbrains-mono']) {
+    assert.ok(css.includes(`/fonts/${file}-latin.woff2`), `${file} is self-hosted`);
+  }
+  for (const file of fs.readdirSync(path.resolve(process.cwd(), 'public/fonts'))) {
+    assert.ok(file.endsWith('.woff2') || file.startsWith('OFL-'), `unexpected font asset ${file}`);
+  }
+});
+
 test('templates use only Tailwind default font sizes (no text-[..px] arbitrary values)', () => {
   const dir = path.resolve(import.meta.dirname, '../src/templates');
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.ts'))) {

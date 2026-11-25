@@ -171,6 +171,8 @@ test('security headers: nosniff, framing and referrer policy always; CSP only fo
   assert.match(prod['Content-Security-Policy'], /frame-ancestors 'none'/);
   assert.match(prod['Content-Security-Policy'], /object-src 'none'/);
   assert.match(prod['Content-Security-Policy'], /wss:\/\/rotor-clash\.example/);
+  assert.match(prod['Content-Security-Policy'], /font-src 'self'(;|$)/, 'fonts are self-hosted');
+  assert.doesNotMatch(prod['Content-Security-Policy'], /fonts\.(googleapis|gstatic)\.com/);
   assert.equal(run(false)['Content-Security-Policy'], undefined);
   assert.equal(run(false)['Strict-Transport-Security'], undefined, 'no HSTS over the dev server');
 });
