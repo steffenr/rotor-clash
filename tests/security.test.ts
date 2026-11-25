@@ -215,6 +215,13 @@ test('store: a device key is bound to exactly one player id', () => {
   assert.equal(store.bindPublicKey('player-b', `B${'A'.repeat(85)}C`), true, 'a fresh key is fine');
 });
 
+test('store: logging in again cannot rename a profile around the cooldown', () => {
+  const store = new LeaderboardStore(tempStoreFile());
+  assert.equal(store.getOrCreatePlayer('player-x', 'Alice').callsign, 'Alice');
+  assert.equal(store.getOrCreatePlayer('player-x', 'Mallory').callsign, 'Alice', 'login keeps the name');
+  assert.equal(store.updateCallsign('player-x', 'Mallory').callsign, 'Mallory', 'a real rename still works');
+});
+
 test('store: renaming to the same name does not write, and oversized names are bounded', async () => {
   const file = tempStoreFile();
   const store = new LeaderboardStore(file);

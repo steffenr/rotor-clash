@@ -172,21 +172,15 @@ export class LeaderboardStore {
     return true;
   }
 
+  /**
+   * The profile for an id, created with `callsign` when it does not exist yet. An existing profile is
+   * never renamed here: renaming goes through `updateCallsign()`, which the server rate limits.
+   */
   public getOrCreatePlayer(id: string, callsign?: string): PlayerProfile {
     if (isForbiddenKey(id)) throw new Error('Invalid player id');
     const cleanCallsign = this.sanitizeCallsign(callsign);
     const existing = this.findPlayer(id);
-    if (existing) {
-      if (cleanCallsign && existing.callsign !== cleanCallsign) {
-        existing.callsign = cleanCallsign;
-        existing.updatedAt = Date.now();
-        if (existing.gamesPlayed > 0) {
-          this.rankedCache = null;
-          this.persist();
-        }
-      }
-      return existing;
-    }
+    if (existing) return existing;
 
     const created: PlayerProfile = {
       id,
