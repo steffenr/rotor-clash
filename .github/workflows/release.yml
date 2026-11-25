@@ -88,8 +88,9 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER || vars.SSH_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS || vars.SSH_KNOWN_HOSTS }}
         run: |
-          for var_name in SSH_HOST SSH_USER DEPLOY_PATH SSH_PRIVATE_KEY; do
+          for var_name in SSH_HOST SSH_USER DEPLOY_PATH SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
             if [ -z "${!var_name}" ]; then
               echo "Error: Missing required GitHub Secret or Variable: $var_name" >&2
               exit 1
@@ -103,18 +104,20 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT || vars.SSH_PORT || '22' }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || vars.DEPLOY_PATH }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          # Optional but recommended: the server's host key line(s), from `ssh-keyscan -p <port> <host>`.
+          # Required: the server's pinned host key line(s), from `ssh-keyscan -p <port> <host>`.
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS || vars.SSH_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          if [ -n "$SSH_KNOWN_HOSTS" ]; then
-            # Pinned host key: a different server (man-in-the-middle) is refused.
-            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            echo "::warning::SSH_KNOWN_HOSTS is not set: trusting the host key presented on first contact. Pin it (secret or variable SSH_KNOWN_HOSTS) to prevent man-in-the-middle deployments."
-            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          # Pinned host key: a different server (man-in-the-middle) is refused. Never trust a key
+          # that is seen for the first time during a deploy.
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          KEY_HOST="$SSH_HOST"
+          if [ "$SSH_PORT" != "22" ]; then KEY_HOST="[$SSH_HOST]:$SSH_PORT"; fi
+          if ! ssh-keygen -F "$KEY_HOST" -f ~/.ssh/known_hosts > /dev/null 2>&1; then
+            echo "::error::SSH_KNOWN_HOSTS has no host key for $KEY_HOST. Refusing to deploy (nothing was uploaded)." >&2
+            exit 1
           fi
           SSH_OPTS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts -i $HOME/.ssh/deploy_key"
 
