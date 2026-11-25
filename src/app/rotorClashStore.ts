@@ -96,6 +96,7 @@ function markReloadedFor(version: string): boolean {
 function serverErrorMessage(payload: unknown, t: Translations): string {
   const { code, message } = (payload ?? {}) as { code?: unknown; message?: unknown };
   if (code === 'ROOM_LIMIT') return t.lobby.roomLimitReached;
+  if (code === 'ROOM_JOIN_THROTTLED') return t.lobby.joinThrottled;
   return typeof message === 'string' ? message : '';
 }
 

@@ -50,6 +50,12 @@ const MAX_DROPPED_MESSAGES = 100;
 /** REST API: 60 requests per minute and address. */
 const API_BURST = 60;
 const API_REFILL_PER_SECOND = 1;
+/** WebSocket handshakes per address: enough for a burst of page loads, not for a flood. */
+const HANDSHAKE_BURST = 30;
+const HANDSHAKE_REFILL_PER_SECOND = 5;
+/** Room joins per socket: a player needs a handful, guessing a 6-character code needs billions. */
+const ROOM_JOIN_BURST = 5;
+const ROOM_JOIN_REFILL_PER_SECOND = 0.1;
 /** Lobby and leaderboard broadcasts reach every client, so bursts are merged into one. */
 const BROADCAST_DELAY_MS = 250;
 const RENAME_COOLDOWN_MS = 2000;
@@ -67,10 +73,12 @@ async function bootstrap() {
   }
 
   // Small per-address limit on the REST API, with a bounded table so forged client addresses
-  // cannot grow memory.
+  // cannot grow memory. Handshakes get their own bucket, checked before a socket is upgraded.
   const apiLimiter = new KeyedRateLimiter(API_BURST, API_REFILL_PER_SECOND);
+  const handshakeLimiter = new KeyedRateLimiter(HANDSHAKE_BURST, HANDSHAKE_REFILL_PER_SECOND);
   const apiCleanup = setInterval(() => {
     apiLimiter.prune();
+    handshakeLimiter.prune();
   }, 5 * 60 * 1000);
   apiCleanup.unref();
 
@@ -114,9 +122,10 @@ async function bootstrap() {
     path: '/ws',
     // Real messages are tiny; `ws` defaults to 100 MiB per message.
     maxPayload: MAX_MESSAGE_BYTES,
-    // Browsers always send Origin: refuse handshakes started from other websites.
+    // Browsers always send Origin: refuse handshakes started from other websites, and cap how fast
+    // one address may open sockets at all.
     verifyClient: (info: { origin: string; req: http.IncomingMessage }) =>
-      isAllowedOrigin(info.origin, info.req.headers.host),
+      isAllowedOrigin(info.origin, info.req.headers.host) && handshakeLimiter.take(clientIp(info.req)),
   });
   const connectionLimiter = new ConnectionLimiter(MAX_SOCKETS_PER_IP, MAX_SOCKETS_TOTAL);
 
@@ -244,6 +253,7 @@ async function bootstrap() {
     }
 
     const limiter = new RateLimiter(MESSAGE_BURST, MESSAGES_PER_SECOND);
+    const roomJoinLimiter = new RateLimiter(ROOM_JOIN_BURST, ROOM_JOIN_REFILL_PER_SECOND);
     let dropped = 0;
 
     ws.on('message', (raw, isBinary) => {
@@ -369,6 +379,14 @@ async function bootstrap() {
             break;
           }
           case 'room:join': {
+            // Guessing a room code is a numbers game; a human never needs this many attempts.
+            if (!roomJoinLimiter.take()) {
+              sendJson(ws, 'error:toast', {
+                message: 'Too many join attempts. Please wait a moment and try again.',
+                code: 'ROOM_JOIN_THROTTLED',
+              });
+              break;
+            }
             const roomCode = trimString(payload.roomCode, 12);
             const res = engine.joinRoom(playerId, roomCode);
             if (!res.ok) {

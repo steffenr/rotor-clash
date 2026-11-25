@@ -44,6 +44,7 @@ export interface Translations {
     authReset: string;
     authFailed: string;
     roomLimitReached: string;
+    joinThrottled: string;
     joinDuel: string;
     tutorialPrompt: string;
     launchTutorial: string;
