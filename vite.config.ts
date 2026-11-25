@@ -34,6 +34,25 @@ export default defineConfig(() => {
       },
     },
     server: {
+      // The runtime datastore (data/leaderboard.json) and the package files sit next to the sources
+      // but are never part of the app; the dev server must not hand them out either. The defaults
+      // from Vite are repeated here because `deny` replaces them. `src/data/**` stays readable: the
+      // deck markdown is imported with ?raw and must keep working.
+      fs: {
+        deny: [
+          '.env',
+          '.env.*',
+          '*.{crt,pem,key,p12,pfx,cer,der}',
+          '.npmrc',
+          '.yarnrc.yml',
+          '**/.git/**',
+          '**/.github/**',
+          '**/data/leaderboard.json',
+          '**/data/leaderboard.json.tmp',
+          '**/package.json',
+          '**/package-lock.json',
+        ],
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
