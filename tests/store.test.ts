@@ -164,3 +164,50 @@ test('LeaderboardStore.recordForfeit never pushes a rating below the floor', () 
   assert.equal(store.getPlayer('low')!.elo, 400);
   assert.equal(store.getPlayer('low')!.losses, 4);
 });
+
+test('LeaderboardStore damps rating for the same pair meeting again and again', () => {
+  const store = new LeaderboardStore(tempFile());
+  const play = (i: number, winnerId: string) =>
+    store.recordPvpMatch({
+      matchId: `repeat-${i}`,
+      mode: 'ranked',
+      p1Id: 'farm-a',
+      p2Id: 'farm-b',
+      p1Cards: 20,
+      p2Cards: 10,
+      p1Quartets: 2,
+      p2Quartets: 0,
+      winnerId,
+      roundsPlayed: 8,
+    });
+
+  const first = play(1, 'farm-a');
+  const fullWin = Math.abs(first.p1Delta);
+  assert.ok(fullWin > 0);
+
+  const second = play(2, 'farm-a');
+  assert.ok(Math.abs(second.p1Delta) > 0, 'the second meeting still counts');
+
+  const third = play(3, 'farm-a');
+  // Half of what the (now different) ratings would otherwise produce; at most half of the first gain.
+  assert.ok(Math.abs(third.p1Delta) <= Math.ceil(fullWin / 2), `third meeting damped, got ${third.p1Delta}`);
+
+  const fourth = play(4, 'farm-a');
+  assert.equal(fourth.p1Delta, 0, 'the fourth meeting in an hour earns nothing');
+  assert.equal(fourth.p2Delta, 0);
+
+  // A fresh opponent is not affected by another pair's history.
+  const fresh = store.recordPvpMatch({
+    matchId: 'fresh-1',
+    mode: 'ranked',
+    p1Id: 'farm-a',
+    p2Id: 'someone-new',
+    p1Cards: 20,
+    p2Cards: 10,
+    p1Quartets: 2,
+    p2Quartets: 0,
+    winnerId: 'farm-a',
+    roundsPlayed: 8,
+  });
+  assert.ok(fresh.p1Delta > 0, 'a new opponent is rated normally');
+});
