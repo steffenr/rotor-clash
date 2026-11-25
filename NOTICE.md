@@ -41,8 +41,8 @@ claimed in them, and they are labelled as AI-generated in the app.
 ## 5. Dependencies and fonts
 
 Third-party packages keep their own licences (express, ws, Alpine.js, Tailwind CSS and Vite are MIT; dotenv is
-BSD-2-Clause). The fonts Fraunces, Plus Jakarta Sans and JetBrains Mono are loaded from Google Fonts under the
-SIL Open Font License.
+BSD-2-Clause). The fonts Fraunces, Plus Jakarta Sans and JetBrains Mono are self-hosted from `public/fonts/`
+under the SIL Open Font License 1.1; the licence texts ship with them (`public/fonts/OFL-*.txt`).
 
 ## Offering the source (AGPL section 13)
 
