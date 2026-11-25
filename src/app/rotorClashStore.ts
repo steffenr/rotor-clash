@@ -131,6 +131,8 @@ export function createRotorClashApp() {
     theme: resolveInitialTheme() as Theme,
     inspectedCard: null as TurbineCard | null,
     showImprint: false,
+    /** Shown when a saved ranked profile can no longer be proven (device key lost). */
+    showIdentityLost: false,
     appVersion: __APP_VERSION__,
 
     // Lobby & WS
@@ -399,8 +401,23 @@ export function createRotorClashApp() {
       };
     },
 
-    /** The server did not accept this browser's id/secret pair: continue with a fresh identity, once. */
+    /** The server did not accept this browser's id/key pair. */
     handleAuthRejected() {
+      if (identityResets >= 1) {
+        this.showToast(this.t.lobby.authFailed);
+        return;
+      }
+      // A ranked profile cannot be reopened without its key: ask before throwing it away.
+      if (this.profile.gamesPlayed > 0) {
+        this.showIdentityLost = true;
+        return;
+      }
+      this.startFreshIdentity();
+    },
+
+    /** Explicit choice from the identity-lost dialog: a new id plus a new device key, once. */
+    startFreshIdentity() {
+      this.showIdentityLost = false;
       if (identityResets >= 1) {
         this.showToast(this.t.lobby.authFailed);
         return;

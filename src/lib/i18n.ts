@@ -43,6 +43,11 @@ export interface Translations {
     listRoomHint: string;
     authReset: string;
     authFailed: string;
+    identityLostTitle: string;
+    identityLostBody: string;
+    identityLostSaved: string;
+    identityLostFresh: string;
+    identityLostReload: string;
     roomLimitReached: string;
     joinThrottled: string;
     joinDuel: string;

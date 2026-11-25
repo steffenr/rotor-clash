@@ -1672,6 +1672,55 @@ export function renderImprintModal(): string {
   `;
 }
 
+/**
+ * Shown when this browser can no longer prove a saved ranked profile (the device key is gone).
+ * The restart is an explicit choice here instead of happening silently behind the player's back.
+ */
+export function renderIdentityLostModal(): string {
+  return `
+    <template x-if="showIdentityLost">
+      <div
+        class="fixed inset-0 z-50 bg-c-ink/60 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="identity-lost-title"
+        x-init="$nextTick(() => $refs.identityFresh?.focus())"
+      >
+        <div class="relative w-full max-w-md rounded-2xl bg-c-paper-hi ink-panel p-5 space-y-4 anim-pop-in">
+          <div class="flex items-start gap-3">
+            <span class="shrink-0 w-10 h-10 rounded-xl bg-c-rose border-2 border-c-red text-c-red-ink inline-flex items-center justify-center">${iconSvg('shield-alert', 'w-5 h-5')}</span>
+            <div class="min-w-0">
+              <h2 id="identity-lost-title" class="font-display text-lg font-extrabold text-c-ink" x-text="t.lobby.identityLostTitle"></h2>
+              <p class="mt-1 text-sm text-c-ink-2 leading-relaxed" x-text="t.lobby.identityLostBody"></p>
+            </div>
+          </div>
+          <div class="rounded-xl bg-c-paper border-2 border-c-ink/20 px-3 py-2 flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-c-ink-2" x-text="t.lobby.identityLostSaved"></span>
+            <span class="font-mono text-sm font-bold text-c-ink truncate" x-text="profile.callsign"></span>
+          </div>
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <button
+              type="button"
+              @click="reloadForUpdate()"
+              class="px-4 py-2.5 rounded-xl bg-c-sand hover:bg-c-sand-hover text-c-ink border-2 border-c-ink font-bold text-sm whitespace-nowrap"
+              x-text="t.lobby.identityLostReload"
+            ></button>
+            <button
+              type="button"
+              x-ref="identityFresh"
+              @click="startFreshIdentity()"
+              class="px-4 py-2.5 rounded-xl bg-c-red hover:bg-c-red-hover text-white border-2 border-c-ink font-bold text-sm whitespace-nowrap inline-flex items-center justify-center gap-1.5"
+            >
+              ${iconSvg('key-round', 'w-4 h-4')}
+              <span x-text="t.lobby.identityLostFresh"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+  `;
+}
+
 export function renderAppShell(): string {
   return `
     <div
@@ -1691,6 +1740,7 @@ export function renderAppShell(): string {
       ${renderFooter()}
       ${renderCardDetailModal()}
       ${renderImprintModal()}
+      ${renderIdentityLostModal()}
     </div>
   `;
 }
